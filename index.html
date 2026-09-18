@@ -2099,25 +2099,94 @@
       updateHeaderProfileUI();
     });
   </script>
+  <!-- TÍCH HỢP FIREBASE AUTH & REALTIME SYNC -->
   <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyA4lRq30I7H3k5qFTwRb3HWVhRFNSROXWY",
-    authDomain: "trunghp1302.firebaseapp.com",
-    projectId: "trunghp1302",
-    storageBucket: "trunghp1302.firebasestorage.app",
-    messagingSenderId: "434901953464",
-    appId: "1:434901953464:web:dc0f96ea2846693d0bfd4d"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyA4lRq30I7H3k5qFTwRb3HWVhRFNSROXWY",
+      authDomain: "trunghp1302.firebaseapp.com",
+      projectId: "trunghp1302",
+      storageBucket: "trunghp1302.firebasestorage.app",
+      messagingSenderId: "434901953464",
+      appId: "1:434901953464:web:dc0f96ea2846693d0bfd4d"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  // Thêm đoạn xử lý Đăng ký/Đăng nhập và onSnapshot đồng bộ dữ liệu vào đây
-</script>
+    // 1. Tạo khung Đăng nhập / Đăng xuất nổi ở góc phải bên dưới
+    const authUI = document.createElement('div');
+    authUI.style.cssText = "position:fixed;bottom:15px;right:15px;z-index:99999;background:#ffffff;padding:12px;border-radius:8px;box-shadow:0 4px 15px rgba(0,0,0,0.2);font-family:sans-serif;font-size:12px;color:#333;";
+    document.body.appendChild(authUI);
+
+    let isRemoteUpdate = false;
+
+    // 2. Quản lý Đăng nhập & Tự động tải dữ liệu từ Cloud
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        authUI.innerHTML = `
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span>🟢 <b>${user.email}</b></span>
+            <button id="fb-logout-btn" style="padding:4px 8px;cursor:pointer;background:#ff4d4d;color:#fff;border:none;border-radius:4px;font-size:11px;">Đăng xuất</button>
+          </div>
+        `;
+        document.getElementById('fb-logout-btn').onclick = () => signOut(auth);
+
+        // Lắng nghe dữ liệu realtime từ Cloud
+        onSnapshot(doc(db, "users", user.uid), (docSnap) => {
+          if (docSnap.exists()) {
+            const cloudData = docSnap.data().storageData || {};
+            isRemoteUpdate = true;
+            
+            // Cập nhật lại bộ nhớ local của trình duyệt
+            Object.keys(cloudData).forEach(key => {
+              localStorage.setItem(key, cloudData[key]);
+            });
+            isRemoteUpdate = false;
+
+            // Gọi lại các hàm hiển thị có sẵn của ứng dụng skku-tracker
+            if (typeof window.renderMonthsGrid === 'function') window.renderMonthsGrid();
+            if (typeof window.renderResearchTable === 'function') window.renderResearchTable();
+            if (typeof window.updateHeaderProfileUI === 'function') window.updateHeaderProfileUI();
+          }
+        });
+      } else {
+        authUI.innerHTML = `
+          <div style="display:flex;flex-direction:column;gap:6px;width:180px;">
+            <b style="text-align:center;">Đồng bộ Cloud</b>
+            <input id="fb-email" type="email" placeholder="Email" style="padding:5px;border:1px solid #ccc;border-radius:4px;">
+            <input id="fb-pass" type="password" placeholder="Mật khẩu" style="padding:5px;border:1px solid #ccc;border-radius:4px;">
+            <div style="display:flex;gap:4px;">
+              <button id="fb-login-btn" style="flex:1;padding:5px;cursor:pointer;background:#2563eb;color:#fff;border:none;border-radius:4px;">Vào</button>
+              <button id="fb-reg-btn" style="flex:1;padding:5px;cursor:pointer;background:#10b981;color:#fff;border:none;border-radius:4px;">Đăng ký</button>
+            </div>
+          </div>
+        `;
+        document.getElementById('fb-login-btn').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('fb-email').value, document.getElementById('fb-pass').value).catch(e => alert(e.message));
+        document.getElementById('fb-reg-btn').onclick = () => createUserWithEmailAndPassword(auth, document.getElementById('fb-email').value, document.getElementById('fb-pass').value).then(() => alert('Đăng ký thành công!')).catch(e => alert(e.message));
+      }
+    });
+
+    // 3. Bắt sự kiện khi bạn gõ/thay đổi dữ liệu để tự động đẩy lên Cloud
+    const originalSetItem = localStorage.setItem;
+    localStorage.setItem = function(key, value) {
+      originalSetItem.apply(this, arguments);
+      if (!isRemoteUpdate && auth.currentUser) {
+        const allLocalData = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          allLocalData[k] = localStorage.getItem(k);
+        }
+        setDoc(doc(db, "users", auth.currentUser.uid), {
+          storageData: allLocalData,
+          updatedAt: new Date()
+        }, { merge: true });
+      }
+    };
+  </script>
 </body>
 </html>
