@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SKKU SAINT - Work & Academic Tracker</title>
+  <title>SKKU SAINT - Academic, Work & Research Tracker</title>
+
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -12,140 +14,274 @@
         extend: {
           colors: {
             skkuNavy: '#002C5F',
+            skkuNavyDark: '#001A3A',
             skkuGreen: '#8CB72A',
             skkuDarkGreen: '#005826',
-            capybaraBg: '#FFF3E0'
+            skkuGold: '#D97706'
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif']
           }
         }
       }
     }
   </script>
+
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
-    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .skku-watermark {
+      background-image: radial-gradient(rgba(0, 44, 95, 0.04) 1px, transparent 0), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='24' fill='%23002C5F' opacity='0.03'%3ESKKU SAINT%3C/text%3E%3C/svg%3E");
+      background-size: 20px 20px, 180px 180px;
+    }
+    .dark .skku-watermark {
+      background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='24' fill='%23ffffff' opacity='0.02'%3ESKKU SAINT%3C/text%3E%3C/svg%3E");
+    }
+    .capybara-subtle {
+      background-image: url('https://media.giphy.com/media/13CoXDiaCcCoyk/giphy.gif');
+      background-size: 45px 45px;
+      background-repeat: no-repeat;
+      background-position: right 12px bottom 12px;
+    }
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.05);
+      border-radius: 8px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(140, 183, 42, 0.5);
+      border-radius: 8px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 44, 95, 0.8);
+    }
   </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200">
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen skku-watermark flex flex-col">
 
-  <header class="bg-skkuNavy text-white shadow-xl border-b-4 border-skkuGreen sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
+  <!-- HEADER & NAVBAR -->
+  <header class="bg-skkuNavy dark:bg-skkuNavyDark text-white shadow-xl border-b-4 border-skkuGreen sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
       
+      <!-- Brand & University Title -->
       <div class="flex items-center space-x-3">
-        <div class="bg-white p-2 rounded-xl shadow-md">
-          <span class="text-skkuNavy font-black text-2xl tracking-wider">SKKU</span>
-          <span class="text-skkuGreen font-black text-2xl">SAINT</span>
+        <div class="bg-white p-2.5 rounded-2xl shadow-md border border-slate-200 flex items-center justify-center">
+          <span class="text-skkuNavy font-black text-2xl tracking-tighter">SKKU</span>
+          <span class="text-skkuGreen font-black text-2xl ml-1">SAINT</span>
         </div>
         <div>
-          <h1 class="text-xl md:text-2xl font-extrabold tracking-tight">Hệ Thống Theo Dõi Tiến Độ Học Tập</h1>
-          <p class="text-xs text-emerald-300 font-medium">Sungkyunkwan Advanced Institute of Nanotechnology</p>
+          <h1 class="text-lg md:text-xl font-extrabold tracking-tight flex items-center gap-2">
+            Quản Lý Học Tập & Nghiên Cứu
+            <span class="text-xs bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-400/30">Lab SAINT</span>
+          </h1>
+          <p class="text-xs text-slate-300 font-medium hidden sm:block">Sungkyunkwan Advanced Institute of Nanotechnology</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-4 bg-slate-800/80 px-4 py-2 rounded-2xl border border-slate-700">
-        <div class="text-center pr-4 border-r border-slate-600">
-          <div class="text-xs text-amber-400 font-bold uppercase tracking-wider">🇰🇷 Giờ Hàn Quốc (KST)</div>
-          <div id="kst-time" class="text-xl md:text-2xl font-black font-mono text-white">00:00:00</div>
-          <div id="kst-date" class="text-xs text-slate-300 font-semibold">18/09/2026</div>
+      <!-- KST Digital Clock & Suwon Weather -->
+      <div class="flex items-center gap-3 bg-slate-800/90 dark:bg-slate-900/90 px-4 py-2 rounded-2xl border border-slate-700/80 shadow-inner">
+        <!-- Live Clock -->
+        <div class="text-center pr-3 border-r border-slate-700">
+          <div class="text-[10px] text-amber-400 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
+            <span>🇰🇷</span> <span data-i18n="kstClock">KST Time</span>
+          </div>
+          <div id="kst-time" class="text-lg md:text-xl font-black font-mono text-white">00:00:00</div>
+          <div id="kst-date" class="text-[11px] text-slate-300 font-semibold">--/--/----</div>
         </div>
-        <div class="text-center min-w-[100px]">
-          <div class="text-xs text-cyan-300 font-bold">📍 Suwon</div>
+        <!-- Weather -->
+        <div class="text-center min-w-[95px]">
+          <div class="text-[10px] text-cyan-300 font-bold flex items-center justify-center gap-1">
+            <i class="fa-solid fa-location-dot"></i> Suwon
+          </div>
           <div id="weather-info" class="text-sm font-bold text-slate-100 flex items-center justify-center gap-1 mt-0.5">
-            <i class="fa-solid fa-spinner animate-spin text-xs"></i> Đang tải...
+            <i class="fa-solid fa-spinner animate-spin text-xs"></i>
           </div>
         </div>
       </div>
 
-      <button id="theme-toggle" class="p-3 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-xl transition-all shadow-md text-lg flex items-center gap-2 font-bold border border-slate-700">
-        <i id="theme-icon" class="fa-solid fa-moon"></i>
-        <span class="text-sm hidden md:inline">Giao diện</span>
-      </button>
+      <!-- User Profile Header Summary Card -->
+      <div onclick="openProfileModal()" class="flex items-center gap-3 bg-slate-800/80 hover:bg-slate-700/80 p-1.5 pr-4 rounded-2xl cursor-pointer transition border border-slate-700 shadow">
+        <img id="header-avatar" src="https://placehold.co/100x100/002C5F/FFF?text=SAINT" alt="Avatar" class="w-10 h-10 rounded-xl object-cover border-2 border-skkuGreen shadow-sm">
+        <div class="text-left hidden lg:block">
+          <div id="header-user-name" class="text-sm font-extrabold text-white leading-tight">Nghiên cứu sinh</div>
+          <div class="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+            <i class="fa-solid fa-user-gear"></i> <span data-i18n="editProfile">Hồ sơ cá nhân</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls: Language & Dark Mode -->
+      <div class="flex items-center gap-2">
+        <!-- Language Switcher -->
+        <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-slate-800 text-white font-bold text-xs px-3 py-2 rounded-xl border border-slate-700 focus:ring-2 focus:ring-skkuGreen cursor-pointer">
+          <option value="vi">🇻🇳 VI</option>
+          <option value="en">🇺🇸 EN</option>
+          <option value="ko">🇰🇷 KO</option>
+        </select>
+
+        <!-- Theme Toggle -->
+        <button id="theme-toggle" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-xl border border-slate-700 transition shadow">
+          <i id="theme-icon" class="fa-solid fa-moon text-base"></i>
+        </button>
+      </div>
 
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 py-8">
-
-    <div id="month-selection-view" class="space-y-6">
+  <!-- MAIN ACTION BAR / NAVIGATION TABS -->
+  <section class="max-w-7xl mx-auto px-4 mt-6 w-full">
+    <div class="bg-white dark:bg-slate-900 p-3 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
       
-      <div class="relative overflow-hidden bg-gradient-to-r from-skkuNavy via-slate-800 to-emerald-900 text-white rounded-3xl p-6 md:p-8 shadow-2xl border-2 border-skkuGreen/30">
-        <div class="max-w-2xl">
-          <h2 class="text-2xl md:text-3xl font-extrabold mb-2">Xin chào! Chọn Tháng Để Quản Lý Lịch Học & Task 🎓</h2>
-          <p class="text-slate-200 text-base md:text-lg">Theo dõi deadline, báo cáo thứ 2 hàng tuần và lịch học các môn Nanophotonics, Energy Chemistry,...</p>
-        </div>
-      </div>
+      <!-- Tab Selector Buttons -->
+      <div class="flex items-center gap-2">
+        <button id="tab-btn-calendar" onclick="switchMainTab('calendar')" class="px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition shadow-md bg-skkuNavy text-white">
+          <i class="fa-solid fa-calendar-days text-skkuGreen"></i>
+          <span data-i18n="tabCalendar">Thư Mục Tháng & Lịch Học</span>
+        </button>
 
-      <div class="flex justify-between items-center">
-        <h3 class="text-xl md:text-2xl font-bold flex items-center gap-2">
-          <i class="fa-solid fa-folder-open text-amber-500"></i> Danh Sách Tháng Học Tập
-        </h3>
-        <button onclick="addNewMonthPrompt()" class="bg-skkuGreen hover:bg-emerald-600 text-slate-900 font-extrabold px-5 py-3 rounded-2xl shadow-lg transition-transform hover:scale-105 flex items-center gap-2 text-base">
-          <i class="fa-solid fa-plus"></i> Thêm Tháng Mới
+        <button id="tab-btn-research" onclick="switchMainTab('research')" class="px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">
+          <i class="fa-solid fa-flask-vial text-amber-500"></i>
+          <span data-i18n="tabResearch">Nghiên Cứu (Research Logs)</span>
         </button>
       </div>
 
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2">
+        <!-- Add Schedule Button -->
+        <button onclick="openAddCourseModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-2xl text-sm flex items-center gap-2 shadow transition">
+          <i class="fa-solid fa-plus-circle"></i>
+          <span data-i18n="btnAddSchedule">Thêm Lịch Học Nâng Cao</span>
+        </button>
+
+        <!-- Edit Profile Button -->
+        <button onclick="openProfileModal()" class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold px-4 py-2.5 rounded-2xl text-sm flex items-center gap-2 shadow transition">
+          <i class="fa-solid fa-address-card text-skkuNavy dark:text-emerald-400"></i>
+          <span data-i18n="btnProfileInfo">Thông Tin Cá Nhân</span>
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- TAB 1: CALENDAR & MONTH FOLDERS VIEW -->
+  <main id="view-calendar-tab" class="max-w-7xl mx-auto px-4 py-6 w-full space-y-6 flex-grow">
+    
+    <!-- MONTH SELECTION SUB-VIEW (Dashboard Folders) -->
+    <div id="month-selection-subview" class="space-y-6">
+      
+      <!-- Welcome Banner -->
+      <div class="relative overflow-hidden bg-gradient-to-r from-skkuNavy via-slate-900 to-emerald-900 text-white rounded-3xl p-6 md:p-8 shadow-2xl border-2 border-skkuGreen/30">
+        <div class="max-w-3xl space-y-2">
+          <h2 class="text-2xl md:text-3xl font-black" data-i18n="bannerTitle">Chào Mừng Đến Với Bảng Quản Lý Academic SAINT 🎓</h2>
+          <p class="text-slate-200 text-base leading-relaxed" data-i18n="bannerSubtitle">Theo dõi lịch học 16 tuần, báo cáo lab định kỳ, quản lý deadline và nhật ký nghiên cứu hàng ngày.</p>
+        </div>
+        <img src="https://media.giphy.com/media/13CoXDiaCcCoyk/giphy.gif" alt="Capybara" class="absolute -right-2 -bottom-2 w-32 md:w-36 opacity-90 pointer-events-none drop-shadow-md">
+      </div>
+
+      <!-- Month Folders Grid Header -->
+      <div class="flex justify-between items-center">
+        <h3 class="text-xl md:text-2xl font-black flex items-center gap-2">
+          <i class="fa-solid fa-folder-closed text-amber-500"></i>
+          <span data-i18n="monthFoldersHeader">Danh Sách Thư Mục Tháng</span>
+        </h3>
+        <button onclick="addNewMonthPrompt()" class="bg-skkuGreen hover:bg-emerald-600 text-slate-900 font-black px-5 py-3 rounded-2xl shadow-lg transition transform hover:scale-105 flex items-center gap-2 text-base">
+          <i class="fa-solid fa-plus"></i> <span data-i18n="btnAddMonth">Thêm Tháng Mới</span>
+        </button>
+      </div>
+
+      <!-- Grid of Month Folder Buttons -->
       <div id="months-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <!-- Injected dynamically by JS -->
       </div>
     </div>
 
-    <div id="month-detail-view" class="hidden space-y-8">
+    <!-- MONTH DETAIL SUB-VIEW -->
+    <div id="month-detail-subview" class="hidden space-y-8">
       
-      <div class="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700">
-        <button onclick="showMonthSelection()" class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2 text-base transition">
-          <i class="fa-solid fa-arrow-left"></i> Quay Lại Chọn Tháng
+      <!-- Back Header -->
+      <div class="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-800">
+        <button onclick="showMonthSelectionView()" class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 px-5 py-3 rounded-2xl font-black flex items-center gap-2 text-base transition">
+          <i class="fa-solid fa-arrow-left"></i> <span data-i18n="btnBackToMonths">Quay Lại Chọn Tháng</span>
         </button>
-        <div class="text-center md:text-right">
+        <div class="text-right">
           <h2 id="selected-month-title" class="text-2xl md:text-3xl font-black text-skkuNavy dark:text-emerald-400">Tháng 9/2026</h2>
-          <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Lịch học cố định 16 tuần & Báo cáo lab</p>
+          <p class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="semesterSubtitle">Học kỳ Fall 2026 • SAINT Lab Research</p>
         </div>
       </div>
 
+      <!-- TOP DEADLINES & IMPORTANT NOTES SECTION -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-xl border-2 border-red-500/30 flex flex-col justify-between">
+        <!-- CARD 1: DEADLINES -->
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-xl border-2 border-red-500/30 flex flex-col justify-between">
           <div>
             <div class="flex justify-between items-center mb-4">
-              <h3 class="text-xl font-extrabold text-red-600 dark:text-red-400 flex items-center gap-2">
-                <i class="fa-solid fa-clock-rotate-left"></i> Deadline Trong Tháng
+              <h3 class="text-xl font-black text-red-600 dark:text-red-400 flex items-center gap-2">
+                <i class="fa-solid fa-hourglass-half"></i> <span data-i18n="cardDeadlines">Deadline Trong Tháng</span>
               </h3>
-              <button onclick="addDeadlinePrompt()" class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-1.5 rounded-xl text-sm flex items-center gap-1 shadow">
-                <i class="fa-solid fa-plus"></i> Thêm Deadline
+              <button onclick="addDeadlinePrompt()" class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1 shadow">
+                <i class="fa-solid fa-plus"></i> <span data-i18n="btnAdd">Thêm</span>
               </button>
             </div>
             <ul id="deadline-list" class="space-y-3 max-h-56 overflow-y-auto pr-1">
+              <!-- Injected by JS -->
             </ul>
           </div>
         </div>
 
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-xl border-2 border-amber-500/30 flex flex-col justify-between">
+        <!-- CARD 2: IMPORTANT NOTES -->
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-xl border-2 border-amber-500/30 flex flex-col justify-between">
           <div>
             <div class="flex justify-between items-center mb-4">
-              <h3 class="text-xl font-extrabold text-amber-600 dark:text-amber-400 flex items-center gap-2">
-                <i class="fa-solid fa-note-sticky"></i> Important Notes (Ghi Chú)
+              <h3 class="text-xl font-black text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                <i class="fa-solid fa-note-sticky"></i> <span data-i18n="cardNotes">Important Notes</span>
               </h3>
-              <button onclick="addNotePrompt()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-3 py-1.5 rounded-xl text-sm flex items-center gap-1 shadow">
-                <i class="fa-solid fa-plus"></i> Thêm Ghi Chú
+              <button onclick="addNotePrompt()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1 shadow">
+                <i class="fa-solid fa-plus"></i> <span data-i18n="btnAdd">Thêm</span>
               </button>
             </div>
             
-            <div class="bg-amber-100 dark:bg-amber-950/60 border-l-4 border-amber-500 p-3 rounded-r-xl mb-3 text-amber-900 dark:text-amber-200 font-bold text-base flex items-start gap-2 shadow-sm">
-              <span class="text-lg">📌</span>
-              <span>Report với giáo sư hướng dẫn sáng thứ 2 hàng tuần lúc 9h</span>
+            <!-- PERMANENT ADVISOR REPORT NOTE -->
+            <div class="bg-amber-100 dark:bg-amber-950/70 border-l-4 border-amber-500 p-3.5 rounded-r-2xl mb-3 text-amber-950 dark:text-amber-200 font-extrabold text-base flex items-start gap-2 shadow-sm">
+              <span class="text-xl">📌</span>
+              <span data-i18n="permanentAdvisorNote">Report với giáo sư hướng dẫn sáng thứ 2 hàng tuần lúc 9h</span>
             </div>
 
             <ul id="notes-list" class="space-y-2.5 max-h-44 overflow-y-auto pr-1">
+              <!-- Injected by JS -->
             </ul>
           </div>
         </div>
 
       </div>
 
-      <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-700">
-        <h3 class="text-2xl font-black mb-6 text-slate-800 dark:text-slate-100 flex items-center gap-2">
-          <i class="fa-solid fa-calendar-days text-skkuGreen"></i> Lịch Học & Công Việc Theo Tuần
-        </h3>
+      <!-- WEEKLY & DAILY GRID SECTION -->
+      <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-6">
+        <div class="flex items-center justify-between border-b pb-4 border-slate-200 dark:border-slate-800">
+          <h3 class="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-calendar-week text-skkuGreen"></i>
+            <span data-i18n="scheduleTitle">Lịch Học & Công Việc Hàng Tuần (Mon -> Sun)</span>
+          </h3>
+          <span class="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-950 px-3 py-1 rounded-full border border-amber-500/30">
+            ★ <span data-i18n="todayAutoExpandedNote">Hôm nay được tự động tô đậm & hiển thị chi tiết</span>
+          </span>
+        </div>
 
+        <!-- Weeks Rows Container -->
         <div id="weeks-container" class="space-y-8">
+          <!-- Injected dynamically by JS -->
         </div>
       </div>
 
@@ -153,33 +289,259 @@
 
   </main>
 
-  <div id="week-task-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-2xl w-full p-6 md:p-8 shadow-2xl border-2 border-skkuGreen transform transition-all space-y-6">
+  <!-- TAB 2: RESEARCH LOGS VIEW -->
+  <main id="view-research-tab" class="max-w-7xl mx-auto px-4 py-6 w-full space-y-6 hidden flex-grow">
+    
+    <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-6">
       
-      <div class="flex justify-between items-center border-b pb-4 border-slate-200 dark:border-slate-700">
+      <!-- Research Header & Topic Switcher -->
+      <div class="flex flex-wrap items-center justify-between gap-4 border-b pb-4 border-slate-200 dark:border-slate-800">
         <div>
-          <h3 id="modal-week-title" class="text-2xl font-black text-skkuNavy dark:text-emerald-400">Kế Hoạch & Task Tuần</h3>
-          <p class="text-sm font-semibold text-slate-500">Nhiệm vụ nghiên cứu & Báo cáo với Giáo sư</p>
+          <h2 class="text-2xl md:text-3xl font-black text-skkuNavy dark:text-emerald-400 flex items-center gap-2">
+            <i class="fa-solid fa-microscope text-amber-500"></i>
+            <span data-i18n="researchHeader">Sổ Nhàn Nhật Ký Nghiên Cứu Lab (Research Log Table)</span>
+          </h2>
+          <p class="text-sm font-semibold text-slate-500 dark:text-slate-400" data-i18n="researchSubtitle">Quản lý tiến độ thí nghiệm, ghi chú bài học & plan ngày tiếp theo.</p>
         </div>
-        <button onclick="closeWeekTaskModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-2xl font-bold">
+
+        <button onclick="addNewResearchTopicPrompt()" class="bg-skkuGreen hover:bg-emerald-600 text-slate-900 font-black px-4 py-2.5 rounded-2xl text-sm flex items-center gap-2 shadow">
+          <i class="fa-solid fa-folder-plus"></i> <span data-i18n="btnAddTopic">Thêm Đề Tài Mới</span>
+        </button>
+      </div>
+
+      <!-- Topics Pills List -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-2" id="research-topics-list">
+        <!-- Injected by JS -->
+      </div>
+
+      <!-- Current Selected Project Info Bar -->
+      <div class="flex justify-between items-center bg-slate-100 dark:bg-slate-800/80 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">🧪</span>
+          <div>
+            <h3 id="current-project-title" class="text-xl font-extrabold text-slate-900 dark:text-white">Tên đề tài</h3>
+            <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold" data-i18n="tableInstructions">Điền nhật ký 5 cột bên dưới:</span>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <button onclick="addResearchRow()" class="bg-skkuNavy hover:bg-slate-800 text-white font-extrabold px-4 py-2 rounded-xl text-sm flex items-center gap-1 shadow">
+            <i class="fa-solid fa-plus"></i> <span data-i18n="btnAddRow">Thêm Dòng Mới</span>
+          </button>
+          <button onclick="deleteCurrentProject()" class="text-red-500 hover:text-red-700 p-2 text-sm font-bold">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 5-COLUMN RESEARCH TABLE -->
+      <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <table class="w-full text-left border-collapse min-w-[900px]">
+          <thead>
+            <tr class="bg-skkuNavy text-white font-black text-sm uppercase tracking-wider">
+              <th class="p-4 w-44 border-r border-slate-700" data-i18n="colDate">1. Thứ Ngày Tháng</th>
+              <th class="p-4 w-1/4 border-r border-slate-700" data-i18n="colTasks">2. Việc Cần Làm</th>
+              <th class="p-4 w-36 border-r border-slate-700 text-center" data-i18n="colProgress">3. Tiến Độ (%)</th>
+              <th class="p-4 w-1/4 border-r border-slate-700" data-i18n="colNotes">4. Take Notes (Đã học)</th>
+              <th class="p-4 w-1/4 border-r border-slate-700" data-i18n="colPlan">5. Plan Ngày Mai</th>
+              <th class="p-4 w-12 text-center">Xóa</th>
+            </tr>
+          </thead>
+          <tbody id="research-table-body" class="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900 text-sm font-medium">
+            <!-- Injected by JS -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 text-center text-xs space-y-2">
+      <div class="font-extrabold text-sm text-slate-200">Sungkyunkwan Advanced Institute of Nanotechnology (SAINT) • SKKU</div>
+      <p>© 2026 SKKU Academic & Research Tracker. Designed for Researchers & Graduate Students.</p>
+    </div>
+  </footer>
+
+  <!-- MODAL 1: USER PROFILE & PERSONAL INFO -->
+  <div id="profile-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 md:p-8 shadow-2xl border-2 border-skkuGreen space-y-6 max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex justify-between items-center border-b pb-4 border-slate-200 dark:border-slate-800">
+        <h3 class="text-2xl font-black text-skkuNavy dark:text-emerald-400 flex items-center gap-2">
+          <i class="fa-solid fa-user-gear"></i> <span data-i18n="modalProfileTitle">Thông Tin Cá Nhân & Hồ Sơ</span>
+        </h3>
+        <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-2xl font-bold">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Form Inputs Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm font-bold">
+        
+        <!-- Avatar Preview & URL -->
+        <div class="sm:col-span-2 bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl flex items-center gap-4">
+          <img id="profile-avatar-preview" src="" class="w-16 h-16 rounded-2xl object-cover border-2 border-skkuGreen shadow">
+          <div class="flex-grow space-y-1">
+            <label class="text-xs font-bold text-slate-500 uppercase" data-i18n="lblAvatarUrl">Link Ảnh Đại Diện (Avatar URL):</label>
+            <input type="text" id="prof-avatar" oninput="updateAvatarPreview(this.value)" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold">
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblFullName">Họ và Tên:</label>
+          <input type="text" id="prof-name" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblPhone">Số Điện Thoại:</label>
+          <input type="text" id="prof-phone" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblPersonalEmail">Email Cá Nhân:</label>
+          <input type="email" id="prof-pemail" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblSchoolEmail">Email Trường (@skku.edu):</label>
+          <input type="email" id="prof-semail" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblDob">Ngày Tháng Năm Sinh:</label>
+          <input type="date" id="prof-dob" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblPassport">Số Hộ Chiếu (Passport No.):</label>
+          <input type="text" id="prof-passport" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblArc">Số Thẻ Cư Trú (ARC No.):</label>
+          <input type="text" id="prof-arc" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblBankName">Tên Ngân Hàng (Nonghyup, Woori...):</label>
+          <input type="text" id="prof-bankname" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblBankAccount">Số Tài Khoản Ngân Hàng:</label>
+          <input type="text" id="prof-bankaccount" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+        </div>
+
+      </div>
+
+      <div class="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3">
+        <button onclick="closeProfileModal()" class="px-5 py-2.5 rounded-xl font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">Hủy</button>
+        <button onclick="saveProfileInfo()" class="px-6 py-2.5 rounded-xl font-black bg-skkuGreen text-slate-900 hover:bg-emerald-500 shadow-lg" data-i18n="btnSaveProfile">Lưu Thông Tin</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL 2: ADD COURSE SCHEDULE GLOBAL -->
+  <div id="add-course-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 md:p-8 shadow-2xl border-2 border-emerald-500 space-y-5">
+      
+      <div class="flex justify-between items-center border-b pb-3 border-slate-200 dark:border-slate-800">
+        <h3 class="text-xl font-black text-skkuNavy dark:text-emerald-400 flex items-center gap-2">
+          <i class="fa-solid fa-calendar-plus"></i> <span data-i18n="modalAddCourseTitle">Thêm Lịch Học Nâng Cao</span>
+        </h3>
+        <button onclick="closeAddCourseModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-sm font-bold">
+        <div>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblCourseName">Tên Môn Học:</label>
+          <input type="text" id="course-name" placeholder="VD: Nanophotonics" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblCourseRoom">Phòng Học / Hình Thức:</label>
+          <input type="text" id="course-room" placeholder="VD: Phòng 83102 hoặc Online" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-slate-500 uppercase" data-i18n="lblDayOfWeek">Thứ Trong Tuần:</label>
+            <select id="course-dow" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+              <option value="1">Thứ 2 (Mon)</option>
+              <option value="2">Thứ 3 (Tue)</option>
+              <option value="3">Thứ 4 (Wed)</option>
+              <option value="4">Thứ 5 (Thu)</option>
+              <option value="5">Thứ 6 (Fri)</option>
+              <option value="6">Thứ 7 (Sat)</option>
+              <option value="7">Chủ Nhật (Sun)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-xs text-slate-500 uppercase" data-i18n="lblTime">Thời Gian (Start - End):</label>
+            <div class="flex gap-1 mt-1">
+              <input type="text" id="course-start" placeholder="09:00" class="w-1/2 p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs">
+              <input type="text" id="course-end" placeholder="11:45" class="w-1/2 p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs">
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-slate-500 uppercase" data-i18n="lblStartWeek">Tuần Bắt Đầu (1-16):</label>
+            <input type="number" id="course-wstart" value="1" min="1" max="16" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+          </div>
+
+          <div>
+            <label class="text-xs text-slate-500 uppercase" data-i18n="lblEndWeek">Tuần Kết Thúc (1-16):</label>
+            <input type="number" id="course-wend" value="16" min="1" max="16" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-2">
+        <button onclick="closeAddCourseModal()" class="px-4 py-2 rounded-xl font-bold bg-slate-200 dark:bg-slate-800">Hủy</button>
+        <button onclick="saveGlobalCourse()" class="px-5 py-2 rounded-xl font-black bg-skkuGreen text-slate-900 hover:bg-emerald-500" data-i18n="btnApplyCourse">Áp Dụng Lịch Học</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL 3: WEEK TASK MODAL -->
+  <div id="week-task-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-6 md:p-8 shadow-2xl border-2 border-skkuGreen space-y-6">
+      
+      <div class="flex justify-between items-center border-b pb-4 border-slate-200 dark:border-slate-800">
+        <div>
+          <h3 id="modal-week-title" class="text-2xl font-black text-skkuNavy dark:text-emerald-400">Task Tuần</h3>
+          <p class="text-xs font-semibold text-slate-500" data-i18n="weekTaskDesc">Kế hoạch báo cáo giáo sư & nhiệm vụ tuần</p>
+        </div>
+        <button onclick="closeWeekTaskModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
       <div class="space-y-4">
         <div class="flex justify-between items-center">
-          <h4 class="font-extrabold text-lg">Danh sách công việc tuần:</h4>
-          <button onclick="addCustomWeekTaskPrompt()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-sm flex items-center gap-1 shadow">
-            <i class="fa-solid fa-plus"></i> Thêm Task Mới
+          <h4 class="font-extrabold text-base" data-i18n="lblWeekTaskList">Danh Sách Task Tuần Này:</h4>
+          <button onclick="addCustomWeekTaskPrompt()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1 shadow">
+            <i class="fa-solid fa-plus"></i> <span data-i18n="btnAdd">Thêm Task</span>
           </button>
         </div>
 
         <ul id="week-task-list" class="space-y-3 max-h-80 overflow-y-auto pr-2">
+          <!-- Injected by JS -->
         </ul>
       </div>
 
-      <div class="pt-4 border-t border-slate-200 dark:border-slate-700 flex justify-end">
-        <button onclick="closeWeekTaskModal()" class="bg-skkuNavy hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-xl text-base shadow">
+      <div class="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+        <button onclick="closeWeekTaskModal()" class="bg-skkuNavy hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow">
           Đóng
         </button>
       </div>
@@ -188,41 +550,254 @@
   </div>
 
   <script>
-    // --- 1. DATA INITIALIZATION & LOCALSTORAGE ---
-    const STORAGE_KEY = 'SKKU_SAINT_TRACKER_DATA_V2';
-    
-    // Default Schedule Rules (From Aug 31 for 16 weeks)
-    const FIXED_CLASSES = {
-      1: "Xem video online môn Academic Writing", // Thứ 2
-      2: "15:00 - 16:30 | Môn Energy Chemistry (Online)", // Thứ 3
-      3: "09:00 - 11:45 | Môn Nanophotonics", // Thứ 4
-      4: "15:00 - 16:15 | Môn Electrochemical Catalysis" // Thứ 5
+    // --- 1. LOCALSTORAGE KEY & APP STATE ---
+    const STORAGE_KEY = 'SKKU_SAINT_TRACKER_V3';
+
+    // Default Fixed Schedule (Semester Start: 31/08/2026)
+    const DEFAULT_FIXED_SCHEDULE = {
+      1: { name: "Academic Writing", time: "Online", room: "Video Course" },
+      2: { name: "Energy Chemistry (Online)", time: "15:00 - 16:30", room: "Online Zoom/iCampus" },
+      3: { name: "Nanophotonics", time: "09:00 - 11:45", room: "Phòng 83102" },
+      4: { name: "Electrochemical Catalysis", time: "15:00 - 16:15", room: "Phòng 83105" }
     };
 
+    // Dictionary for Multi-Language Translation
+    const i18nDict = {
+      vi: {
+        kstClock: "Giờ Hàn Quốc (KST)",
+        editProfile: "Hồ sơ cá nhân",
+        tabCalendar: "Thư Mục Tháng & Lịch Học",
+        tabResearch: "Nghiên Cứu (Research Logs)",
+        btnAddSchedule: "Thêm Lịch Học Nâng Cao",
+        btnProfileInfo: "Thông Tin Cá Nhân",
+        bannerTitle: "Chào Mừng Đến Với Bảng Quản Lý Academic SAINT 🎓",
+        bannerSubtitle: "Theo dõi lịch học 16 tuần, báo cáo lab định kỳ, quản lý deadline và nhật ký nghiên cứu hàng ngày.",
+        monthFoldersHeader: "Danh Sách Thư Mục Tháng",
+        btnAddMonth: "Thêm Tháng Mới",
+        btnBackToMonths: "Quay Lại Chọn Tháng",
+        semesterSubtitle: "Học kỳ Fall 2026 • SAINT Lab Research",
+        cardDeadlines: "Deadline Trong Tháng",
+        cardNotes: "Important Notes",
+        btnAdd: "Thêm",
+        permanentAdvisorNote: "Report với giáo sư hướng dẫn sáng thứ 2 hàng tuần lúc 9h",
+        scheduleTitle: "Lịch Học & Công Việc Hàng Tuần (Mon -> Sun)",
+        todayAutoExpandedNote: "Hôm nay được tự động tô đậm & hiển thị chi tiết",
+        researchHeader: "Sổ Nhật Ký Nghiên Cứu Lab (Research Log Table)",
+        researchSubtitle: "Quản lý tiến độ thí nghiệm, ghi chú bài học & plan ngày tiếp theo.",
+        btnAddTopic: "Thêm Đề Tài Mới",
+        tableInstructions: "Điền nhật ký 5 cột bên dưới:",
+        btnAddRow: "Thêm Dòng Mới",
+        colDate: "1. Thứ Ngày Tháng",
+        colTasks: "2. Việc Cần Làm",
+        colProgress: "3. Tiến Độ (%)",
+        colNotes: "4. Take Notes (Đã học)",
+        colPlan: "5. Plan Ngày Mai",
+        modalProfileTitle: "Thông Tin Cá Nhân & Hồ Sơ",
+        lblAvatarUrl: "Link Ảnh Đại Diện (Avatar URL):",
+        lblFullName: "Họ và Tên:",
+        lblPhone: "Số Điện Thoại:",
+        lblPersonalEmail: "Email Cá Nhân:",
+        lblSchoolEmail: "Email Trường (@skku.edu):",
+        lblDob: "Ngày Tháng Năm Sinh:",
+        lblPassport: "Số Hộ Chiếu (Passport No.):",
+        lblArc: "Số Thẻ Cư Trú (ARC No.):",
+        lblBankName: "Tên Ngân Hàng:",
+        lblBankAccount: "Số Tài Khoản Ngân Hàng:",
+        btnSaveProfile: "Lưu Thông Tin",
+        modalAddCourseTitle: "Thêm Lịch Học Nâng Cao",
+        lblCourseName: "Tên Môn Học:",
+        lblCourseRoom: "Phòng Học / Hình Thức:",
+        lblDayOfWeek: "Thứ Trong Tuần:",
+        lblTime: "Thời Gian (Start - End):",
+        lblStartWeek: "Tuần Bắt Đầu (1-16):",
+        lblEndWeek: "Tuần Kết Thúc (1-16):",
+        btnApplyCourse: "Áp Dụng Lịch Học",
+        weekTaskDesc: "Kế hoạch báo cáo giáo sư & nhiệm vụ tuần",
+        lblWeekTaskList: "Danh Sách Task Tuần Này:"
+      },
+      en: {
+        kstClock: "Korean Standard Time (KST)",
+        editProfile: "Personal Profile",
+        tabCalendar: "Month Folders & Schedule",
+        tabResearch: "Research Logs",
+        btnAddSchedule: "Add Advanced Course",
+        btnProfileInfo: "Personal Profile",
+        bannerTitle: "Welcome to SKKU SAINT Academic Portal 🎓",
+        bannerSubtitle: "Track your 16-week course schedule, weekly advisor reports, deadlines, and lab research logs.",
+        monthFoldersHeader: "Month Folders List",
+        btnAddMonth: "Add New Month",
+        btnBackToMonths: "Back to Month Folders",
+        semesterSubtitle: "Fall Semester 2026 • SAINT Lab Research",
+        cardDeadlines: "Monthly Deadlines",
+        cardNotes: "Important Notes",
+        btnAdd: "Add",
+        permanentAdvisorNote: "Weekly advisor report every Monday morning at 09:00",
+        scheduleTitle: "Weekly Courses & Tasks (Mon -> Sun)",
+        todayAutoExpandedNote: "Today is auto-highlighted and expanded",
+        researchHeader: "Lab Research Journal & Logs",
+        researchSubtitle: "Manage experimental progress, key takeaways & next day plans.",
+        btnAddTopic: "Add New Topic",
+        tableInstructions: "Fill out the 5-column log table below:",
+        btnAddRow: "Add New Log Row",
+        colDate: "1. Date & Day",
+        colTasks: "2. Tasks To Do",
+        colProgress: "3. Progress (%)",
+        colNotes: "4. Take Notes / Learnings",
+        colPlan: "5. Plan for Tomorrow",
+        modalProfileTitle: "Personal Information & Profile",
+        lblAvatarUrl: "Avatar Image URL:",
+        lblFullName: "Full Name:",
+        lblPhone: "Phone Number:",
+        lblPersonalEmail: "Personal Email:",
+        lblSchoolEmail: "School Email (@skku.edu):",
+        lblDob: "Date of Birth:",
+        lblPassport: "Passport No.:",
+        lblArc: "ARC No.:",
+        lblBankName: "Bank Name:",
+        lblBankAccount: "Bank Account Number:",
+        btnSaveProfile: "Save Profile",
+        modalAddCourseTitle: "Add Advanced Course Schedule",
+        lblCourseName: "Course Name:",
+        lblCourseRoom: "Room / Location:",
+        lblDayOfWeek: "Day of Week:",
+        lblTime: "Time Range:",
+        lblStartWeek: "Start Week (1-16):",
+        lblEndWeek: "End Week (1-16):",
+        btnApplyCourse: "Apply Course Schedule",
+        weekTaskDesc: "Advisor report plan & weekly tasks",
+        lblWeekTaskList: "This Week's Task List:"
+      },
+      ko: {
+        kstClock: "한국 표준시 (KST)",
+        editProfile: "개인 프로필",
+        tabCalendar: "월별 폴더 & 수업 일정",
+        tabResearch: "연구 일지 (Research Logs)",
+        btnAddSchedule: "고급 수업 일정 추가",
+        btnProfileInfo: "개인 정보",
+        bannerTitle: "성균관대 SAINT 학업 및 연구 관리 🎓",
+        bannerSubtitle: "16주 수업 일정, 주간 지도교수 보고, 마감일 및 연구 일지를 효율적으로 관리하세요.",
+        monthFoldersHeader: "월별 폴더 목록",
+        btnAddMonth: "새 월 추가",
+        btnBackToMonths: "월 선택으로 돌아가기",
+        semesterSubtitle: "2026 가을학기 • SAINT 연구실",
+        cardDeadlines: "이달의 마감일 (Deadlines)",
+        cardNotes: "중요 메모 (Notes)",
+        btnAdd: "추가",
+        permanentAdvisorNote: "매주 월요일 오전 9시 지도교수님 주간 보고",
+        scheduleTitle: "주간 수업 및 할 일 (월 -> 일)",
+        todayAutoExpandedNote: "오늘 일정이 자동으로 강조 및 확장됩니다",
+        researchHeader: "연구실 연구 일지 (Research Table)",
+        researchSubtitle: "실험 진행 상황, 학습 내용 및 다음 날 계획을 기록하세요.",
+        btnAddTopic: "새 연구 주제 추가",
+        tableInstructions: "아래 5개 컬럼 표를 작성하세요:",
+        btnAddRow: "새 행 추가",
+        colDate: "1. 날짜 및 요일",
+        colTasks: "2. 할 일 (Tasks)",
+        colProgress: "3. 진행률 (%)",
+        colNotes: "4. 노트 / 학습 내용",
+        colPlan: "5. 내일 계획",
+        modalProfileTitle: "개인 정보 및 프로필",
+        lblAvatarUrl: "프로필 이미지 URL:",
+        lblFullName: "성명:",
+        lblPhone: "전화번호:",
+        lblPersonalEmail: "개인 이메일:",
+        lblSchoolEmail: "학교 이메일 (@skku.edu):",
+        lblDob: "생년월일:",
+        lblPassport: "여권 번호:",
+        lblArc: "외국인등록번호 (ARC):",
+        lblBankName: "은행명:",
+        lblBankAccount: "계좌번호:",
+        btnSaveProfile: "정보 저장",
+        modalAddCourseTitle: "고급 수업 일정 추가",
+        lblCourseName: "교과목명:",
+        lblCourseRoom: "강의실 / 형태:",
+        lblDayOfWeek: "요일:",
+        lblTime: "시간대:",
+        lblStartWeek: "시작 주 (1-16):",
+        lblEndWeek: "종료 주 (1-16):",
+        btnApplyCourse: "수업 일정 적용",
+        weekTaskDesc: "지도교수 보고 계획 및 주간 과제",
+        lblWeekTaskList: "이번 주 과제 목록:"
+      }
+    };
+
+    // Global App State Object
     let appData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
-      selectedMonthKey: "9/2026",
+      lang: 'vi',
+      theme: 'light',
+      profile: {
+        avatar: 'https://placehold.co/150x150/002C5F/8CB72A?text=SKKU+SAINT',
+        name: 'Nguyễn Văn A',
+        phone: '010-1234-5678',
+        pemail: 'researcher@gmail.com',
+        semail: 'student@skku.edu',
+        dob: '1998-05-15',
+        passport: 'C12345678',
+        arc: '980515-5123456',
+        bankName: 'NH Nonghyup Bank',
+        bankAccount: '302-1234-5678-91'
+      },
+      selectedMonthKey: '9/2026',
       months: {
-        "9/2026": { year: 2026, month: 9, deadlines: [], notes: [] },
+        "9/2026": { year: 2026, month: 9, deadlines: [{ text: "Nộp báo cáo Nanophotonics", done: false }], notes: ["Chuẩn bị slide thuyết trình seminar"] },
         "10/2026": { year: 2026, month: 10, deadlines: [], notes: [] },
         "11/2026": { year: 2026, month: 11, deadlines: [], notes: [] },
         "12/2026": { year: 2026, month: 12, deadlines: [], notes: [] },
         "1/2027": { year: 2027, month: 1, deadlines: [], notes: [] }
       },
+      globalCourses: [], // Dynamic courses added by user
       dayData: {}, // Format: "YYYY-MM-DD": { tasks: [], customClasses: [], dailyReport: "" }
-      weekTasks: {} // Format: "2026-W36": [ {id, text, completed} ]
+      weekTasks: {}, // Format: "2026-M9-W3": [ { id, text, done } ]
+      researchProjects: [
+        {
+          id: "proj_1",
+          title: "Perovskite Solar Cells Synthesis",
+          logs: [
+            {
+              id: "log_1",
+              date: "2026-09-18",
+              dateText: "18/09/2026 (Thứ 6)",
+              tasks: "Đo phổ XRD mẫu A1-A5 và tổng hợp màng mỏng",
+              progress: 75,
+              notes: "Mẫu A3 có tinh thể đồng đều nhất, hiệu suất cao",
+              plan: "Thực hiện đo quang phổ UV-Vis cho mẫu A3 vào sáng mai"
+            }
+          ]
+        }
+      ],
+      activeProjectIndex: 0
     };
 
     let activeWeekKeyForModal = null;
-    let expandedDayKey = null; // Currently open expanded day inline
+    let expandedDayKey = null;
 
     function saveData() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
     }
 
-    // --- 2. KST CLOCK & WEATHER ---
+    // --- 2. MULTI-LANGUAGE TRANSLATION SYSTEM ---
+    function changeLanguage(lang) {
+      appData.lang = lang;
+      saveData();
+      applyLanguageUI();
+    }
+
+    function applyLanguageUI() {
+      const lang = appData.lang || 'vi';
+      document.getElementById('lang-select').value = lang;
+
+      const dict = i18nDict[lang] || i18nDict['vi'];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+          el.innerText = dict[key];
+        }
+      });
+    }
+
+    // --- 3. KST CLOCK & WEATHER WIDGET ---
     function updateKSTClock() {
       const now = new Date();
-      // Format to KST (Asia/Seoul)
       const optionsTime = { timeZone: 'Asia/Seoul', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
       const optionsDate = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' };
       
@@ -237,71 +812,164 @@
 
     async function fetchSuwonWeather() {
       try {
-        // Suwon Coordinates: 37.2911, 126.9778
         const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.2911&longitude=126.9778&current_weather=true');
         const data = await res.json();
         if (data && data.current_weather) {
           const temp = Math.round(data.current_weather.temperature);
-          document.getElementById('weather-info').innerHTML = `<i class="fa-solid fa-temperature-three-quarters text-amber-400"></i> ${temp}°C Suwon`;
+          document.getElementById('weather-info').innerHTML = `<i class="fa-solid fa-temperature-three-quarters text-amber-400"></i> ${temp}°C`;
         }
       } catch (e) {
-        document.getElementById('weather-info').innerHTML = `<i class="fa-solid fa-cloud-sun text-amber-300"></i> Suwon 22°C`;
+        document.getElementById('weather-info').innerHTML = `<i class="fa-solid fa-cloud-sun text-amber-300"></i> 22°C Suwon`;
       }
     }
     fetchSuwonWeather();
 
-    // --- 3. DARK / LIGHT MODE ---
+    // --- 4. DARK / LIGHT THEME ---
     const themeToggleBtn = document.getElementById('theme-toggle');
     const themeIcon = document.getElementById('theme-icon');
 
+    function applyTheme() {
+      if (appData.theme === 'dark') {
+        document.documentElement.classList.add('dark');
+        themeIcon.className = 'fa-solid fa-sun text-amber-300 text-base';
+      } else {
+        document.documentElement.classList.remove('dark');
+        themeIcon.className = 'fa-solid fa-moon text-amber-400 text-base';
+      }
+    }
+
     themeToggleBtn.addEventListener('click', () => {
-      document.documentElement.classList.toggle('dark');
-      const isDark = document.documentElement.classList.contains('dark');
-      themeIcon.className = isDark ? 'fa-solid fa-sun text-amber-300' : 'fa-solid fa-moon text-amber-400';
+      appData.theme = (appData.theme === 'dark') ? 'light' : 'dark';
+      saveData();
+      applyTheme();
     });
 
-    // --- 4. NAVIGATION & VIEW SWITCHING ---
-    function showMonthSelection() {
-      document.getElementById('month-selection-view').classList.remove('hidden');
-      document.getElementById('month-detail-view').classList.add('hidden');
+    // --- 5. NAVIGATION TABS & PROFILE ---
+    function switchMainTab(tab) {
+      const calBtn = document.getElementById('tab-btn-calendar');
+      const resBtn = document.getElementById('tab-btn-research');
+      const calView = document.getElementById('view-calendar-tab');
+      const resView = document.getElementById('view-research-tab');
+
+      if (tab === 'calendar') {
+        calBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition shadow-md bg-skkuNavy text-white";
+        resBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800";
+        calView.classList.remove('hidden');
+        resView.classList.add('hidden');
+      } else {
+        resBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition shadow-md bg-skkuNavy text-white";
+        calBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800";
+        resView.classList.remove('hidden');
+        calView.classList.add('hidden');
+        renderResearchTab();
+      }
+    }
+
+    // Profile Modal Logic
+    function openProfileModal() {
+      const p = appData.profile;
+      document.getElementById('prof-avatar').value = p.avatar || '';
+      document.getElementById('prof-name').value = p.name || '';
+      document.getElementById('prof-phone').value = p.phone || '';
+      document.getElementById('prof-pemail').value = p.pemail || '';
+      document.getElementById('prof-semail').value = p.semail || '';
+      document.getElementById('prof-dob').value = p.dob || '';
+      document.getElementById('prof-passport').value = p.passport || '';
+      document.getElementById('prof-arc').value = p.arc || '';
+      document.getElementById('prof-bankname').value = p.bankName || '';
+      document.getElementById('prof-bankaccount').value = p.bankAccount || '';
+      updateAvatarPreview(p.avatar);
+      document.getElementById('profile-modal').classList.remove('hidden');
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profile-modal').classList.add('hidden');
+    }
+
+    function updateAvatarPreview(url) {
+      document.getElementById('profile-avatar-preview').src = url || 'https://placehold.co/150x150/002C5F/8CB72A?text=SAINT';
+    }
+
+    function saveProfileInfo() {
+      appData.profile = {
+        avatar: document.getElementById('prof-avatar').value,
+        name: document.getElementById('prof-name').value,
+        phone: document.getElementById('prof-phone').value,
+        pemail: document.getElementById('prof-pemail').value,
+        semail: document.getElementById('prof-semail').value,
+        dob: document.getElementById('prof-dob').value,
+        passport: document.getElementById('prof-passport').value,
+        arc: document.getElementById('prof-arc').value,
+        bankName: document.getElementById('prof-bankname').value,
+        bankAccount: document.getElementById('prof-bankaccount').value
+      };
+      saveData();
+      updateHeaderProfileUI();
+      closeProfileModal();
+    }
+
+    function updateHeaderProfileUI() {
+      const p = appData.profile;
+      document.getElementById('header-avatar').src = p.avatar || 'https://placehold.co/100x100/002C5F/FFF?text=SAINT';
+      document.getElementById('header-user-name').innerText = p.name || 'Nghiên cứu sinh';
+    }
+
+    // --- 6. MONTH FOLDERS & SUBVIEW ---
+    function showMonthSelectionView() {
+      document.getElementById('month-selection-subview').classList.remove('hidden');
+      document.getElementById('month-detail-subview').classList.add('hidden');
       renderMonthsGrid();
     }
 
-    function selectMonth(monthKey) {
-      appData.selectedMonthKey = monthKey;
+    function selectMonthFolder(key) {
+      appData.selectedMonthKey = key;
       saveData();
-      document.getElementById('month-selection-view').classList.add('hidden');
-      document.getElementById('month-detail-view').classList.remove('hidden');
-      document.getElementById('selected-month-title').innerText = `Tháng ${monthKey}`;
+      document.getElementById('month-selection-subview').classList.add('hidden');
+      document.getElementById('month-detail-subview').classList.remove('hidden');
+      document.getElementById('selected-month-title').innerText = `Tháng ${key}`;
       renderMonthDetail();
     }
 
-    // --- 5. RENDER MONTHS GRID ---
     function renderMonthsGrid() {
       const container = document.getElementById('months-grid');
       container.innerHTML = '';
 
+      // Determine current active KST month string (e.g., "9/2026")
+      const now = new Date();
+      const currentMonthKey = `${now.getMonth() + 1}/${now.getFullYear()}`; // 9/2026
+
       Object.keys(appData.months).forEach(key => {
         const m = appData.months[key];
+        const isCurrentMonth = (key === currentMonthKey);
+
         const card = document.createElement('div');
-        card.className = `relative overflow-hidden bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-xl border-2 border-slate-200 dark:border-slate-700 hover:border-skkuGreen cursor-pointer transition-all hover:-translate-y-1 group flex flex-col justify-between min-h-[160px]`;
-        card.onclick = () => selectMonth(key);
+        card.className = `relative overflow-hidden bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-xl border-2 transition-all cursor-pointer group hover:-translate-y-1 flex flex-col justify-between min-h-[170px] capybara-subtle ${
+          isCurrentMonth 
+            ? 'border-skkuGreen ring-4 ring-skkuGreen/30 bg-emerald-50/50 dark:bg-emerald-950/30' 
+            : 'border-slate-200 dark:border-slate-800 hover:border-skkuGreen'
+        }`;
+        card.onclick = () => selectMonthFolder(key);
 
         card.innerHTML = `
           <div>
             <div class="flex justify-between items-start">
-              <span class="text-xs font-black uppercase tracking-wider text-skkuGreen bg-emerald-100 dark:bg-emerald-950 px-3 py-1 rounded-full">Lịch Học</span>
-              <i class="fa-solid fa-calendar text-2xl text-slate-400 group-hover:text-skkuGreen transition"></i>
+              ${
+                isCurrentMonth 
+                  ? '<span class="text-xs font-black uppercase tracking-wider text-slate-900 bg-skkuGreen px-3 py-1 rounded-full shadow" data-i18n="currentMonthBadge">THÁNG HIỆN TẠI</span>' 
+                  : '<span class="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">Lịch Học</span>'
+              }
+              <i class="fa-solid fa-folder-open text-2xl ${isCurrentMonth ? 'text-skkuGreen' : 'text-slate-400'} group-hover:scale-110 transition"></i>
             </div>
-            <h4 class="text-3xl font-black mt-3 text-slate-800 dark:text-slate-100">${key}</h4>
-            <p class="text-sm text-slate-500 font-semibold mt-1">Năm ${m.year}</p>
+            <h4 class="text-3xl font-black mt-3 text-slate-900 dark:text-slate-100">${key}</h4>
+            <p class="text-xs text-slate-500 font-semibold mt-1">Năm ${m.year}</p>
           </div>
-          <div class="mt-4 flex justify-between items-center text-sm font-bold text-skkuNavy dark:text-emerald-400">
-            <span>Mở xem lịch tuần →</span>
+          <div class="mt-4 flex justify-between items-center text-xs font-black text-skkuNavy dark:text-emerald-400">
+            <span>Xem chi tiết lịch tuần →</span>
           </div>
         `;
         container.appendChild(card);
       });
+      applyLanguageUI();
     }
 
     function addNewMonthPrompt() {
@@ -323,25 +991,25 @@
       }
     }
 
-    // --- 6. RENDER MONTH DETAILS (DEADLINES, NOTES, WEEKS) ---
+    // --- 7. MONTH DETAILED VIEW (DEADLINES & NOTES) ---
     function renderMonthDetail() {
       const mKey = appData.selectedMonthKey;
       const monthObj = appData.months[mKey];
       if (!monthObj) return;
 
-      // Render Deadlines
+      // Deadlines
       const deadlineList = document.getElementById('deadline-list');
       deadlineList.innerHTML = '';
       if (!monthObj.deadlines || monthObj.deadlines.length === 0) {
-        deadlineList.innerHTML = `<li class="text-sm text-slate-400 italic">Chưa có deadline nào trong tháng.</li>`;
+        deadlineList.innerHTML = `<li class="text-xs text-slate-400 italic">Chưa có deadline nào trong tháng.</li>`;
       } else {
         monthObj.deadlines.forEach((item, idx) => {
           const li = document.createElement('li');
-          li.className = "flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-600";
+          li.className = "flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700";
           li.innerHTML = `
             <div class="flex items-center gap-2">
               <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleDeadline(${idx})" class="w-5 h-5 accent-red-500 rounded cursor-pointer">
-              <span class="${item.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'} text-base">${item.text}</span>
+              <span class="${item.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'} text-sm">${item.text}</span>
             </div>
             <button onclick="deleteDeadline(${idx})" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
           `;
@@ -349,28 +1017,27 @@
         });
       }
 
-      // Render Notes
+      // Notes
       const notesList = document.getElementById('notes-list');
       notesList.innerHTML = '';
       if (monthObj.notes) {
         monthObj.notes.forEach((note, idx) => {
           const li = document.createElement('li');
-          li.className = "flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-600";
+          li.className = "flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700";
           li.innerHTML = `
-            <span class="font-semibold text-base text-slate-800 dark:text-slate-200">• ${note}</span>
+            <span class="font-semibold text-sm text-slate-800 dark:text-slate-200">• ${note}</span>
             <button onclick="deleteNote(${idx})" class="text-slate-400 hover:text-amber-500"><i class="fa-solid fa-xmark"></i></button>
           `;
           notesList.appendChild(li);
         });
       }
 
-      // Render Weeks and Days
+      // Render 16-Week Schedule Grid
       renderWeeksGrid(monthObj.year, monthObj.month);
     }
 
-    // Deadline Actions
     function addDeadlinePrompt() {
-      const text = prompt("Nhập tên Deadline và Hạn chót (VD: Nộp Báo cáo Nanophotonics - 15/09):");
+      const text = prompt("Nhập tên Deadline & Thời hạn (VD: Báo cáo Nanophotonics - 15/09):");
       if (text && text.trim()) {
         const mKey = appData.selectedMonthKey;
         if (!appData.months[mKey].deadlines) appData.months[mKey].deadlines = [];
@@ -394,7 +1061,6 @@
       renderMonthDetail();
     }
 
-    // Note Actions
     function addNotePrompt() {
       const text = prompt("Nhập Ghi chú mới:");
       if (text && text.trim()) {
@@ -413,16 +1079,14 @@
       renderMonthDetail();
     }
 
-    // --- 7. WEEKS & INLINE DAYS EXPANSION ---
+    // --- 8. WEEKS & DAYS GRID (16-WEEK SEMESTER SCHEDULE) ---
     function renderWeeksGrid(year, month) {
       const weeksContainer = document.getElementById('weeks-container');
       weeksContainer.innerHTML = '';
 
-      // Get current KST date string (YYYY-MM-DD)
-      const nowKST = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' }); // Output: YYYY-MM-DD
+      // KST Today YYYY-MM-DD
+      const nowKST = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' }); // "2026-09-18"
 
-      // Generate days for the month
-      const firstDay = new Date(year, month - 1, 1);
       const lastDay = new Date(year, month, 0);
 
       let currentWeekDays = [];
@@ -437,7 +1101,6 @@
         currentWeekDays.push({ dayNumber: d, dayOfWeek: dayOfWeek, dateStr: dateStr });
 
         if (dayOfWeek === 7 || d === lastDay.getDate()) {
-          // Render full week row
           const weekRow = createWeekRowElement(weekNum, currentWeekDays, nowKST, year, month);
           weeksContainer.appendChild(weekRow);
           currentWeekDays = [];
@@ -448,27 +1111,28 @@
 
     function createWeekRowElement(weekNum, daysArray, nowKST, year, month) {
       const weekWrapper = document.createElement('div');
-      weekWrapper.className = "bg-slate-50 dark:bg-slate-900/60 p-5 rounded-3xl border border-slate-200 dark:border-slate-700 space-y-4";
+      weekWrapper.className = "bg-slate-50 dark:bg-slate-950 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm";
 
       const weekKey = `${year}-M${month}-W${weekNum}`;
 
-      // Week Title Header
+      // Header
       const header = document.createElement('div');
-      header.className = "flex justify-between items-center border-b pb-2 border-slate-200 dark:border-slate-700";
-      header.innerHTML = `<h4 class="font-extrabold text-lg text-skkuNavy dark:text-emerald-400">Tuần ${weekNum}</h4>`;
+      header.className = "flex justify-between items-center border-b pb-2 border-slate-200 dark:border-slate-800";
+      header.innerHTML = `<h4 class="font-black text-lg text-skkuNavy dark:text-emerald-400">Tuần ${weekNum} (Học kỳ 16 tuần)</h4>`;
       weekWrapper.appendChild(header);
 
-      // Days Grid (Mon-Sun buttons in a row)
+      // Days 7-column grid
       const daysGrid = document.createElement('div');
       daysGrid.className = "grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3";
 
       const dayNames = { 1: 'T2', 2: 'T3', 3: 'T4', 4: 'T5', 5: 'T6', 6: 'T7', 7: 'CN' };
 
-      // Check if today falls in this week, set default expanded day to today
       daysArray.forEach(day => {
         const isToday = (day.dateStr === nowKST);
+        
+        // Auto-expand Today if expandedDayKey is null
         if (isToday && expandedDayKey === null) {
-          expandedDayKey = day.dateStr; // Auto expand today!
+          expandedDayKey = day.dateStr;
         }
 
         const isExpanded = (expandedDayKey === day.dateStr);
@@ -476,25 +1140,25 @@
         const dayBtn = document.createElement('button');
         dayBtn.className = `p-4 rounded-2xl border-2 text-left transition-all flex flex-col justify-between ${
           isToday 
-            ? 'bg-amber-100 dark:bg-amber-950 border-amber-500 font-extrabold shadow-md ring-2 ring-amber-400 scale-105' 
-            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-skkuGreen'
+            ? 'bg-amber-100 dark:bg-amber-950/80 border-amber-500 font-extrabold shadow-lg ring-4 ring-amber-400/40 scale-105' 
+            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-skkuGreen'
         } ${isExpanded ? 'ring-2 ring-skkuGreen border-skkuGreen' : ''}`;
 
         dayBtn.onclick = () => {
           expandedDayKey = (expandedDayKey === day.dateStr) ? null : day.dateStr;
-          renderMonthDetail(); // Refresh inline views
+          renderMonthDetail();
         };
 
         dayBtn.innerHTML = `
-          <div class="flex justify-between items-center">
-            <span class="text-xs font-black uppercase ${isToday ? 'text-amber-700 dark:text-amber-300' : 'text-slate-400'}">${dayNames[day.dayOfWeek]}</span>
-            ${isToday ? '<span class="text-[10px] bg-amber-500 text-slate-900 font-black px-1.5 py-0.5 rounded-full">HÔM NAY</span>' : ''}
+          <div class="flex justify-between items-center w-full">
+            <span class="text-xs font-black uppercase ${isToday ? 'text-amber-800 dark:text-amber-300' : 'text-slate-400'}">${dayNames[day.dayOfWeek]}</span>
+            ${isToday ? '<span class="text-[10px] bg-amber-500 text-slate-900 font-black px-2 py-0.5 rounded-full shadow">HÔM NAY</span>' : ''}
           </div>
-          <div class="text-xl font-black mt-2 ${isToday ? 'text-amber-900 dark:text-amber-100' : 'text-slate-800 dark:text-slate-100'}">
+          <div class="text-2xl font-black mt-2 ${isToday ? 'text-amber-950 dark:text-amber-100' : 'text-slate-900 dark:text-slate-100'}">
             ${day.dayNumber}/${month}
           </div>
-          <div class="text-[11px] font-bold mt-2 text-slate-500 flex items-center justify-between">
-            <span>${isExpanded ? '▲ Thu gọn' : '▼ Xem lịch'}</span>
+          <div class="text-[11px] font-bold mt-2 text-slate-500 flex items-center justify-between w-full">
+            <span>${isExpanded ? '▲ Thu gọn' : '▼ Chi tiết'}</span>
           </div>
         `;
 
@@ -503,83 +1167,146 @@
 
       weekWrapper.appendChild(daysGrid);
 
-      // INLINE DETAILS SECTION (Shows directly below if a day in this week is expanded)
+      // INLINE DETAILS EXPANSION SECTION (Appears below grid when a day in this week is selected)
       const expandedDayInThisWeek = daysArray.find(d => d.dateStr === expandedDayKey);
       if (expandedDayInThisWeek) {
-        const inlineBox = createInlineDayDetailsElement(expandedDayInThisWeek);
+        const inlineBox = createInlineDayDetailsElement(expandedDayInThisWeek, weekNum);
         weekWrapper.appendChild(inlineBox);
       }
 
-      // WEEK TASK BUTTON (At the bottom of the week row)
+      // WEEK TASK BUTTON
       const weekTaskBtn = document.createElement('button');
-      weekTaskBtn.className = "w-full py-3 px-4 bg-skkuNavy hover:bg-slate-800 text-white font-extrabold rounded-2xl shadow-lg flex items-center justify-center gap-2 transition text-base mt-3 border border-emerald-500/30";
+      weekTaskBtn.className = "w-full py-3 px-4 bg-skkuNavy hover:bg-slate-800 text-white font-extrabold rounded-2xl shadow-md flex items-center justify-center gap-2 transition text-sm mt-3 border border-emerald-500/30";
       weekTaskBtn.onclick = () => openWeekTaskModal(weekKey, weekNum);
-      weekTaskBtn.innerHTML = `<i class="fa-solid fa-list-check text-skkuGreen"></i> Kế Hoạch & Task Tuần ${weekNum} (Read Paper, Report...)`;
+      weekTaskBtn.innerHTML = `<i class="fa-solid fa-list-check text-skkuGreen"></i> Kế Hoạch & Task Tuần ${weekNum} (Read Paper, Advisor Report...)`;
       weekWrapper.appendChild(weekTaskBtn);
 
       return weekWrapper;
     }
 
-    // --- 8. INLINE DAY DETAILS EXPANSION ELEMENT ---
-    function createInlineDayDetailsElement(dayObj) {
+    // --- 9. INLINE DAY DETAILS EXPANSION ---
+    function createInlineDayDetailsElement(dayObj, weekNum) {
       const { dateStr, dayOfWeek, dayNumber } = dayObj;
       const dayData = appData.dayData[dateStr] || { tasks: [], customClasses: [], dailyReport: "" };
 
       const container = document.createElement('div');
-      container.className = "mt-4 p-6 bg-emerald-50/70 dark:bg-slate-800/90 rounded-3xl border-2 border-skkuGreen shadow-inner space-y-5 animate-fadeIn";
+      container.className = "mt-4 p-6 bg-emerald-50/80 dark:bg-slate-900/90 rounded-3xl border-2 border-skkuGreen shadow-inner space-y-5 animate-fadeIn";
 
-      // Fixed Class logic
-      const fixedClassText = FIXED_CLASSES[dayOfWeek] || "Không có lịch học cố định hôm nay (Dành cho Lab / Tự học)";
+      // Calculate Courses for this specific day
+      // 1. Default schedule
+      let dayCourses = [];
+      if (DEFAULT_FIXED_SCHEDULE[dayOfWeek]) {
+        const def = DEFAULT_FIXED_SCHEDULE[dayOfWeek];
+        dayCourses.push({ id: 'def_1', name: def.name, time: def.time, room: def.room, source: 'default' });
+      }
+
+      // 2. Global Added Courses matching weekNum and dayOfWeek
+      if (appData.globalCourses) {
+        appData.globalCourses.forEach(c => {
+          if (parseInt(c.dow) === dayOfWeek && weekNum >= parseInt(c.wstart) && weekNum <= parseInt(c.wend)) {
+            dayCourses.push({ id: c.id, name: c.name, time: `${c.start} - ${c.end}`, room: c.room, source: 'global' });
+          }
+        });
+      }
+
+      // 3. Specific Custom Override Classes
+      if (dayData.customClasses) {
+        dayCourses = dayCourses.concat(dayData.customClasses);
+      }
 
       container.innerHTML = `
-        <div class="flex justify-between items-center border-b pb-3 border-emerald-200 dark:border-slate-700">
+        <div class="flex justify-between items-center border-b pb-3 border-emerald-200 dark:border-slate-800">
           <h5 class="text-xl font-black text-skkuNavy dark:text-emerald-400 flex items-center gap-2">
             <i class="fa-solid fa-graduation-cap"></i> Chi Tiết Ngày ${dayNumber} (Thứ ${dayOfWeek === 7 ? 'Chủ Nhật' : dayOfWeek + 1})
           </h5>
-          <span class="text-xs font-bold text-slate-500">${dateStr}</span>
+          <span class="text-xs font-bold text-slate-500">${dateStr} • Tuần ${weekNum}</span>
         </div>
 
-        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-emerald-200 dark:border-slate-700 space-y-2">
-          <h6 class="font-extrabold text-sm text-skkuDarkGreen dark:text-emerald-300 uppercase tracking-wide">📚 Lịch Học Môn Học Cố Định:</h6>
-          <div class="p-3 bg-emerald-100/60 dark:bg-slate-800 rounded-xl font-bold text-base text-slate-800 dark:text-slate-100 flex items-center gap-2">
-            <i class="fa-solid fa-book-open text-skkuGreen"></i> ${fixedClassText}
+        <!-- 1. COURSE LIST FOR THIS DAY -->
+        <div class="bg-white dark:bg-slate-950 p-4 rounded-2xl shadow-sm border border-emerald-200 dark:border-slate-800 space-y-3">
+          <div class="flex justify-between items-center">
+            <h6 class="font-extrabold text-xs text-skkuDarkGreen dark:text-emerald-300 uppercase tracking-wide">📚 Lịch Học & Môn Học Ngày Hôm Nay:</h6>
+            <button onclick="addCustomDayClassPrompt('${dateStr}')" class="bg-emerald-600 text-white font-bold px-2.5 py-1 rounded-xl text-xs flex items-center gap-1 shadow">
+              <i class="fa-solid fa-plus"></i> Thêm Môn Lớp Hôm Nay
+            </button>
+          </div>
+
+          <div class="space-y-2">
+            ${
+              dayCourses.length === 0 
+                ? '<p class="text-xs text-slate-400 italic">Không có lịch học cố định hôm nay (Tập trung Lab / Thí nghiệm).</p>'
+                : dayCourses.map((c, idx) => `
+                    <div class="p-3 bg-emerald-100/70 dark:bg-slate-800 rounded-xl font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center justify-between border border-emerald-200 dark:border-slate-700">
+                      <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-book-open text-skkuGreen text-base"></i>
+                        <div>
+                          <div class="text-base font-extrabold">${c.name}</div>
+                          <div class="text-xs font-semibold text-slate-600 dark:text-slate-300">⏰ ${c.time} • 📍 ${c.room}</div>
+                        </div>
+                      </div>
+                      ${c.source === 'custom' ? `<button onclick="deleteCustomDayClass('${dateStr}', ${idx})" class="text-red-500 text-xs font-bold"><i class="fa-solid fa-trash"></i></button>` : ''}
+                    </div>
+                  `).join('')
+            }
           </div>
         </div>
 
+        <!-- 2. DAILY TASKS -->
         <div class="space-y-3">
           <div class="flex justify-between items-center">
-            <h6 class="font-extrabold text-sm text-slate-700 dark:text-slate-200 uppercase tracking-wide">✅ Việc Cần Làm Hôm Đó:</h6>
+            <h6 class="font-extrabold text-xs text-slate-700 dark:text-slate-200 uppercase tracking-wide">✅ Việc Cần Làm Hôm Đó:</h6>
             <button onclick="addDailyTaskPrompt('${dateStr}')" class="bg-skkuGreen hover:bg-emerald-600 text-slate-900 font-bold px-3 py-1 rounded-xl text-xs flex items-center gap-1 shadow">
               <i class="fa-solid fa-plus"></i> Thêm Việc
             </button>
           </div>
-          <ul id="tasks-${dateStr}" class="space-y-2">
+          <ul class="space-y-2">
             ${
               dayData.tasks.length === 0 
-                ? '<li class="text-xs text-slate-400 italic">Chưa có việc cần làm được thêm.</li>'
+                ? '<li class="text-xs text-slate-400 italic">Chưa có công việc nào được thêm.</li>'
                 : dayData.tasks.map((t, idx) => `
-                    <li class="flex items-center justify-between p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <li class="flex items-center justify-between p-2.5 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
                       <div class="flex items-center gap-2">
-                        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleDailyTask('${dateStr}',${idx})" class="w-5 h-5 accent-skkuGreen rounded cursor-pointer">
-                        <span class="${t.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'} text-base">${t.text}</span>
+                        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleDailyTask('${dateStr}', ${idx})" class="w-5 h-5 accent-skkuGreen rounded cursor-pointer">
+                        <span class="${t.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'} text-sm">${t.text}</span>
                       </div>
-                      <button onclick="deleteDailyTask('${dateStr}',${idx})" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
+                      <button onclick="deleteDailyTask('${dateStr}', ${idx})" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
                     </li>
                   `).join('')
             }
           </ul>
         </div>
 
+        <!-- 3. DAILY REPORT TEXTAREA -->
         <div class="space-y-2">
-          <h6 class="font-extrabold text-sm text-slate-700 dark:text-slate-200 uppercase tracking-wide">📝 Daily Report (Viết Báo Cáo Hàng Ngày):</h6>
-          <textarea id="report-${dateStr}" oninput="saveDailyReport('${dateStr}')" rows="3" placeholder="Nhập những gì đã học, kết quả thí nghiệm hoặc tiến độ công việc hôm nay..." class="w-full p-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-skkuGreen font-medium text-base text-slate-800 dark:text-slate-100">${dayData.dailyReport || ''}</textarea>
+          <h6 class="font-extrabold text-xs text-slate-700 dark:text-slate-200 uppercase tracking-wide">📝 Daily Report (Viết Báo Cáo Hàng Ngày):</h6>
+          <textarea id="report-${dateStr}" oninput="saveDailyReport('${dateStr}')" rows="3" placeholder="Nhập những gì đã học, kết quả thí nghiệm hoặc tiến độ công việc hôm nay..." class="w-full p-3 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-skkuGreen font-medium text-sm text-slate-800 dark:text-slate-100">${dayData.dailyReport || ''}</textarea>
         </div>
       `;
 
       return container;
     }
 
-    // Daily Task Functions
+    // Daily Custom Class Functions
+    function addCustomDayClassPrompt(dateStr) {
+      const name = prompt("Tên môn học / công việc:");
+      if (!name) return;
+      const time = prompt("Thời gian (VD: 14:00 - 16:00):") || "Cả ngày";
+      const room = prompt("Địa điểm / Phòng học:") || "Lab SAINT";
+
+      if (!appData.dayData[dateStr]) appData.dayData[dateStr] = { tasks: [], customClasses: [], dailyReport: "" };
+      if (!appData.dayData[dateStr].customClasses) appData.dayData[dateStr].customClasses = [];
+
+      appData.dayData[dateStr].customClasses.push({ id: Date.now(), name, time, room, source: 'custom' });
+      saveData();
+      renderMonthDetail();
+    }
+
+    function deleteCustomDayClass(dateStr, idx) {
+      appData.dayData[dateStr].customClasses.splice(idx, 1);
+      saveData();
+      renderMonthDetail();
+    }
+
     function addDailyTaskPrompt(dateStr) {
       const text = prompt("Nhập việc cần làm hôm nay:");
       if (text && text.trim()) {
@@ -609,12 +1336,46 @@
       saveData();
     }
 
-    // --- 9. WEEK TASK MODAL ---
+    // --- 10. GLOBAL COURSE MODAL LOGIC ---
+    function openAddCourseModal() {
+      document.getElementById('add-course-modal').classList.remove('hidden');
+    }
+
+    function closeAddCourseModal() {
+      document.getElementById('add-course-modal').classList.add('hidden');
+    }
+
+    function saveGlobalCourse() {
+      const name = document.getElementById('course-name').value;
+      const room = document.getElementById('course-room').value;
+      const dow = document.getElementById('course-dow').value;
+      const start = document.getElementById('course-start').value || "09:00";
+      const end = document.getElementById('course-end').value || "11:00";
+      const wstart = document.getElementById('course-wstart').value || "1";
+      const wend = document.getElementById('course-wend').value || "16";
+
+      if (name.trim()) {
+        appData.globalCourses.push({
+          id: Date.now(),
+          name: name.trim(),
+          room: room.trim(),
+          dow: dow,
+          start: start,
+          end: end,
+          wstart: wstart,
+          wend: wend
+        });
+        saveData();
+        closeAddCourseModal();
+        renderMonthDetail();
+      }
+    }
+
+    // --- 11. WEEK TASK MODAL ---
     function openWeekTaskModal(weekKey, weekNum) {
       activeWeekKeyForModal = weekKey;
       document.getElementById('modal-week-title').innerText = `Kế Hoạch & Task Tuần ${weekNum}`;
 
-      // Initialize default week tasks if empty
       if (!appData.weekTasks[weekKey] || appData.weekTasks[weekKey].length === 0) {
         appData.weekTasks[weekKey] = [
           { text: "Read paper của giáo gửi và report vào mỗi thứ 2 hàng tuần", done: false },
@@ -639,11 +1400,11 @@
 
       tasks.forEach((t, idx) => {
         const li = document.createElement('li');
-        li.className = "flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-700/60 rounded-2xl border border-slate-200 dark:border-slate-600";
+        li.className = "flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700";
         li.innerHTML = `
           <div class="flex items-center gap-3">
             <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleWeekTask(${idx})" class="w-5 h-5 accent-skkuGreen rounded cursor-pointer">
-            <span class="${t.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'} text-base">${t.text}</span>
+            <span class="${t.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'} text-sm">${t.text}</span>
           </div>
           <button onclick="deleteWeekTask(${idx})" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
         `;
@@ -672,9 +1433,143 @@
       renderWeekTasksInModal();
     }
 
-    // Initialize App View
-    showMonthSelection();
-  </script>
+    // --- 12. RESEARCH LOGS TAB LOGIC ---
+    function renderResearchTab() {
+      const topicsContainer = document.getElementById('research-topics-list');
+      topicsContainer.innerHTML = '';
 
+      if (!appData.researchProjects || appData.researchProjects.length === 0) {
+        appData.researchProjects = [
+          { id: "proj_1", title: "Perovskite Solar Cells Synthesis", logs: [] }
+        ];
+        saveData();
+      }
+
+      appData.researchProjects.forEach((proj, idx) => {
+        const btn = document.createElement('button');
+        const isActive = (idx === appData.activeProjectIndex);
+        btn.className = `px-4 py-2 rounded-2xl text-xs font-black transition whitespace-nowrap shadow-sm border ${
+          isActive 
+            ? 'bg-skkuGreen text-slate-900 border-emerald-500' 
+            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:border-skkuGreen'
+        }`;
+        btn.innerText = `🧪 ${proj.title}`;
+        btn.onclick = () => {
+          appData.activeProjectIndex = idx;
+          saveData();
+          renderResearchTab();
+        };
+        topicsContainer.appendChild(btn);
+      });
+
+      const currentProj = appData.researchProjects[appData.activeProjectIndex] || appData.researchProjects[0];
+      document.getElementById('current-project-title').innerText = currentProj.title;
+
+      renderResearchTable(currentProj);
+    }
+
+    function renderResearchTable(project) {
+      const tbody = document.getElementById('research-table-body');
+      tbody.innerHTML = '';
+
+      if (!project.logs || project.logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 italic">Chưa có nhật ký nghiên cứu nào. Nhấn "Thêm Dòng Mới" để bắt đầu!</td></tr>`;
+        return;
+      }
+
+      project.logs.forEach((log, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition";
+        tr.innerHTML = `
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800">
+            <input type="text" value="${log.dateText || ''}" onchange="updateResearchRow(${idx}, 'dateText', this.value)" class="w-full bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1 rounded">
+          </td>
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800">
+            <textarea rows="2" onchange="updateResearchRow(${idx}, 'tasks', this.value)" class="w-full bg-transparent font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1 rounded resize-none">${log.tasks || ''}</textarea>
+          </td>
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800 text-center">
+            <div class="flex items-center gap-2">
+              <input type="range" min="0" max="100" value="${log.progress || 0}" oninput="updateResearchRow(${idx}, 'progress', this.value)" class="w-20 accent-skkuGreen">
+              <span class="font-extrabold text-xs text-skkuDarkGreen dark:text-emerald-400 w-8">${log.progress || 0}%</span>
+            </div>
+          </td>
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800">
+            <textarea rows="2" onchange="updateResearchRow(${idx}, 'notes', this.value)" class="w-full bg-transparent font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1 rounded resize-none">${log.notes || ''}</textarea>
+          </td>
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800">
+            <textarea rows="2" onchange="updateResearchRow(${idx}, 'plan', this.value)" class="w-full bg-transparent font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1 rounded resize-none">${log.plan || ''}</textarea>
+          </td>
+          <td class="p-3 text-center">
+            <button onclick="deleteResearchRow(${idx})" class="text-slate-400 hover:text-red-500 font-bold"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function addResearchRow() {
+      const proj = appData.researchProjects[appData.activeProjectIndex];
+      const nowStr = new Date().toLocaleDateString('vi-VN');
+      if (!proj.logs) proj.logs = [];
+      proj.logs.unshift({
+        id: Date.now(),
+        dateText: `${nowStr} (Thứ ${new Date().getDay() + 1})`,
+        tasks: "",
+        progress: 0,
+        notes: "",
+        plan: ""
+      });
+      saveData();
+      renderResearchTab();
+    }
+
+    function updateResearchRow(idx, field, val) {
+      const proj = appData.researchProjects[appData.activeProjectIndex];
+      proj.logs[idx][field] = val;
+      saveData();
+    }
+
+    function deleteResearchRow(idx) {
+      const proj = appData.researchProjects[appData.activeProjectIndex];
+      proj.logs.splice(idx, 1);
+      saveData();
+      renderResearchTab();
+    }
+
+    function addNewResearchTopicPrompt() {
+      const title = prompt("Nhập tên Đề tài Nghiên cứu mới:");
+      if (title && title.trim()) {
+        appData.researchProjects.push({
+          id: `proj_${Date.now()}`,
+          title: title.trim(),
+          logs: []
+        });
+        appData.activeProjectIndex = appData.researchProjects.length - 1;
+        saveData();
+        renderResearchTab();
+      }
+    }
+
+    function deleteCurrentProject() {
+      if (appData.researchProjects.length <= 1) {
+        alert("Bạn cần giữ lại ít nhất 1 đề tài nghiên cứu!");
+        return;
+      }
+      if (confirm("Bạn có chắc chắn muốn xóa đề tài này không?")) {
+        appData.researchProjects.splice(appData.activeProjectIndex, 1);
+        appData.activeProjectIndex = 0;
+        saveData();
+        renderResearchTab();
+      }
+    }
+
+    // --- 13. INITIALIZATION ON WINDOW LOAD ---
+    window.onload = function() {
+      applyTheme();
+      updateHeaderProfileUI();
+      showMonthSelectionView();
+      applyLanguageUI();
+    };
+  </script>
 </body>
 </html>
