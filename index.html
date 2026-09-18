@@ -85,7 +85,7 @@
   <header class="bg-skkuNavy dark:bg-skkuNavyDark text-white shadow-xl border-b-4 border-skkuGreen sticky top-0 z-40">
     <div class="max-w-[98%] mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-4">
       
-      <!-- Left: Avatar & Tên Phòng Thí Nghiệm -->
+      <!-- Left: Avatar & Tên Phòng Thí Nghiệm (Giữ nguyên Tiếng Anh) -->
       <div class="flex items-center space-x-4 flex-wrap sm:flex-nowrap gap-y-2">
         <div class="relative group cursor-pointer w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border-2 border-skkuGreen shadow-md bg-slate-800 flex-shrink-0" onclick="openAvatarModal()" title="Phóng to / Thay đổi ảnh đại diện">
           <img id="main-avatar-img" src="https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab" alt="Avatar" class="w-full h-full object-cover group-hover:scale-105 transition duration-200">
@@ -99,7 +99,7 @@
             <span class="text-white font-black text-xl sm:text-2xl md:text-3xl tracking-tight">Energy & Environmental Sustainability Lab</span>
             <span class="text-xs bg-emerald-500/20 text-emerald-300 font-bold px-2.5 py-1 rounded-full border border-emerald-400/30">EES Lab</span>
           </div>
-          <p class="text-sm sm:text-base text-skkuGreen font-bold tracking-wide mt-0.5">Chungseok Choi Group</p>
+          <p class="text-sm sm:text-base text-skkuGreen font-bold tracking-wide mt-0.5">Chungseok Choi Group • SAINT</p>
         </div>
       </div>
 
@@ -122,23 +122,34 @@
         </div>
       </div>
 
-      <!-- Right: Thông tin cá nhân, Đăng nhập/Đăng ký & Điều khiển -->
+      <!-- Right: Quản lý Đăng nhập / Đăng xuất & Hồ sơ cá nhân -->
       <div class="flex items-center gap-3">
-        <button onclick="openAuthModal('login')" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black px-3.5 py-2 rounded-2xl text-xs flex items-center gap-1.5 shadow transition">
-          <i class="fa-solid fa-right-to-bracket"></i>
-          <span>Đăng Nhập / Đăng Ký</span>
-        </button>
-
-        <div onclick="openProfileModal()" class="flex items-center gap-2.5 bg-slate-800/80 hover:bg-slate-700/80 p-1.5 pr-3 rounded-2xl cursor-pointer transition border border-slate-700 shadow">
-          <img id="header-avatar" src="https://placehold.co/100x100/002C5F/FFF?text=EESL" alt="Avatar" class="w-9 h-9 rounded-xl object-cover border-2 border-skkuGreen shadow-sm">
-          <div class="text-left hidden md:block">
-            <div id="header-user-name" class="text-xs font-extrabold text-white leading-tight">Nghiên cứu sinh</div>
-            <div class="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
-              <i class="fa-solid fa-user-gear text-[9px]"></i> <span data-i18n="editProfile">Hồ sơ cá nhân</span>
-            </div>
-          </div>
+        
+        <!-- TRẠNG THÁI CHƯA ĐĂNG NHẬP -->
+        <div id="header-logged-out" class="flex items-center gap-2">
+          <button onclick="openAuthModal('login')" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black px-4 py-2.5 rounded-2xl text-xs sm:text-sm flex items-center gap-2 shadow-lg transition transform hover:scale-105">
+            <i class="fa-solid fa-right-to-bracket"></i>
+            <span data-i18n="loginRegisterBtn">Đăng Nhập / Đăng Ký</span>
+          </button>
         </div>
 
+        <!-- TRẠNG THÁI ĐÃ ĐĂNG NHẬP -->
+        <div id="header-logged-in" class="hidden flex items-center gap-3">
+          <div onclick="openProfileModal()" class="flex items-center gap-2.5 bg-slate-800/80 hover:bg-slate-700/80 p-1.5 pr-3 rounded-2xl cursor-pointer transition border border-slate-700 shadow">
+            <img id="header-avatar" src="https://placehold.co/100x100/002C5F/FFF?text=EESL" alt="Avatar" class="w-9 h-9 rounded-xl object-cover border-2 border-skkuGreen shadow-sm">
+            <div class="text-left hidden md:block">
+              <div id="header-user-name" class="text-xs font-extrabold text-white leading-tight">--</div>
+              <div id="header-user-email" class="text-[10px] text-emerald-400 font-semibold truncate max-w-[140px]">--</div>
+            </div>
+          </div>
+
+          <button onclick="handleLogout()" class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-2 rounded-2xl text-xs flex items-center gap-1.5 shadow transition">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span data-i18n="btnLogout">Đăng xuất</span>
+          </button>
+        </div>
+
+        <!-- Chuyển đổi ngôn ngữ & Theme -->
         <div class="flex items-center gap-1.5">
           <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-slate-800 text-white font-bold text-xs px-2.5 py-2 rounded-xl border border-slate-700 focus:ring-2 focus:ring-skkuGreen cursor-pointer">
             <option value="vi">🇻🇳 VI</option>
@@ -150,6 +161,7 @@
             <i id="theme-icon" class="fa-solid fa-moon text-sm"></i>
           </button>
         </div>
+
       </div>
 
     </div>
@@ -222,7 +234,7 @@
             </div>
             <div class="flex-grow">
               <div class="flex items-center justify-between">
-                <h4 class="font-black text-slate-900 dark:text-white text-base group-hover:text-skkuNavy dark:group-hover:text-emerald-400">Kingo Portal</h4>
+                <h4 class="font-black text-slate-900 dark:text-white text-base group-hover:text-skkuNavy dark:group-hover:text-emerald-400">SKKU Kingo Portal</h4>
                 <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-skkuGreen"></i>
               </div>
               <p class="text-xs text-slate-500 dark:text-slate-400 font-medium" data-i18n="kingoDesc">Cổng thông tin sinh viên SKKU Kingo ID</p>
@@ -412,7 +424,7 @@
   <!-- FOOTER -->
   <footer class="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 mt-auto">
     <div class="max-w-[98%] mx-auto px-4 text-center text-xs space-y-2">
-      <div class="font-extrabold text-sm text-slate-200">Energy & Environmental Sustainability Lab • Chungseok Choi Group</div>
+      <div class="font-extrabold text-sm text-slate-200">Energy & Environmental Sustainability Lab • Chungseok Choi Group • SAINT</div>
       <p>© 2026 Academic & Research Tracker. Designed for Researchers & Graduate Students.</p>
     </div>
   </footer>
@@ -423,8 +435,8 @@
       
       <div class="flex justify-between items-center border-b pb-3 border-slate-200 dark:border-slate-800">
         <div class="flex items-center gap-2">
-          <button id="auth-tab-login" onclick="switchAuthTab('login')" class="text-lg font-black px-3 py-1 rounded-xl text-skkuNavy dark:text-emerald-400 bg-slate-100 dark:bg-slate-800">Đăng Nhập</button>
-          <button id="auth-tab-register" onclick="switchAuthTab('register')" class="text-lg font-black px-3 py-1 rounded-xl text-slate-400 hover:text-slate-600">Đăng Ký</button>
+          <button id="auth-tab-login" onclick="switchAuthTab('login')" class="text-lg font-black px-3 py-1 rounded-xl text-skkuNavy dark:text-emerald-400 bg-slate-100 dark:bg-slate-800" data-i18n="tabLogin">Đăng Nhập</button>
+          <button id="auth-tab-register" onclick="switchAuthTab('register')" class="text-lg font-black px-3 py-1 rounded-xl text-slate-400 hover:text-slate-600" data-i18n="tabRegister">Đăng Ký</button>
         </div>
         <button onclick="closeAuthModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">
           <i class="fa-solid fa-xmark"></i>
@@ -434,46 +446,46 @@
       <!-- FORM ĐĂNG NHẬP -->
       <div id="auth-form-login" class="space-y-4 text-sm font-bold">
         <div>
-          <label class="text-xs text-slate-500 uppercase">Email / Tên tài khoản:</label>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblLoginAccount">Email / Tên tài khoản:</label>
           <input type="text" id="login-email" placeholder="student@skku.edu" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
         </div>
         <div>
-          <label class="text-xs text-slate-500 uppercase">Mật Khẩu:</label>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblPassword">Mật Khẩu:</label>
           <input type="password" id="login-password" placeholder="••••••••" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
         </div>
         <div id="login-error-msg" class="text-xs text-red-500 font-bold hidden"></div>
-        <button onclick="handleLoginSubmit()" class="w-full py-3 bg-skkuNavy hover:bg-slate-800 text-white font-extrabold rounded-xl shadow-md transition">
+        <button onclick="handleLoginSubmit()" class="w-full py-3 bg-skkuNavy hover:bg-slate-800 text-white font-extrabold rounded-xl shadow-md transition" data-i18n="btnLoginSubmit">
           Đăng Nhập
         </button>
         <div class="text-center text-xs text-slate-500 pt-2">
-          Chưa có tài khoản? <button onclick="switchAuthTab('register')" class="text-skkuGreen font-black underline">Đăng ký ngay</button>
+          <span data-i18n="noAccountText">Chưa có tài khoản?</span> <button onclick="switchAuthTab('register')" class="text-skkuGreen font-black underline" data-i18n="registerNowLink">Đăng ký ngay</button>
         </div>
       </div>
 
       <!-- FORM ĐĂNG KÝ -->
       <div id="auth-form-register" class="space-y-4 text-sm font-bold hidden">
         <div>
-          <label class="text-xs text-slate-500 uppercase">Họ và Tên:</label>
-          <input type="text" id="reg-name" placeholder="Nguyễn Văn A" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblFullName">Họ và Tên:</label>
+          <input type="text" id="reg-name" placeholder="Ví dụ: Lê Thành Trung" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
         </div>
         <div>
-          <label class="text-xs text-slate-500 uppercase">Email Trường (@skku.edu) / Cá Nhân:</label>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblRegEmail">Email Trường (@skku.edu) / Cá Nhân:</label>
           <input type="email" id="reg-email" placeholder="student@skku.edu" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
         </div>
         <div>
-          <label class="text-xs text-slate-500 uppercase">Mật Khẩu:</label>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblPassword">Mật Khẩu:</label>
           <input type="password" id="reg-password" placeholder="Tối thiểu 6 ký tự" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
         </div>
         <div>
-          <label class="text-xs text-slate-500 uppercase">Xác Nhận Mật Khẩu:</label>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblConfirmPassword">Xác Nhận Mật Khẩu:</label>
           <input type="password" id="reg-confirm-password" placeholder="Nhập lại mật khẩu" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
         </div>
         <div id="reg-error-msg" class="text-xs text-red-500 font-bold hidden"></div>
-        <button onclick="handleRegisterSubmit()" class="w-full py-3 bg-skkuGreen hover:bg-emerald-600 text-slate-900 font-extrabold rounded-xl shadow-md transition">
+        <button onclick="handleRegisterSubmit()" class="w-full py-3 bg-skkuGreen hover:bg-emerald-600 text-slate-900 font-extrabold rounded-xl shadow-md transition" data-i18n="btnRegisterSubmit">
           Tạo Tài Khoản & Đăng Ký
         </button>
         <div class="text-center text-xs text-slate-500 pt-2">
-          Đã có tài khoản? <button onclick="switchAuthTab('login')" class="text-skkuNavy dark:text-emerald-400 font-black underline">Đăng nhập</button>
+          <span data-i18n="hasAccountText">Đã có tài khoản?</span> <button onclick="switchAuthTab('login')" class="text-skkuNavy dark:text-emerald-400 font-black underline" data-i18n="loginNowLink">Đăng nhập</button>
         </div>
       </div>
 
@@ -606,18 +618,18 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="text-xs text-slate-500 uppercase">Ngày Bắt Đầu Tuần 1:</label>
+            <label class="text-xs text-slate-500 uppercase" data-i18n="lblStartDate">Ngày Bắt Đầu Tuần 1:</label>
             <input type="date" id="course-start-date" onchange="calculateCourseEndDate()" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
           </div>
 
           <div>
-            <label class="text-xs text-slate-500 uppercase">Số Tuần Học (Khoảng Thời Gian):</label>
+            <label class="text-xs text-slate-500 uppercase" data-i18n="lblDurationWeeks">Số Tuần Học:</label>
             <input type="number" id="course-duration-weeks" value="16" min="1" max="52" oninput="calculateCourseEndDate()" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
           </div>
         </div>
 
         <div>
-          <label class="text-xs text-slate-500 uppercase">Ngày Kết Thúc (Tự Động Tính):</label>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblEndDateAuto">Ngày Kết Thúc (Tự Động Tính):</label>
           <input type="text" id="course-end-date" readonly placeholder="Tự động tính..." class="w-full p-3 mt-1 rounded-xl border border-emerald-500/50 bg-emerald-50 dark:bg-slate-800 text-emerald-800 dark:text-emerald-300 font-extrabold cursor-not-allowed">
         </div>
       </div>
@@ -690,7 +702,7 @@
 
   <script>
     // --- 1. LOCALSTORAGE KEY & APP STATE ---
-    const STORAGE_KEY = 'EESL_ACADEMIC_TRACKER_V7';
+    const STORAGE_KEY = 'EESL_ACADEMIC_TRACKER_V8';
 
     const DEFAULT_FIXED_SCHEDULE = {
       1: { name: "Academic Writing", time: "Online", room: "Video Course" },
@@ -702,6 +714,8 @@
     const i18nDict = {
       vi: {
         kstClock: "Giờ Hàn Quốc (KST)",
+        loginRegisterBtn: "Đăng Nhập / Đăng Ký",
+        btnLogout: "Đăng xuất",
         editProfile: "Hồ sơ cá nhân",
         tabCalendar: "Thư Mục Tháng & Lịch Học",
         tabResearch: "Nghiên Cứu",
@@ -734,6 +748,18 @@
         colNotes: "Ghi Chú & Bài Học",
         colPlan: "Kế Hoạch Ngày Mai",
         colDelete: "Xóa",
+        tabLogin: "Đăng Nhập",
+        tabRegister: "Đăng Ký",
+        lblLoginAccount: "Email / Tên tài khoản:",
+        lblPassword: "Mật Khẩu:",
+        btnLoginSubmit: "Đăng Nhập",
+        noAccountText: "Chưa có tài khoản?",
+        registerNowLink: "Đăng ký ngay",
+        lblRegEmail: "Email Trường (@skku.edu) / Cá Nhân:",
+        lblConfirmPassword: "Xác Nhận Mật Khẩu:",
+        btnRegisterSubmit: "Tạo Tài Khoản & Đăng Ký",
+        hasAccountText: "Đã có tài khoản?",
+        loginNowLink: "Đăng nhập",
         modalProfileTitle: "Thông Tin Cá Nhân & Hồ Sơ",
         lblAvatarUrl: "Link Ảnh Đại Diện (Avatar URL):",
         lblFullName: "Họ và Tên:",
@@ -753,6 +779,9 @@
         lblCourseRoom: "Phòng Học / Hình Thức:",
         lblDayOfWeek: "Thứ Trong Tuần:",
         lblTime: "Thời Gian (Bắt đầu - Kết thúc):",
+        lblStartDate: "Ngày Bắt Đầu Tuần 1:",
+        lblDurationWeeks: "Số Tuần Học:",
+        lblEndDateAuto: "Ngày Kết Thúc (Tự Động Tính):",
         btnApplyCourse: "Áp Dụng Lịch Học",
         weekTaskDesc: "Kế hoạch báo cáo giáo sư và nhiệm vụ tuần",
         lblWeekTaskList: "Danh Sách Công Việc Tuần Này:",
@@ -778,24 +807,16 @@
         collapse: "▲ Thu gọn",
         expand: "▼ Chi tiết",
         weekTasksBtn: "Kế Hoạch & Task Tuần ",
-        dayDetailsTitle: "Chi Tiết Ngày ",
-        todayClassesTitle: "📚 Lịch Học & Môn Học Ngày Hôm Nay:",
-        btnAddDayClass: "Thêm Môn Lớp Hôm Nay",
-        noClassToday: "Không có lịch học cố định hôm nay (Tập trung Lab / Thí nghiệm).",
-        todayTasksTitle: "✅ Việc Cần Làm Hôm Đó:",
-        btnAddDailyTask: "Thêm Việc",
-        noTasksAdded: "Chưa có công việc nào được thêm.",
-        dailyReportTitle: "📝 Daily Report (Viết Báo Cáo Hàng Ngày):",
-        dailyReportPlaceholder: "Nhập những gì đã học, kết quả thí nghiệm hoặc tiến độ công việc hôm nay...",
-        noResearchLogs: "Chưa có nhật ký nghiên cứu nào. Bấm \"Thêm Dòng Mới\" hoặc \"Thêm Ngày Hôm Sau\" để bắt đầu.",
-        progress0: "0% (Chưa hoàn thành)",
-        progress50: "50% (Đang làm)",
-        progress100: "100% (Đã hoàn thành)",
+        registerSuccessMsg: "Bạn đã đăng ký thành công! Vui lòng bấm Đăng Nhập để truy cập hệ thống.",
+        loginSuccessMsg: "Đăng nhập thành công!",
+        logoutSuccessMsg: "Đã đăng xuất thành công!",
         daysMap: { 1: 'T2', 2: 'T3', 3: 'T4', 4: 'T5', 5: 'T6', 6: 'T7', 7: 'CN' },
         daysFullMap: { 1: 'Thứ 2', 2: 'Thứ 3', 3: 'Thứ 4', 4: 'Thứ 5', 5: 'Thứ 6', 6: 'Thứ 7', 7: 'Chủ Nhật' }
       },
       en: {
         kstClock: "Korean Standard Time (KST)",
+        loginRegisterBtn: "Login / Register",
+        btnLogout: "Logout",
         editProfile: "Personal Profile",
         tabCalendar: "Month Folders & Schedule",
         tabResearch: "Research Logs",
@@ -828,6 +849,18 @@
         colNotes: "Take Notes / Learnings",
         colPlan: "Plan for Tomorrow",
         colDelete: "Delete",
+        tabLogin: "Login",
+        tabRegister: "Register",
+        lblLoginAccount: "Email / Username:",
+        lblPassword: "Password:",
+        btnLoginSubmit: "Login",
+        noAccountText: "Don't have an account?",
+        registerNowLink: "Register now",
+        lblRegEmail: "School Email (@skku.edu) / Personal:",
+        lblConfirmPassword: "Confirm Password:",
+        btnRegisterSubmit: "Create Account & Register",
+        hasAccountText: "Already have an account?",
+        loginNowLink: "Login",
         modalProfileTitle: "Personal Information & Profile",
         lblAvatarUrl: "Avatar Image URL:",
         lblFullName: "Full Name:",
@@ -847,6 +880,9 @@
         lblCourseRoom: "Room / Location:",
         lblDayOfWeek: "Day of Week:",
         lblTime: "Time Range:",
+        lblStartDate: "Week 1 Start Date:",
+        lblDurationWeeks: "Duration (Weeks):",
+        lblEndDateAuto: "End Date (Auto Calculated):",
         btnApplyCourse: "Apply Course Schedule",
         weekTaskDesc: "Advisor report plan & weekly tasks",
         lblWeekTaskList: "This Week's Task List:",
@@ -872,24 +908,16 @@
         collapse: "▲ Collapse",
         expand: "▼ Details",
         weekTasksBtn: "Weekly Plan & Tasks Week ",
-        dayDetailsTitle: "Details for Day ",
-        todayClassesTitle: "📚 Today's Schedule & Courses:",
-        btnAddDayClass: "Add Class Today",
-        noClassToday: "No fixed courses today (Focus on Lab / Experiments).",
-        todayTasksTitle: "✅ Tasks To Do Today:",
-        btnAddDailyTask: "Add Task",
-        noTasksAdded: "No tasks added yet.",
-        dailyReportTitle: "📝 Daily Report (Write Daily Log):",
-        dailyReportPlaceholder: "Enter what you learned, experiment results or progress today...",
-        noResearchLogs: "No research logs yet. Click \"Add New Row\" or \"Add Next Day\" to start.",
-        progress0: "0% (Not completed)",
-        progress50: "50% (In progress)",
-        progress100: "100% (Completed)",
+        registerSuccessMsg: "Registration successful! Please click Login to access your account.",
+        loginSuccessMsg: "Login successful!",
+        logoutSuccessMsg: "Logged out successfully!",
         daysMap: { 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat', 7: 'Sun' },
         daysFullMap: { 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday', 7: 'Sunday' }
       },
       ko: {
         kstClock: "한국 표준시 (KST)",
+        loginRegisterBtn: "로그인 / 회원가입",
+        btnLogout: "로그아웃",
         editProfile: "개인 프로필",
         tabCalendar: "월별 폴더 & 수업 일정",
         tabResearch: "연구 일지",
@@ -922,6 +950,18 @@
         colNotes: "노트 / 학습 내용",
         colPlan: "내일 계획",
         colDelete: "삭제",
+        tabLogin: "로그인",
+        tabRegister: "회원가입",
+        lblLoginAccount: "이메일 / 아이디:",
+        lblPassword: "비밀번호:",
+        btnLoginSubmit: "로그인",
+        noAccountText: "계정이 없으신가요?",
+        registerNowLink: "지금 가입하기",
+        lblRegEmail: "학교 이메일 (@skku.edu) / 개인 이메일:",
+        lblConfirmPassword: "비밀번호 확인:",
+        btnRegisterSubmit: "계정 생성 및 회원가입",
+        hasAccountText: "이미 계정이 있으신가요?",
+        loginNowLink: "로그인",
         modalProfileTitle: "개인 정보 및 프로필",
         lblAvatarUrl: "프로필 이미지 URL:",
         lblFullName: "성명:",
@@ -941,6 +981,9 @@
         lblCourseRoom: "강의실 / 형태:",
         lblDayOfWeek: "요일:",
         lblTime: "시간대:",
+        lblStartDate: "1주차 시작일:",
+        lblDurationWeeks: "수업 주수:",
+        lblEndDateAuto: "종료일 (자동 계산):",
         btnApplyCourse: "수업 일정 적용",
         weekTaskDesc: "지도교수 보고 계획 및 주간 과제",
         lblWeekTaskList: "이번 주 과제 목록:",
@@ -966,19 +1009,9 @@
         collapse: "▲ 접기",
         expand: "▼ 상세보기",
         weekTasksBtn: "주간 계획 및 과제 ",
-        dayDetailsTitle: "일자 상세 ",
-        todayClassesTitle: "📚 오늘의 수업 및 과목:",
-        btnAddDayClass: "오늘 수업 추가",
-        noClassToday: "오늘 고정 수업이 없습니다 (실험/연구 집중).",
-        todayTasksTitle: "✅ 오늘 할 일:",
-        btnAddDailyTask: "할 일 추가",
-        noTasksAdded: "추가된 할 일이 없습니다.",
-        dailyReportTitle: "📝 일간 보고서 (매일 일지 작성):",
-        dailyReportPlaceholder: "오늘 배운 내용, 실험 결과 또는 진행 상황을 입력하세요...",
-        noResearchLogs: "연구 일지가 없습니다. \"새 행 추가\" 또는 \"다음 날 추가\"를 클릭하여 시작하세요.",
-        progress0: "0% (미완료)",
-        progress50: "50% (진행 중)",
-        progress100: "100% (완료)",
+        registerSuccessMsg: "회원가입이 완료되었습니다! 로그인 버튼을 눌러 로그인해주세요.",
+        loginSuccessMsg: "로그인되었습니다!",
+        logoutSuccessMsg: "로그아웃되었습니다!",
         daysMap: { 1: '월', 2: '화', 3: '수', 4: '목', 5: '금', 6: '토', 7: '일' },
         daysFullMap: { 1: '월요일', 2: '화요일', 3: '수요일', 4: '목요일', 5: '금요일', 6: '토요일', 7: '일요일' }
       }
@@ -988,10 +1021,10 @@
       lang: 'vi',
       theme: 'light',
       users: {},
-      currentUser: null,
+      currentUser: null, // Bắt đầu chưa đăng nhập
       profile: {
         avatar: 'https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab',
-        name: 'Nguyễn Văn A',
+        name: '',
         phone: '010-1234-5678',
         pemail: 'researcher@gmail.com',
         semail: 'student@skku.edu',
@@ -1039,7 +1072,7 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
     }
 
-    // --- HELPER FUNCTIONS: LINK DETECTION & RENDER ---
+    // --- HELPER FUNCTIONS ---
     function renderClickableLinks(text) {
       if (!text) return '';
       const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
@@ -1049,25 +1082,10 @@
       });
     }
 
-    function getExtractedLinks(text) {
-      if (!text) return [];
-      const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
-      return text.match(urlRegex) || [];
-    }
-
-    function renderExtractedLinksHtml(links) {
-      if (!links || links.length === 0) return '';
-      return links.map(url => {
-        let href = url.startsWith('http') ? url : 'http://' + url;
-        return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline font-bold text-xs"><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> ${url}</a>`;
-      }).join('<br>');
-    }
-
     function formatLogDateText(dateText) {
       if (!dateText) return '';
       const lang = appData.lang || 'vi';
       const dict = i18nDict[lang] || i18nDict['vi'];
-
       const allDayMaps = [i18nDict.vi.daysMap, i18nDict.en.daysMap, i18nDict.ko.daysMap];
 
       return dateText.replace(/\(([A-Za-z0-9T월화수목금토일]+)\)/g, (match, p1) => {
@@ -1088,7 +1106,7 @@
       });
     }
 
-    // --- AUTHENTICATION (LOGIN / REGISTER) LOGIC ---
+    // --- LUỒNG ĐĂNG NHẬP & ĐĂNG KÝ MỚI ---
     function openAuthModal(tab = 'login') {
       switchAuthTab(tab);
       document.getElementById('auth-modal').classList.remove('hidden');
@@ -1124,27 +1142,27 @@
       const confirmPass = document.getElementById('reg-confirm-password').value;
       const errorEl = document.getElementById('reg-error-msg');
 
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+
       if (!name || !email || !pass) {
-        errorEl.innerText = "Vui lòng điền đầy đủ thông tin đăng ký!";
+        errorEl.innerText = (lang === 'ko' ? "모든 정보를 입력해주세요!" : (lang === 'en' ? "Please fill in all fields!" : "Vui lòng điền đầy đủ thông tin đăng ký!"));
         errorEl.classList.remove('hidden');
         return;
       }
       if (pass !== confirmPass) {
-        errorEl.innerText = "Mật khẩu xác nhận không trùng khớp!";
+        errorEl.innerText = (lang === 'ko' ? "비밀번호가 일치하지 않습니다!" : (lang === 'en' ? "Passwords do not match!" : "Mật khẩu xác nhận không trùng khớp!"));
         errorEl.classList.remove('hidden');
         return;
       }
 
       if (!appData.users) appData.users = {};
       appData.users[email] = { name, email, pass };
-
-      appData.currentUser = email;
-      appData.profile.name = name;
-      appData.profile.semail = email.includes('@') ? email : appData.profile.semail;
       saveData();
-      updateHeaderProfileUI();
+
+      // Đóng modal và hiện thông báo đăng ký thành công (không tự động đăng nhập)
       closeAuthModal();
-      alert("Đăng ký tài khoản thành công!");
+      alert(dict.registerSuccessMsg);
     }
 
     function handleLoginSubmit() {
@@ -1152,30 +1170,75 @@
       const pass = document.getElementById('login-password').value;
       const errorEl = document.getElementById('login-error-msg');
 
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+
       if (!email || !pass) {
-        errorEl.innerText = "Vui lòng nhập Email và Mật khẩu!";
+        errorEl.innerText = (lang === 'ko' ? "이메일과 비밀번호를 입력해주세요!" : (lang === 'en' ? "Please enter email and password!" : "Vui lòng nhập Email và Mật khẩu!"));
         errorEl.classList.remove('hidden');
         return;
       }
 
+      let userName = email.split('@')[0] || "Nghiên cứu sinh";
       if (appData.users && appData.users[email]) {
         if (appData.users[email].pass === pass) {
-          appData.currentUser = email;
-          appData.profile.name = appData.users[email].name;
-          saveData();
-          updateHeaderProfileUI();
-          closeAuthModal();
-          alert("Đăng nhập thành công!");
+          userName = appData.users[email].name;
+        } else {
+          errorEl.innerText = (lang === 'ko' ? "비밀번호가 올바르지 않습니다!" : (lang === 'en' ? "Incorrect password!" : "Mật khẩu không chính xác!"));
+          errorEl.classList.remove('hidden');
           return;
         }
       }
 
+      // Đăng nhập thành công -> Cập nhật thông tin
       appData.currentUser = email;
-      appData.profile.name = email.split('@')[0] || "Nghiên cứu sinh";
+      appData.profile.name = userName;
+      appData.profile.semail = email;
       saveData();
+
       updateHeaderProfileUI();
       closeAuthModal();
-      alert("Đăng nhập thành công!");
+      alert(dict.loginSuccessMsg);
+    }
+
+    function handleLogout() {
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+
+      appData.currentUser = null;
+      saveData();
+      updateHeaderProfileUI();
+      alert(dict.logoutSuccessMsg);
+    }
+
+    function updateHeaderProfileUI() {
+      const loggedOutBox = document.getElementById('header-logged-out');
+      const loggedInBox = document.getElementById('header-logged-in');
+      const p = appData.profile;
+      const avatarSrc = p.avatar || 'https://placehold.co/100x100/002C5F/FFF?text=EESL';
+      
+      if (appData.currentUser) {
+        // Đã đăng nhập: Ẩn nút Đăng ký/Đăng nhập, Hiện Tên + Email + Đăng xuất
+        if (loggedOutBox) loggedOutBox.classList.add('hidden');
+        if (loggedInBox) loggedInBox.classList.remove('hidden');
+        if (document.getElementById('header-avatar')) {
+          document.getElementById('header-avatar').src = avatarSrc;
+        }
+        if (document.getElementById('header-user-name')) {
+          document.getElementById('header-user-name').innerText = p.name || 'Lê Thành Trung';
+        }
+        if (document.getElementById('header-user-email')) {
+          document.getElementById('header-user-email').innerText = appData.currentUser || p.semail;
+        }
+      } else {
+        // Chưa đăng nhập: Hiện nút Đăng Nhập / Đăng Ký
+        if (loggedOutBox) loggedOutBox.classList.remove('hidden');
+        if (loggedInBox) loggedInBox.classList.add('hidden');
+      }
+
+      if (document.getElementById('main-avatar-img')) {
+        document.getElementById('main-avatar-img').src = avatarSrc;
+      }
     }
 
     // --- 2. MULTI-LANGUAGE SYSTEM ---
@@ -1442,20 +1505,6 @@
       closeProfileModal();
     }
 
-    function updateHeaderProfileUI() {
-      const p = appData.profile;
-      const avatarSrc = p.avatar || 'https://placehold.co/100x100/002C5F/FFF?text=EESL';
-      if (document.getElementById('main-avatar-img')) {
-        document.getElementById('main-avatar-img').src = avatarSrc;
-      }
-      if (document.getElementById('header-avatar')) {
-        document.getElementById('header-avatar').src = avatarSrc;
-      }
-      if (document.getElementById('header-user-name')) {
-        document.getElementById('header-user-name').innerText = p.name || 'Nghiên cứu sinh';
-      }
-    }
-
     function openAvatarModal() {
       const avatarSrc = appData.profile.avatar || 'https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab';
       document.getElementById('enlarged-avatar-img').src = avatarSrc;
@@ -1494,7 +1543,6 @@
       saveData();
       document.getElementById('month-selection-subview').classList.add('hidden');
       document.getElementById('month-detail-subview').classList.remove('hidden');
-      
       renderMonthDetail();
     }
 
@@ -1772,12 +1820,14 @@
       const dict = i18nDict[lang] || i18nDict['vi'];
 
       const container = document.createElement('div');
-      container.className = "mt-4 p-6 bg-emerald-50/80 dark:bg-slate-900/90 rounded-3xl border-2 border-skkuGreen shadow-inner space-y-5 animate-fadeIn";
+      container.className = "mt-4 p-5 bg-white dark:bg-slate-900 rounded-3xl border-2 border-skkuGreen/50 shadow-xl space-y-5 animate-fadeIn";
 
-      let dayCourses = [];
+      const headerTitle = `${dict.dayDetailsTitle} ${dayNumber} (${dict.daysFullMap[dayOfWeek] || dayOfWeek})`;
+
+      let todayCourses = [];
       if (DEFAULT_FIXED_SCHEDULE[dayOfWeek]) {
         const def = DEFAULT_FIXED_SCHEDULE[dayOfWeek];
-        dayCourses.push({ id: 'def_1', name: def.name, time: def.time, room: def.room, source: 'default' });
+        todayCourses.push({ name: def.name, time: def.time, room: def.room });
       }
 
       if (appData.globalCourses) {
@@ -1788,112 +1838,104 @@
             inRange = (dateStr >= c.startDate && dateStr <= c.endDate);
           }
           if (matchDow && inRange) {
-            dayCourses.push({ id: c.id, name: c.name, time: `${c.start} - ${c.end}`, room: c.room, source: 'global' });
+            todayCourses.push({ name: c.name, time: `${c.start} - ${c.end}`, room: c.room });
           }
         });
       }
 
       if (dayData.customClasses) {
-        dayCourses = dayCourses.concat(dayData.customClasses);
+        dayData.customClasses.forEach(c => {
+          todayCourses.push({ name: c.name, time: c.time, room: c.room });
+        });
       }
 
-      const fullDayName = dict.daysFullMap[dayOfWeek] || dayOfWeek;
-      const weekStr = (lang === 'ko') ? `${weekNum}주차` : `${dict.weekPrefix}${weekNum}`;
-
       container.innerHTML = `
-        <div class="flex justify-between items-center border-b pb-3 border-emerald-200 dark:border-slate-800">
-          <h5 class="text-xl font-black text-skkuNavy dark:text-emerald-400 flex items-center gap-2">
-            <i class="fa-solid fa-graduation-cap"></i> ${dict.dayDetailsTitle}${dayNumber} (${fullDayName})
+        <div class="flex justify-between items-center border-b pb-3 border-slate-200 dark:border-slate-800">
+          <h5 class="font-black text-lg text-skkuNavy dark:text-emerald-400 flex items-center gap-2">
+            <i class="fa-solid fa-calendar-day text-skkuGreen"></i>
+            <span>${headerTitle}</span>
           </h5>
-          <span class="text-xs font-bold text-slate-500">${dateStr} • ${weekStr}</span>
+          <button onclick="expandedDayKey = null; renderMonthDetail();" class="text-slate-400 hover:text-slate-600 font-bold text-xs bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-xl">
+            <i class="fa-solid fa-xmark"></i> ${dict.collapse}
+          </button>
         </div>
 
-        <div class="bg-white dark:bg-slate-950 p-4 rounded-2xl shadow-sm border border-emerald-200 dark:border-slate-800 space-y-3">
-          <div class="flex justify-between items-center">
-            <h6 class="font-extrabold text-xs text-skkuDarkGreen dark:text-emerald-300 uppercase tracking-wide">${dict.todayClassesTitle}</h6>
-            <button onclick="addCustomDayClassPrompt('${dateStr}')" class="bg-emerald-600 text-white font-bold px-2.5 py-1 rounded-xl text-xs flex items-center gap-1 shadow">
-              <i class="fa-solid fa-plus"></i> ${dict.btnAddDayClass}
-            </button>
-          </div>
-
-          <div class="space-y-2">
-            ${
-              dayCourses.length === 0 
-                ? `<p class="text-xs text-slate-400 italic">${dict.noClassToday}</p>`
-                : dayCourses.map((c, idx) => `
-                    <div class="p-3 bg-emerald-100/70 dark:bg-slate-800 rounded-xl font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center justify-between border border-emerald-200 dark:border-slate-700">
-                      <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-book-open text-skkuGreen text-base"></i>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <h6 class="font-extrabold text-sm text-slate-800 dark:text-slate-200">${dict.todayClassesTitle}</h6>
+              <button onclick="addCustomClassPrompt('${dateStr}')" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded-lg">
+                <i class="fa-solid fa-plus"></i> ${dict.btnAddDayClass}
+              </button>
+            </div>
+            <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+              ${
+                todayCourses.length === 0
+                  ? `<p class="text-xs text-slate-400 italic">${dict.noClassToday}</p>`
+                  : todayCourses.map(c => `
+                      <div class="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs flex justify-between items-center">
                         <div>
-                          <div class="text-base font-extrabold">${c.name}</div>
-                          <div class="text-xs font-semibold text-slate-600 dark:text-slate-300">⏰ ${c.time} • 📍 ${c.room}</div>
+                          <div class="font-black text-slate-900 dark:text-slate-100">${c.name}</div>
+                          <div class="text-[11px] text-slate-500 font-semibold">⏰ ${c.time} • 📍 ${c.room}</div>
                         </div>
                       </div>
-                      ${c.source === 'custom' ? `<button onclick="deleteCustomDayClass('${dateStr}', ${idx})" class="text-red-500 text-xs font-bold"><i class="fa-solid fa-trash"></i></button>` : ''}
-                    </div>
-                  `).join('')
-            }
+                    `).join('')
+              }
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <h6 class="font-extrabold text-sm text-slate-800 dark:text-slate-200">${dict.todayTasksTitle}</h6>
+              <button onclick="addDailyTaskPrompt('${dateStr}')" class="text-xs bg-skkuNavy hover:bg-slate-800 text-white font-bold px-2.5 py-1 rounded-lg">
+                <i class="fa-solid fa-plus"></i> ${dict.btnAddDailyTask}
+              </button>
+            </div>
+            <ul class="space-y-2 max-h-48 overflow-y-auto pr-1">
+              ${
+                !dayData.tasks || dayData.tasks.length === 0
+                  ? `<li class="text-xs text-slate-400 italic">${dict.noTasksAdded}</li>`
+                  : dayData.tasks.map((t, idx) => `
+                      <li class="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                          <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleDailyTask('${dateStr}',${idx})" class="w-4 h-4 accent-emerald-500">
+                          <span class="${t.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'}">${renderClickableLinks(t.text)}</span>
+                        </div>
+                        <button onclick="deleteDailyTask('${dateStr}',${idx})" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
+                      </li>
+                    `).join('')
+              }
+            </ul>
           </div>
         </div>
 
-        <div class="space-y-3">
-          <div class="flex justify-between items-center">
-            <h6 class="font-extrabold text-xs text-slate-700 dark:text-slate-200 uppercase tracking-wide">${dict.todayTasksTitle}</h6>
-            <button onclick="addDailyTaskPrompt('${dateStr}')" class="bg-skkuGreen hover:bg-emerald-600 text-slate-900 font-bold px-3 py-1 rounded-xl text-xs flex items-center gap-1 shadow">
-              <i class="fa-solid fa-plus"></i> ${dict.btnAddDailyTask}
-            </button>
-          </div>
-          <ul class="space-y-2">
-            ${
-              dayData.tasks.length === 0 
-                ? `<li class="text-xs text-slate-400 italic">${dict.noTasksAdded}</li>`
-                : dayData.tasks.map((t, idx) => `
-                    <li class="flex items-center justify-between p-2.5 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
-                      <div class="flex items-center gap-2">
-                        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleDailyTask('${dateStr}',${idx})" class="w-5 h-5 accent-skkuGreen rounded cursor-pointer">
-                        <span class="${t.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'} text-sm">${renderClickableLinks(t.text)}</span>
-                      </div>
-                      <button onclick="deleteDailyTask('${dateStr}',${idx})" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
-                    </li>
-                  `).join('')
-            }
-          </ul>
-        </div>
-
-        <div class="space-y-2">
-          <h6 class="font-extrabold text-xs text-slate-700 dark:text-slate-200 uppercase tracking-wide">${dict.dailyReportTitle}</h6>
-          <textarea id="report-${dateStr}" oninput="saveDailyReport('${dateStr}')" rows="3" placeholder="${dict.dailyReportPlaceholder}" class="w-full p-3 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-skkuGreen font-medium text-sm text-slate-800 dark:text-slate-100">${dayData.dailyReport || ''}</textarea>
-          <div class="text-xs text-slate-600 dark:text-slate-300 font-medium">${renderClickableLinks(dayData.dailyReport || '')}</div>
+        <div class="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+          <label class="font-extrabold text-sm text-slate-800 dark:text-slate-200 block">${dict.dailyReportTitle}</label>
+          <textarea onchange="updateDailyReport('${dateStr}', this.value)" placeholder="${dict.dailyReportPlaceholder}" class="w-full p-3 rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold focus:ring-2 focus:ring-skkuGreen min-h-[70px] auto-expand">${dayData.dailyReport || ''}</textarea>
         </div>
       `;
 
       return container;
     }
 
-    function addCustomDayClassPrompt(dateStr) {
-      const name = prompt("Tên môn học / công việc:");
+    function addCustomClassPrompt(dateStr) {
+      const name = prompt("Nhập tên môn học / Sự kiện:");
       if (!name) return;
-      const time = prompt("Thời gian (VD: 14:00 - 16:00):") || "Cả ngày";
-      const room = prompt("Địa điểm / Phòng học:") || "Lab EES";
+      const time = prompt("Nhập thời gian (VD: 14:00 - 15:30):", "14:00 - 15:30") || "Cả ngày";
+      const room = prompt("Nhập địa điểm / Phòng học:", "Phòng Lab") || "Phòng Lab";
 
       if (!appData.dayData[dateStr]) appData.dayData[dateStr] = { tasks: [], customClasses: [], dailyReport: "" };
       if (!appData.dayData[dateStr].customClasses) appData.dayData[dateStr].customClasses = [];
-
-      appData.dayData[dateStr].customClasses.push({ id: Date.now(), name, time, room, source: 'custom' });
-      saveData();
-      renderMonthDetail();
-    }
-
-    function deleteCustomDayClass(dateStr, idx) {
-      appData.dayData[dateStr].customClasses.splice(idx, 1);
+      appData.dayData[dateStr].customClasses.push({ name, time, room });
       saveData();
       renderMonthDetail();
     }
 
     function addDailyTaskPrompt(dateStr) {
-      const text = prompt("Nhập việc cần làm hôm nay:");
+      const text = prompt("Nhập công việc cần làm hôm nay:");
       if (text && text.trim()) {
         if (!appData.dayData[dateStr]) appData.dayData[dateStr] = { tasks: [], customClasses: [], dailyReport: "" };
+        if (!appData.dayData[dateStr].tasks) appData.dayData[dateStr].tasks = [];
         appData.dayData[dateStr].tasks.push({ text: text.trim(), done: false });
         saveData();
         renderMonthDetail();
@@ -1912,20 +1954,14 @@
       renderMonthDetail();
     }
 
-    function saveDailyReport(dateStr) {
-      const val = document.getElementById(`report-${dateStr}`).value;
+    function updateDailyReport(dateStr, value) {
       if (!appData.dayData[dateStr]) appData.dayData[dateStr] = { tasks: [], customClasses: [], dailyReport: "" };
-      appData.dayData[dateStr].dailyReport = val;
+      appData.dayData[dateStr].dailyReport = value;
       saveData();
     }
 
-    // --- 11. GLOBAL COURSE MODAL LOGIC & AUTO DATE CALCULATION ---
+    // --- 11. GLOBAL COURSE MODAL & WEEK TASK MODAL ---
     function openAddCourseModal() {
-      if (!document.getElementById('course-start-date').value) {
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('course-start-date').value = today;
-      }
-      calculateCourseEndDate();
       document.getElementById('add-course-modal').classList.remove('hidden');
     }
 
@@ -1936,71 +1972,46 @@
     function calculateCourseEndDate() {
       const startDateVal = document.getElementById('course-start-date').value;
       const weeksVal = parseInt(document.getElementById('course-duration-weeks').value) || 16;
-      
-      if (!startDateVal) {
-        document.getElementById('course-end-date').value = '';
-        return;
+      if (startDateVal) {
+        const start = new Date(startDateVal);
+        const endDate = new Date(start.setDate(start.getDate() + (weeksVal * 7) - 1));
+        const yyyy = endDate.getFullYear();
+        const mm = String(endDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(endDate.getDate()).padStart(2, '0');
+        document.getElementById('course-end-date').value = `${yyyy}-${mm}-${dd}`;
       }
-
-      const startDate = new Date(startDateVal);
-      if (isNaN(startDate.getTime())) return;
-
-      const endDate = new Date(startDate);
-      endDate.setDate(startDate.getDate() + (weeksVal * 7 - 1));
-
-      const dd = String(endDate.getDate()).padStart(2, '0');
-      const mm = String(endDate.getMonth() + 1).padStart(2, '0');
-      const yyyy = endDate.getFullYear();
-
-      const lang = appData.lang || 'vi';
-      const dict = i18nDict[lang] || i18nDict['vi'];
-
-      let dow = endDate.getDay();
-      if (dow === 0) dow = 7;
-      const dowName = (dict.daysFullMap && dict.daysFullMap[dow]) ? dict.daysFullMap[dow] : `T${dow}`;
-
-      document.getElementById('course-end-date').value = `${dd}/${mm}/${yyyy} (${dowName})`;
-      document.getElementById('course-end-date').dataset.iso = endDate.toISOString().split('T')[0];
     }
 
     function saveGlobalCourse() {
-      const name = document.getElementById('course-name').value;
-      const room = document.getElementById('course-room').value;
+      const name = document.getElementById('course-name').value.trim();
+      const room = document.getElementById('course-room').value.trim();
       const dow = document.getElementById('course-dow').value;
-      const start = document.getElementById('course-start').value || "09:00";
-      const end = document.getElementById('course-end').value || "11:45";
+      const start = document.getElementById('course-start').value.trim();
+      const end = document.getElementById('course-end').value.trim();
       const startDate = document.getElementById('course-start-date').value;
-      const weeks = parseInt(document.getElementById('course-duration-weeks').value) || 16;
-      const endDateIso = document.getElementById('course-end-date').dataset.iso || startDate;
+      const endDate = document.getElementById('course-end-date').value;
 
-      if (name.trim()) {
-        appData.globalCourses.push({
-          id: Date.now(),
-          name: name.trim(),
-          room: room.trim(),
-          dow: dow,
-          start: start,
-          end: end,
-          startDate: startDate,
-          weeks: weeks,
-          endDate: endDateIso
-        });
-        saveData();
-        closeAddCourseModal();
-        if (!document.getElementById('month-detail-subview').classList.contains('hidden')) {
-          renderMonthDetail();
-        }
-        renderNotifications();
+      if (!name) {
+        alert("Vui lòng nhập tên môn học!");
+        return;
       }
+
+      if (!appData.globalCourses) appData.globalCourses = [];
+      appData.globalCourses.push({ name, room, dow, start, end, startDate, endDate });
+      saveData();
+      closeAddCourseModal();
+      renderMonthDetail();
+      renderNotifications();
+      alert("Đã áp dụng lịch học nâng cao thành công!");
     }
 
-    // --- 12. WEEK TASK MODAL LOGIC ---
     function openWeekTaskModal(weekKey, weekNum) {
       activeWeekKeyForModal = weekKey;
       const lang = appData.lang || 'vi';
       const dict = i18nDict[lang] || i18nDict['vi'];
-      document.getElementById('modal-week-title').innerText = `${dict.weekTasksBtn}${weekNum}`;
-      renderWeekTasks();
+
+      document.getElementById('modal-week-title').innerText = `${dict.weekPrefix}${weekNum} - ${dict.weekTaskDesc}`;
+      renderWeekTasksList();
       document.getElementById('week-task-modal').classList.remove('hidden');
     }
 
@@ -2008,70 +2019,79 @@
       document.getElementById('week-task-modal').classList.add('hidden');
     }
 
-    function renderWeekTasks() {
-      const list = document.getElementById('week-task-list');
-      list.innerHTML = '';
+    function renderWeekTasksList() {
+      const listEl = document.getElementById('week-task-list');
+      listEl.innerHTML = '';
 
-      const tasks = appData.weekTasks[activeWeekKeyForModal] || [
-        { text: "Chuẩn bị Slide & Báo cáo với Giáo sư", done: false },
-        { text: "Đọc 2 bài báo ISI thuộc nhóm EES Lab", done: false }
-      ];
+      if (!activeWeekKeyForModal) return;
+      const tasks = appData.weekTasks[activeWeekKeyForModal] || [];
 
-      appData.weekTasks[activeWeekKeyForModal] = tasks;
-      saveData();
+      if (tasks.length === 0) {
+        listEl.innerHTML = `<li class="text-xs text-slate-400 italic">Chưa có công việc nào cho tuần này. Bấm "Thêm Task" để tạo mới.</li>`;
+        return;
+      }
 
       tasks.forEach((t, idx) => {
         const li = document.createElement('li');
-        li.className = "flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700";
+        li.className = "p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 flex justify-between items-center text-sm";
         li.innerHTML = `
-          <div class="flex items-center gap-3">
-            <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleWeekTask(${idx})" class="w-5 h-5 accent-skkuGreen rounded cursor-pointer">
-            <span class="${t.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'} text-sm">${renderClickableLinks(t.text)}</span>
+          <div class="flex items-center gap-2.5">
+            <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleWeekTask(${idx})" class="w-5 h-5 accent-emerald-500 rounded cursor-pointer">
+            <span class="${t.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'}">${renderClickableLinks(t.text)}</span>
           </div>
           <button onclick="deleteWeekTask(${idx})" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
         `;
-        list.appendChild(li);
+        listEl.appendChild(li);
       });
     }
 
     function addCustomWeekTaskPrompt() {
-      const text = prompt("Nhập task tuần mới:");
-      if (text && text.trim()) {
+      const text = prompt("Nhập nhiệm vụ/kế hoạch tuần:");
+      if (text && text.trim() && activeWeekKeyForModal) {
         if (!appData.weekTasks[activeWeekKeyForModal]) appData.weekTasks[activeWeekKeyForModal] = [];
         appData.weekTasks[activeWeekKeyForModal].push({ text: text.trim(), done: false });
         saveData();
-        renderWeekTasks();
+        renderWeekTasksList();
       }
     }
 
     function toggleWeekTask(idx) {
-      appData.weekTasks[activeWeekKeyForModal][idx].done = !appData.weekTasks[activeWeekKeyForModal][idx].done;
-      saveData();
-      renderWeekTasks();
+      if (activeWeekKeyForModal && appData.weekTasks[activeWeekKeyForModal]) {
+        appData.weekTasks[activeWeekKeyForModal][idx].done = !appData.weekTasks[activeWeekKeyForModal][idx].done;
+        saveData();
+        renderWeekTasksList();
+      }
     }
 
     function deleteWeekTask(idx) {
-      appData.weekTasks[activeWeekKeyForModal].splice(idx, 1);
-      saveData();
-      renderWeekTasks();
+      if (activeWeekKeyForModal && appData.weekTasks[activeWeekKeyForModal]) {
+        appData.weekTasks[activeWeekKeyForModal].splice(idx, 1);
+        saveData();
+        renderWeekTasksList();
+      }
     }
 
-    // --- 13. RESEARCH TAB & TABLE LOGIC ---
+    // --- 12. TAB 2: RESEARCH LOGS TAB LOGIC ---
     function renderResearchTab() {
-      renderResearchTopics();
+      renderResearchTopicsList();
       renderResearchTable();
     }
 
-    function renderResearchTopics() {
+    function renderResearchTopicsList() {
       const container = document.getElementById('research-topics-list');
       container.innerHTML = '';
 
+      if (!appData.researchProjects || appData.researchProjects.length === 0) {
+        appData.researchProjects = [{ id: "proj_1", title: "Energy & Environmental Catalysts Development", logs: [] }];
+        appData.activeProjectIndex = 0;
+      }
+
       appData.researchProjects.forEach((proj, idx) => {
-        const btn = document.createElement('button');
         const isActive = (idx === appData.activeProjectIndex);
-        btn.className = `px-4 py-2 rounded-2xl font-black text-xs whitespace-nowrap transition flex items-center gap-2 ${
+        const btn = document.createElement('button');
+        btn.className = `px-4 py-2 rounded-2xl font-bold text-xs whitespace-nowrap transition shadow-sm ${
           isActive 
-            ? 'bg-skkuNavy text-white shadow-md border-2 border-skkuGreen' 
+            ? 'bg-skkuNavy text-white ring-2 ring-skkuGreen' 
             : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
         }`;
         btn.onclick = () => {
@@ -2079,13 +2099,152 @@
           saveData();
           renderResearchTab();
         };
-        btn.innerHTML = `<i class="fa-solid fa-flask text-emerald-400"></i> ${proj.title}`;
+        btn.innerHTML = `🧪 ${proj.title}`;
         container.appendChild(btn);
       });
+    }
 
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (currentProj) {
-        document.getElementById('current-project-title').innerText = currentProj.title;
+    function renderResearchTable() {
+      const tbody = document.getElementById('research-table-body');
+      tbody.innerHTML = '';
+
+      const proj = appData.researchProjects[appData.activeProjectIndex];
+      if (!proj) return;
+
+      document.getElementById('current-project-title').innerText = proj.title;
+
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+
+      if (!proj.logs || proj.logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 italic">${dict.noResearchLogs}</td></tr>`;
+        return;
+      }
+
+      proj.logs.forEach((log, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-800";
+
+        const formattedDate = formatLogDateText(log.dateText);
+
+        tr.innerHTML = `
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800 text-center font-bold">
+            <textarea onchange="updateResearchLog(${idx}, 'dateText', this.value)" class="w-full text-center bg-transparent border-0 font-extrabold focus:ring-1 focus:ring-skkuGreen rounded auto-expand">${formattedDate || ''}</textarea>
+          </td>
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800">
+            <textarea onchange="updateResearchLog(${idx}, 'tasks', this.value)" class="w-full bg-transparent border-0 font-medium focus:ring-1 focus:ring-skkuGreen rounded auto-expand">${log.tasks || ''}</textarea>
+            <div class="mt-1">${renderClickableLinks(log.tasks)}</div>
+          </td>
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800 text-center">
+            <select onchange="updateResearchLog(${idx}, 'progressStep', this.value)" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold text-xs border border-slate-300 dark:border-slate-700">
+              <option value="0" ${log.progressStep == 0 ? 'selected' : ''}>${dict.progress0}</option>
+              <option value="1" ${log.progressStep == 1 ? 'selected' : ''}>${dict.progress50}</option>
+              <option value="2" ${log.progressStep == 2 ? 'selected' : ''}>${dict.progress100}</option>
+            </select>
+          </td>
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800">
+            <textarea onchange="updateResearchLog(${idx}, 'notes', this.value)" class="w-full bg-transparent border-0 focus:ring-1 focus:ring-skkuGreen rounded auto-expand">${log.notes || ''}</textarea>
+            <div class="mt-1">${renderClickableLinks(log.notes)}</div>
+          </td>
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800">
+            <textarea onchange="updateResearchLog(${idx}, 'plan', this.value)" class="w-full bg-transparent border-0 focus:ring-1 focus:ring-skkuGreen rounded auto-expand">${log.plan || ''}</textarea>
+            <div class="mt-1">${renderClickableLinks(log.plan)}</div>
+          </td>
+          <td class="p-3 text-center">
+            <button onclick="deleteResearchLogRow(${idx})" class="text-slate-400 hover:text-red-500 font-bold p-2"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateResearchLog(logIdx, field, val) {
+      const proj = appData.researchProjects[appData.activeProjectIndex];
+      if (proj && proj.logs[logIdx]) {
+        proj.logs[logIdx][field] = val;
+        saveData();
+        renderResearchTable();
+      }
+    }
+
+    function addResearchRow() {
+      const proj = appData.researchProjects[appData.activeProjectIndex];
+      if (!proj) return;
+      if (!proj.logs) proj.logs = [];
+
+      const now = new Date();
+      const dd = String(now.getDate()).padStart(2, '0');
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const yyyy = now.getFullYear();
+
+      let dow = now.getDay();
+      if (dow === 0) dow = 7;
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+      const dowLabel = dict.daysMap[dow] || `T${dow}`;
+
+      proj.logs.unshift({
+        id: "log_" + Date.now(),
+        dateText: `${dd}/${mm}/${yyyy}\n(${dowLabel})`,
+        tasks: "",
+        progressStep: 0,
+        notes: "",
+        plan: ""
+      });
+
+      saveData();
+      renderResearchTable();
+    }
+
+    function addResearchRowNextDay() {
+      const proj = appData.researchProjects[appData.activeProjectIndex];
+      if (!proj) return;
+      if (!proj.logs) proj.logs = [];
+
+      let baseDate = new Date();
+      if (proj.logs.length > 0) {
+        const firstLog = proj.logs[0];
+        const parts = firstLog.dateText.split('\n')[0].split('/');
+        if (parts.length === 3) {
+          const d = parseInt(parts[0]);
+          const m = parseInt(parts[1]) - 1;
+          const y = parseInt(parts[2]);
+          if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
+            baseDate = new Date(y, m, d + 1);
+          }
+        }
+      }
+
+      const dd = String(baseDate.getDate()).padStart(2, '0');
+      const mm = String(baseDate.getMonth() + 1).padStart(2, '0');
+      const yyyy = baseDate.getFullYear();
+
+      let dow = baseDate.getDay();
+      if (dow === 0) dow = 7;
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+      const dowLabel = dict.daysMap[dow] || `T${dow}`;
+
+      proj.logs.unshift({
+        id: "log_" + Date.now(),
+        dateText: `${dd}/${mm}/${yyyy}\n(${dowLabel})`,
+        tasks: "",
+        progressStep: 0,
+        notes: "",
+        plan: ""
+      });
+
+      saveData();
+      renderResearchTable();
+    }
+
+    function deleteResearchLogRow(idx) {
+      const proj = appData.researchProjects[appData.activeProjectIndex];
+      if (proj && proj.logs) {
+        proj.logs.splice(idx, 1);
+        saveData();
+        renderResearchTable();
       }
     }
 
@@ -2104,11 +2263,11 @@
     }
 
     function editCurrentProjectTitle() {
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (!currentProj) return;
-      const newTitle = prompt("Nhập lại tên đề tài:", currentProj.title);
+      const proj = appData.researchProjects[appData.activeProjectIndex];
+      if (!proj) return;
+      const newTitle = prompt("Sửa tên đề tài:", proj.title);
       if (newTitle && newTitle.trim()) {
-        currentProj.title = newTitle.trim();
+        proj.title = newTitle.trim();
         saveData();
         renderResearchTab();
       }
@@ -2116,7 +2275,7 @@
 
     function deleteCurrentProject() {
       if (appData.researchProjects.length <= 1) {
-        alert("Bạn phải giữ ít nhất 1 đề tài nghiên cứu!");
+        alert("Phải giữ lại ít nhất 1 đề tài nghiên cứu!");
         return;
       }
       if (confirm("Bạn có chắc chắn muốn xóa đề tài này?")) {
@@ -2127,168 +2286,11 @@
       }
     }
 
-    function autoResizeTextarea(el) {
-      el.style.height = 'auto';
-      el.style.height = (el.scrollHeight) + 'px';
-    }
-
-    function updateResearchLogFieldNoRender(idx, field, value) {
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (currentProj && currentProj.logs[idx]) {
-        currentProj.logs[idx][field] = value;
-        saveData();
-        
-        const links = getExtractedLinks(value);
-        const container = document.getElementById(`links-${field}-${idx}`);
-        if (container) {
-          container.innerHTML = renderExtractedLinksHtml(links);
-        }
-      }
-    }
-
-    function setLogProgress(idx, step) {
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (currentProj && currentProj.logs[idx]) {
-        currentProj.logs[idx].progressStep = step;
-        saveData();
-        renderResearchTable();
-      }
-    }
-
-    function renderResearchTable() {
-      const tbody = document.getElementById('research-table-body');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-
-      const lang = appData.lang || 'vi';
-      const dict = i18nDict[lang] || i18nDict['vi'];
-
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (!currentProj || !currentProj.logs || currentProj.logs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-bold italic">${dict.noResearchLogs}</td></tr>`;
-        return;
-      }
-
-      currentProj.logs.forEach((log, idx) => {
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-800";
-        tr.dataset.index = idx;
-
-        const extractedLinksTasks = getExtractedLinks(log.tasks);
-        const extractedLinksNotes = getExtractedLinks(log.notes);
-        const extractedLinksPlan = getExtractedLinks(log.plan);
-
-        const formattedDateText = formatLogDateText(log.dateText || '');
-
-        let stepVal = log.progressStep || 0;
-        let statusBadge = '';
-        if (stepVal === 0) {
-          statusBadge = `<span class="px-2.5 py-1 bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300 rounded-lg text-xs font-bold">0%</span>`;
-        } else if (stepVal === 1) {
-          statusBadge = `<span class="px-2.5 py-1 bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300 rounded-lg text-xs font-bold">50%</span>`;
-        } else {
-          statusBadge = `<span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 rounded-lg text-xs font-bold">100%</span>`;
-        }
-
-        tr.innerHTML = `
-          <td class="p-3 border-r border-slate-200 dark:border-slate-800 align-top text-center">
-            <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'dateText', this.value)" onfocus="autoResizeTextarea(this)" class="w-full bg-transparent border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-center text-xs font-extrabold focus:ring-2 focus:ring-skkuGreen auto-expand">${log.dateText || ''}</textarea>
-            <div class="text-[10px] text-slate-400 font-semibold mt-1">${formattedDateText}</div>
-          </td>
-
-          <td class="p-3 border-r border-slate-200 dark:border-slate-800 align-top">
-            <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'tasks', this.value)" onfocus="autoResizeTextarea(this)" placeholder="Việc cần làm..." class="w-full bg-transparent border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs font-semibold focus:ring-2 focus:ring-skkuGreen auto-expand">${log.tasks || ''}</textarea>
-            <div id="links-tasks-${idx}" class="mt-1">${renderExtractedLinksHtml(extractedLinksTasks)}</div>
-          </td>
-
-          <td class="p-3 border-r border-slate-200 dark:border-slate-800 align-top text-center">
-            <div class="flex flex-col items-center gap-1.5">
-              ${statusBadge}
-              <div class="flex items-center gap-1 mt-1">
-                <button onclick="setLogProgress(${idx}, 0)" class="w-6 h-6 rounded-lg bg-red-500 text-white font-bold text-[10px] hover:opacity-80" title="0%">0</button>
-                <button onclick="setLogProgress(${idx}, 1)" class="w-6 h-6 rounded-lg bg-amber-500 text-slate-900 font-bold text-[10px] hover:opacity-80" title="50%">50</button>
-                <button onclick="setLogProgress(${idx}, 2)" class="w-6 h-6 rounded-lg bg-emerald-500 text-white font-bold text-[10px] hover:opacity-80" title="100%">100</button>
-              </div>
-            </div>
-          </td>
-
-          <td class="p-3 border-r border-slate-200 dark:border-slate-800 align-top">
-            <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'notes', this.value)" onfocus="autoResizeTextarea(this)" placeholder="Ghi chú & bài học..." class="w-full bg-transparent border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs font-semibold focus:ring-2 focus:ring-skkuGreen auto-expand">${log.notes || ''}</textarea>
-            <div id="links-notes-${idx}" class="mt-1">${renderExtractedLinksHtml(extractedLinksNotes)}</div>
-          </td>
-
-          <td class="p-3 border-r border-slate-200 dark:border-slate-800 align-top">
-            <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'plan', this.value)" onfocus="autoResizeTextarea(this)" placeholder="Kế hoạch ngày mai..." class="w-full bg-transparent border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs font-semibold focus:ring-2 focus:ring-skkuGreen auto-expand">${log.plan || ''}</textarea>
-            <div id="links-plan-${idx}" class="mt-1">${renderExtractedLinksHtml(extractedLinksPlan)}</div>
-          </td>
-
-          <td class="p-3 text-center align-top">
-            <button onclick="deleteResearchRow(${idx})" class="text-slate-400 hover:text-red-500 font-bold p-1"><i class="fa-solid fa-trash-can"></i></button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-      
-      setTimeout(() => {
-        document.querySelectorAll('#research-table-body textarea').forEach(el => autoResizeTextarea(el));
-      }, 50);
-    }
-
-    function addResearchRow() {
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (!currentProj) return;
-      const nowKST = new Date().toLocaleDateString('vi-VN', { timeZone: 'Asia/Seoul' });
-      currentProj.logs.push({
-        id: 'log_' + Date.now(),
-        dateText: nowKST,
-        tasks: '',
-        progressStep: 0,
-        notes: '',
-        plan: ''
-      });
-      saveData();
-      renderResearchTable();
-    }
-
-    function addResearchRowNextDay() {
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (!currentProj) return;
-      let nextDateStr = new Date().toLocaleDateString('vi-VN', { timeZone: 'Asia/Seoul' });
-      if (currentProj.logs.length > 0) {
-        const lastLog = currentProj.logs[currentProj.logs.length - 1];
-        const match = (lastLog.dateText || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-        if (match) {
-          const d = new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]) + 1);
-          nextDateStr = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-        }
-      }
-      currentProj.logs.push({
-        id: 'log_' + Date.now(),
-        dateText: nextDateStr,
-        tasks: '',
-        progressStep: 0,
-        notes: '',
-        plan: ''
-      });
-      saveData();
-      renderResearchTable();
-    }
-
-    function deleteResearchRow(idx) {
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (currentProj && currentProj.logs) {
-        currentProj.logs.splice(idx, 1);
-        saveData();
-        renderResearchTable();
-      }
-    }
-
-    // --- INITIALIZATION ON LOAD ---
+    // --- INITIALIZATION ---
     window.addEventListener('DOMContentLoaded', () => {
       applyTheme();
       applyLanguageUI();
       renderMonthsGrid();
-      updateHeaderProfileUI();
     });
   </script>
 </body>
