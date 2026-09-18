@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Energy & Environmental Sustainability Lab - Academic, Work & Research Tracker</title>
+  <title>Energy & Environmental Sustainability Lab - Academic & Research Tracker</title>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -50,7 +50,6 @@
     .dark .skku-watermark {
       background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='20' fill='%23ffffff' opacity='0.02'%3EEES LAB%3C/text%3E%3C/svg%3E");
     }
-    /* Custom Scrollbars */
     ::-webkit-scrollbar {
       width: 8px;
       height: 8px;
@@ -86,30 +85,40 @@
   <header class="bg-skkuNavy dark:bg-skkuNavyDark text-white shadow-xl border-b-4 border-skkuGreen sticky top-0 z-40">
     <div class="max-w-[98%] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
       
-      <!-- Brand & Title & Square Avatar Box -->
-      <div class="flex items-center space-x-3">
-        <div class="relative group cursor-pointer w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border-2 border-skkuGreen shadow-md bg-slate-800 flex-shrink-0" onclick="openAvatarModal()" title="Xem phóng to / Thay đổi ảnh đại diện">
+      <!-- Left: Avatar & Fixed Lab Info & SKKU Title Banner -->
+      <div class="flex items-center space-x-3 flex-wrap sm:flex-nowrap gap-y-2">
+        <!-- Main Avatar -->
+        <div class="relative group cursor-pointer w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border-2 border-skkuGreen shadow-md bg-slate-800 flex-shrink-0" onclick="openAvatarModal()" title="Phóng to / Thay đổi ảnh đại diện">
           <img id="main-avatar-img" src="https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab" alt="Avatar" class="w-full h-full object-cover group-hover:scale-105 transition duration-200">
           <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition text-white text-xs font-bold">
             <i class="fa-solid fa-expand"></i>
           </div>
         </div>
 
-        <div class="bg-white p-2.5 rounded-2xl shadow-md border border-slate-200 items-center justify-center hidden lg:flex">
-          <i class="fa-solid fa-leaf text-skkuGreen text-2xl mr-1.5"></i>
-          <span class="text-skkuNavy font-black text-lg md:text-xl tracking-tight">Energy & Environmental Sustainability Lab</span>
+        <!-- Lab Name & Group Name (FIXED IN ALL LANGUAGES) -->
+        <div class="flex flex-col">
+          <div class="flex items-center gap-2">
+            <span class="text-white font-black text-base sm:text-lg tracking-tight">Energy & Environmental Sustainability Lab</span>
+            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-400/30">EES Lab</span>
+          </div>
+          <p class="text-xs text-skkuGreen font-bold tracking-wide">Chungseok Choi Group</p>
         </div>
-        <div>
-          <h1 class="text-base md:text-lg font-extrabold tracking-tight flex items-center gap-2">
-            <span data-i18n="headerSubtitle">Quản Lý Học Tập & Nghiên Cứu</span>
-            <span class="text-xs bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-400/30">EES Lab</span>
-          </h1>
-          <p class="text-xs text-slate-200 font-bold leading-tight hidden sm:block" data-i18n="saintName">SKKU Advanced Institute of Nano Technology</p>
-          <p class="text-[11px] text-slate-300 font-medium leading-tight hidden sm:block" data-i18n="univName">Sungkyunkwan University</p>
+
+        <!-- SKKU University Header Title Banner (Korean + English + Logo Banner) -->
+        <div class="hidden xl:flex items-center bg-white/10 dark:bg-slate-900/60 px-3 py-1.5 rounded-2xl border border-white/20 ml-2">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full bg-skkuGreen/20 flex items-center justify-center">
+              <i class="fa-solid fa-graduation-cap text-skkuGreen text-sm"></i>
+            </div>
+            <div class="text-left leading-tight">
+              <div class="text-xs font-black text-white tracking-wider">성균관대학교</div>
+              <div class="text-[10px] text-slate-200 font-semibold">SUNGKYUNKWAN UNIVERSITY (SKKU)</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- KST Digital Clock & Suwon Weather -->
+      <!-- Center: KST Clock & Suwon Weather -->
       <div class="flex items-center gap-3 bg-slate-800/90 dark:bg-slate-900/90 px-4 py-2 rounded-2xl border border-slate-700/80 shadow-inner">
         <div class="text-center pr-3 border-r border-slate-700">
           <div class="text-[10px] text-amber-400 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
@@ -128,34 +137,48 @@
         </div>
       </div>
 
-      <!-- User Profile Header Summary Card -->
-      <div onclick="openProfileModal()" class="flex items-center gap-3 bg-slate-800/80 hover:bg-slate-700/80 p-1.5 pr-4 rounded-2xl cursor-pointer transition border border-slate-700 shadow">
-        <img id="header-avatar" src="https://placehold.co/100x100/002C5F/FFF?text=EESL" alt="Avatar" class="w-10 h-10 rounded-xl object-cover border-2 border-skkuGreen shadow-sm">
-        <div class="text-left hidden lg:block">
-          <div id="header-user-name" class="text-sm font-extrabold text-white leading-tight">Nghiên cứu sinh</div>
-          <div class="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
-            <i class="fa-solid fa-user-gear"></i> <span data-i18n="editProfile">Hồ sơ cá nhân</span>
+      <!-- Right: SAINT Logo & User Profile & Controls -->
+      <div class="flex items-center gap-3">
+        <!-- SAINT Logo Card (FIXED POSITION ON THE RIGHT) -->
+        <div class="hidden lg:flex items-center bg-white px-3 py-1.5 rounded-2xl shadow border border-slate-200">
+          <div class="flex items-center gap-1.5 text-skkuNavy font-black text-xs">
+            <i class="fa-solid fa-atom text-cyan-600 text-sm"></i>
+            <div class="leading-none text-left">
+              <span class="text-[9px] block text-slate-500 font-bold">SKKU</span>
+              <span class="text-xs font-black tracking-tight text-skkuNavy">SAINT</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Controls: Language & Dark Mode -->
-      <div class="flex items-center gap-2">
-        <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-slate-800 text-white font-bold text-xs px-3 py-2 rounded-xl border border-slate-700 focus:ring-2 focus:ring-skkuGreen cursor-pointer">
-          <option value="vi">🇻🇳 VI</option>
-          <option value="en">🇺🇸 EN</option>
-          <option value="ko">🇰🇷 KO</option>
-        </select>
+        <!-- Profile Header Summary Card -->
+        <div onclick="openProfileModal()" class="flex items-center gap-2.5 bg-slate-800/80 hover:bg-slate-700/80 p-1.5 pr-3 rounded-2xl cursor-pointer transition border border-slate-700 shadow">
+          <img id="header-avatar" src="https://placehold.co/100x100/002C5F/FFF?text=EESL" alt="Avatar" class="w-9 h-9 rounded-xl object-cover border-2 border-skkuGreen shadow-sm">
+          <div class="text-left hidden md:block">
+            <div id="header-user-name" class="text-xs font-extrabold text-white leading-tight">Nghiên cứu sinh</div>
+            <div class="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-user-gear text-[9px]"></i> <span data-i18n="editProfile">Hồ sơ cá nhân</span>
+            </div>
+          </div>
+        </div>
 
-        <button id="theme-toggle" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-xl border border-slate-700 transition shadow">
-          <i id="theme-icon" class="fa-solid fa-moon text-base"></i>
-        </button>
+        <!-- Language & Dark Mode Controls -->
+        <div class="flex items-center gap-1.5">
+          <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-slate-800 text-white font-bold text-xs px-2.5 py-2 rounded-xl border border-slate-700 focus:ring-2 focus:ring-skkuGreen cursor-pointer">
+            <option value="vi">🇻🇳 VI</option>
+            <option value="en">🇺🇸 EN</option>
+            <option value="ko">🇰🇷 KO</option>
+          </select>
+
+          <button id="theme-toggle" class="p-2 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-xl border border-slate-700 transition shadow">
+            <i id="theme-icon" class="fa-solid fa-moon text-sm"></i>
+          </button>
+        </div>
       </div>
 
     </div>
   </header>
 
-  <!-- MAIN ACTION BAR / NAVIGATION TABS -->
+  <!-- MAIN NAVIGATION TABS & ACTION BAR -->
   <section class="max-w-[98%] mx-auto px-4 mt-6 w-full">
     <div class="bg-white dark:bg-slate-900 p-3 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
       
@@ -200,9 +223,50 @@
         </div>
       </div>
 
-      <!-- NOTIFICATIONS SECTION (NGAY DƯỚI BẢNER TIÊU ĐỀ) -->
+      <!-- NOTIFICATIONS SECTION -->
       <div id="notifications-box" class="transition-all duration-300">
         <!-- Injected dynamically by JS -->
+      </div>
+
+      <!-- UTILITIES / QUICK LINKS SECTION (MỤC TIỆN ÍCH NGOÀI TRANG CHỦ) -->
+      <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
+        <div class="flex items-center justify-between border-b pb-3 border-slate-200 dark:border-slate-800">
+          <h3 class="text-xl font-black text-skkuNavy dark:text-emerald-400 flex items-center gap-2">
+            <i class="fa-solid fa-shapes text-skkuGreen"></i>
+            <span data-i18n="utilitiesTitle">Mục Tiện Ích & Liên Kết Nhanh</span>
+          </h3>
+          <span class="text-xs font-semibold text-slate-400" data-i18n="utilitiesSubtitle">Truy cập nhanh cổng thông tin SKKU & Canvas</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Kingo Portal Shortcut Button -->
+          <a href="https://login.skku.edu/?retUrl=kc213u9an72n4n33c5l9" target="_blank" rel="noopener noreferrer" class="group flex items-center p-4 bg-slate-50 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700/80 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-skkuGreen transition shadow-md">
+            <div class="w-12 h-12 rounded-xl bg-skkuNavy text-skkuGreen flex items-center justify-center text-xl font-black mr-4 flex-shrink-0 group-hover:scale-110 transition shadow">
+              <i class="fa-solid fa-university"></i>
+            </div>
+            <div class="flex-grow">
+              <div class="flex items-center justify-between">
+                <h4 class="font-black text-slate-900 dark:text-white text-base group-hover:text-skkuNavy dark:group-hover:text-emerald-400">Kingo Portal</h4>
+                <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-skkuGreen"></i>
+              </div>
+              <p class="text-xs text-slate-500 dark:text-slate-400 font-medium" data-i18n="kingoDesc">Cổng thông tin sinh viên SKKU Kingo ID</p>
+            </div>
+          </a>
+
+          <!-- SKKU Canvas Shortcut Button -->
+          <a href="https://canvas.skku.edu/courses" target="_blank" rel="noopener noreferrer" class="group flex items-center p-4 bg-slate-50 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700/80 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-skkuGreen transition shadow-md">
+            <div class="w-12 h-12 rounded-xl bg-skkuGreen text-slate-900 flex items-center justify-center text-xl font-black mr-4 flex-shrink-0 group-hover:scale-110 transition shadow">
+              <i class="fa-solid fa-book-open"></i>
+            </div>
+            <div class="flex-grow">
+              <div class="flex items-center justify-between">
+                <h4 class="font-black text-slate-900 dark:text-white text-base group-hover:text-skkuNavy dark:group-hover:text-emerald-400">SKKU Canvas</h4>
+                <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-skkuGreen"></i>
+              </div>
+              <p class="text-xs text-slate-500 dark:text-slate-400 font-medium" data-i18n="canvasDesc">Xem thời khóa biểu các môn học & bài giảng</p>
+            </div>
+          </a>
+        </div>
       </div>
 
       <!-- Month Folders Grid Header -->
@@ -353,7 +417,7 @@
         </div>
       </div>
 
-      <!-- 5-COLUMN RESEARCH TABLE WITH DRAG AND DROP -->
+      <!-- 5-COLUMN RESEARCH TABLE WITH DRAG AND DROP & AUTO LINK DETECTION -->
       <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
         <table class="w-full text-left border-collapse min-w-[950px]">
           <thead>
@@ -379,12 +443,12 @@
   <!-- FOOTER -->
   <footer class="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 mt-auto">
     <div class="max-w-[98%] mx-auto px-4 text-center text-xs space-y-2">
-      <div class="font-extrabold text-sm text-slate-200">Energy & Environmental Sustainability Lab • SKKU</div>
+      <div class="font-extrabold text-sm text-slate-200">Energy & Environmental Sustainability Lab • Chungseok Choi Group • SKKU</div>
       <p>© 2026 Academic & Research Tracker. Designed for Researchers & Graduate Students.</p>
     </div>
   </footer>
 
-  <!-- MODAL 1: USER PROFILE & PERSONAL INFO -->
+  <!-- MODAL 1: USER PROFILE -->
   <div id="profile-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 md:p-8 shadow-2xl border-2 border-skkuGreen space-y-6 max-h-[90vh] overflow-y-auto">
       
@@ -461,7 +525,7 @@
     </div>
   </div>
 
-  <!-- MODAL 2: ADD COURSE SCHEDULE GLOBAL -->
+  <!-- MODAL 2: ADD COURSE SCHEDULE -->
   <div id="add-course-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 md:p-8 shadow-2xl border-2 border-emerald-500 space-y-5">
       
@@ -589,7 +653,7 @@
 
   <script>
     // --- 1. LOCALSTORAGE KEY & APP STATE ---
-    const STORAGE_KEY = 'EESL_ACADEMIC_TRACKER_V5';
+    const STORAGE_KEY = 'EESL_ACADEMIC_TRACKER_V6';
 
     const DEFAULT_FIXED_SCHEDULE = {
       1: { name: "Academic Writing", time: "Online", room: "Video Course" },
@@ -600,9 +664,6 @@
 
     const i18nDict = {
       vi: {
-        headerSubtitle: "Quản Lý Học Tập & Nghiên Cứu",
-        saintName: "SKKU Advanced Institute of Nano Technology",
-        univName: "Sungkyunkwan University",
         kstClock: "Giờ Hàn Quốc (KST)",
         editProfile: "Hồ sơ cá nhân",
         tabCalendar: "Thư Mục Tháng & Lịch Học",
@@ -611,6 +672,10 @@
         btnProfileInfo: "Thông Tin Cá Nhân",
         bannerTitle: "Chào Mừng Đến Với Bảng Quản Lý Academic EES Lab 🎓",
         bannerSubtitle: "Theo dõi lịch học, báo cáo lab định kỳ, quản lý deadline và nhật ký nghiên cứu hàng ngày)",
+        utilitiesTitle: "Mục Tiện Ích & Liên Kết Nhanh",
+        utilitiesSubtitle: "Truy cập nhanh cổng thông tin SKKU & Canvas",
+        kingoDesc: "Cổng thông tin sinh viên SKKU Kingo ID",
+        canvasDesc: "Xem thời khóa biểu các môn học & bài giảng",
         monthFoldersHeader: "Danh Sách Thư Mục Tháng",
         btnAddMonth: "Thêm Tháng Mới",
         btnBackToMonths: "Quay Lại Chọn Tháng",
@@ -658,16 +723,10 @@
         lblWeekTaskList: "Danh Sách Task Tuần Này:",
         modalAvatarTitle: "Ảnh Đại Diện Cá Nhân",
         btnUploadNewPhoto: "Tải Ảnh Khác Để Thay Thế",
-        statusUnfinished: "Chưa hoàn thành",
-        statusInProgress: "Đang thực hiện",
-        statusCompleted: "Đã hoàn thành",
-        currentMonthBadge: "THÁNG HIỆN TẠI",
-        viewDetails: "Xem chi tiết lịch tuần →"
+        daysMap: { 1: 'T2', 2: 'T3', 3: 'T4', 4: 'T5', 5: 'T6', 6: 'T7', 7: 'CN' },
+        daysFullMap: { 1: 'Thứ 2', 2: 'Thứ 3', 3: 'Thứ 4', 4: 'Thứ 5', 5: 'Thứ 6', 6: 'Thứ 7', 7: 'Chủ Nhật' }
       },
       en: {
-        headerSubtitle: "Academic & Research Management",
-        saintName: "SKKU Advanced Institute of Nano Technology",
-        univName: "Sungkyunkwan University",
         kstClock: "Korean Standard Time (KST)",
         editProfile: "Personal Profile",
         tabCalendar: "Month Folders & Schedule",
@@ -676,6 +735,10 @@
         btnProfileInfo: "Personal Profile",
         bannerTitle: "Welcome to EES Lab Academic Portal 🎓",
         bannerSubtitle: "Track course schedule, weekly advisor reports, deadlines, and lab research logs)",
+        utilitiesTitle: "Quick Utilities & Links",
+        utilitiesSubtitle: "Quick access to SKKU Kingo Portal & Canvas",
+        kingoDesc: "SKKU Student Kingo ID Portal",
+        canvasDesc: "View course schedules, materials & lectures",
         monthFoldersHeader: "Month Folders List",
         btnAddMonth: "Add New Month",
         btnBackToMonths: "Back to Month Folders",
@@ -723,16 +786,10 @@
         lblWeekTaskList: "This Week's Task List:",
         modalAvatarTitle: "Personal Profile Picture",
         btnUploadNewPhoto: "Upload Alternative Photo",
-        statusUnfinished: "Not Completed",
-        statusInProgress: "In Progress",
-        statusCompleted: "Completed",
-        currentMonthBadge: "CURRENT MONTH",
-        viewDetails: "View weekly details →"
+        daysMap: { 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat', 7: 'Sun' },
+        daysFullMap: { 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday', 7: 'Sunday' }
       },
       ko: {
-        headerSubtitle: "학업 및 연구 관리 Portal",
-        saintName: "성균관대학교 나노과학기술원 (SAINT)",
-        univName: "성균관대학교",
         kstClock: "한국 표준시 (KST)",
         editProfile: "개인 프로필",
         tabCalendar: "월별 폴더 & 수업 일정",
@@ -741,6 +798,10 @@
         btnProfileInfo: "개인 정보",
         bannerTitle: "EES Lab 학업 및 연구 관리 Portal 🎓",
         bannerSubtitle: "수업 일정, 주간 지도교수 보고, 마감일 및 연구 일지를 효율적으로 관리하세요)",
+        utilitiesTitle: "유틸리티 및 빠른 링크",
+        utilitiesSubtitle: "성균관대 킹고 포털 및 Canvas 빠른 접속",
+        kingoDesc: "성균관대학교 킹고 포털 시스템",
+        canvasDesc: "강의 시간표 및 수업 자료 조회",
         monthFoldersHeader: "월별 폴더 목록",
         btnAddMonth: "새 월 추가",
         btnBackToMonths: "월 선택으로 돌아가기",
@@ -788,11 +849,8 @@
         lblWeekTaskList: "이번 주 과제 목록:",
         modalAvatarTitle: "프로필 사진",
         btnUploadNewPhoto: "다른 사진 업로드",
-        statusUnfinished: "미완료",
-        statusInProgress: "진행 중",
-        statusCompleted: "완료",
-        currentMonthBadge: "현재 월",
-        viewDetails: "주간 상세 보기 →"
+        daysMap: { 1: '월', 2: '화', 3: '수', 4: '목', 5: '금', 6: '토', 7: '일' },
+        daysFullMap: { 1: '월요일', 2: '화요일', 3: '수요일', 4: '목요일', 5: '금요일', 6: '토요일', 7: '일요일' }
       }
     };
 
@@ -822,7 +880,7 @@
       globalCourses: [], 
       dayData: {}, 
       weekTasks: {}, 
-      notificationsAck: {}, // { "2026-09-18": true }
+      notificationsAck: {},
       researchProjects: [
         {
           id: "proj_1",
@@ -830,8 +888,8 @@
           logs: [
             {
               id: "log_1",
-              dateText: "18/09/2026\n(Thứ 6)",
-              tasks: "Đo phổ XRD mẫu A1-A5 và tổng hợp màng mỏng",
+              dateText: "18/09/2026\n(5)",
+              tasks: "Đo phổ XRD mẫu A1-A5 và tổng hợp màng mỏng https://canvas.skku.edu/courses",
               progressStep: 1,
               notes: "Mẫu A3 có tinh thể đồng đều nhất, hiệu suất cao",
               plan: "Thực hiện đo quang phổ UV-Vis cho mẫu A3 vào sáng mai"
@@ -850,13 +908,34 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
     }
 
-    // --- 2. MULTI-LANGUAGE TRANSLATION SYSTEM ---
+    // --- HELPER FUNCTION: LINKIFY TEXT ---
+    // Detect URLs in string and return clickable underlined links with target="_blank"
+    function renderClickableLinks(text) {
+      if (!text) return '';
+      const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
+      return text.replace(urlRegex, function(url) {
+        let href = url.startsWith('http') ? url : 'http://' + url;
+        return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="underline text-blue-600 dark:text-blue-400 font-bold hover:text-blue-800 break-all inline-flex items-center gap-1" onclick="event.stopPropagation()"><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>${url}</a>`;
+      });
+    }
+
+    // Extract raw links to display underneath textareas
+    function getExtractedLinks(text) {
+      if (!text) return [];
+      const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
+      return text.match(urlRegex) || [];
+    }
+
+    // --- 2. MULTI-LANGUAGE SYSTEM ---
     function changeLanguage(lang) {
       appData.lang = lang;
       saveData();
       applyLanguageUI();
       if (!document.getElementById('view-research-tab').classList.contains('hidden')) {
         renderResearchTab();
+      }
+      if (!document.getElementById('month-detail-subview').classList.contains('hidden')) {
+        renderMonthDetail();
       }
     }
 
@@ -876,11 +955,11 @@
       renderNotifications();
     }
 
-    // --- 3. KST CLOCK & WEATHER WIDGET ---
+    // --- 3. KST CLOCK & SUWON WEATHER ---
     function updateKSTClock() {
       const now = new Date();
       const optionsTime = { timeZone: 'Asia/Seoul', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
-      const optionsDate = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' };
+      const optionsDate = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
       
       const timeStr = new Intl.DateTimeFormat('vi-VN', optionsTime).format(now);
       const dateStr = new Intl.DateTimeFormat('vi-VN', optionsDate).format(now);
@@ -912,10 +991,10 @@
     function applyTheme() {
       if (appData.theme === 'dark') {
         document.documentElement.classList.add('dark');
-        themeIcon.className = 'fa-solid fa-sun text-amber-300 text-base';
+        themeIcon.className = 'fa-solid fa-sun text-amber-300 text-sm';
       } else {
         document.documentElement.classList.remove('dark');
-        themeIcon.className = 'fa-solid fa-moon text-amber-400 text-base';
+        themeIcon.className = 'fa-solid fa-moon text-amber-400 text-sm';
       }
     }
 
@@ -925,7 +1004,7 @@
       applyTheme();
     });
 
-    // --- 5. NOTIFICATIONS SYSTEM FOR HOME PAGE ---
+    // --- 5. NOTIFICATIONS SYSTEM ---
     function renderNotifications() {
       const container = document.getElementById('notifications-box');
       if (!container) return;
@@ -973,7 +1052,7 @@
             </div>
             <div>
               <h4 class="text-lg font-black tracking-tight flex items-center gap-2">
-                <span>NOTIFICATIONS - LỊCH HỌC HÔM NAY (${String(nowKST.getDate()).padStart(2, '0')}/${String(nowKST.getMonth() + 1).padStart(2, '0')}/${nowKST.getFullYear()})</span>
+                <span>LỊCH HỌC HÔM NAY (${String(nowKST.getDate()).padStart(2, '0')}/${String(nowKST.getMonth() + 1).padStart(2, '0')}/${nowKST.getFullYear()})</span>
                 ${isAck ? '<span class="text-xs bg-slate-500 text-white font-bold px-2.5 py-0.5 rounded-full">Đã xác nhận</span>' : '<span class="text-xs bg-red-500 text-white font-bold px-2.5 py-0.5 rounded-full animate-pulse">Chú ý</span>'}
               </h4>
               <p class="text-xs font-semibold opacity-90">Tổng hợp toàn bộ lịch học và báo cáo cần thực hiện trong ngày hôm nay.</p>
@@ -1163,7 +1242,7 @@
             <div class="flex justify-between items-start">
               ${
                 isCurrentMonth 
-                  ? '<span class="text-xs font-black uppercase tracking-wider text-slate-900 bg-skkuGreen px-3 py-1 rounded-full shadow" data-i18n="currentMonthBadge">THÁNG HIỆN TẠI</span>' 
+                  ? '<span class="text-xs font-black uppercase tracking-wider text-slate-900 bg-skkuGreen px-3 py-1 rounded-full shadow">THÁNG HIỆN TẠI</span>' 
                   : '<span class="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">Lịch Học</span>'
               }
               <i class="fa-solid fa-folder-open text-2xl ${isCurrentMonth ? 'text-skkuGreen' : 'text-slate-400'} group-hover:scale-110 transition"></i>
@@ -1172,7 +1251,7 @@
             <p class="text-xs text-slate-500 font-semibold mt-1">Năm ${m.year}</p>
           </div>
           <div class="mt-4 flex justify-between items-center text-xs font-black text-skkuNavy dark:text-emerald-400">
-            <span data-i18n="viewDetails">Xem chi tiết lịch tuần →</span>
+            <span>Xem chi tiết lịch tuần →</span>
           </div>
         `;
         container.appendChild(card);
@@ -1216,7 +1295,7 @@
           li.innerHTML = `
             <div class="flex items-center gap-2">
               <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleDeadline(${idx})" class="w-5 h-5 accent-red-500 rounded cursor-pointer">
-              <span class="${item.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'} text-sm">${item.text}</span>
+              <span class="${item.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'} text-sm">${renderClickableLinks(item.text)}</span>
             </div>
             <button onclick="deleteDeadline(${idx})" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
           `;
@@ -1231,7 +1310,7 @@
           const li = document.createElement('li');
           li.className = "flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700";
           li.innerHTML = `
-            <span class="font-semibold text-sm text-slate-800 dark:text-slate-200">• ${note}</span>
+            <span class="font-semibold text-sm text-slate-800 dark:text-slate-200">• ${renderClickableLinks(note)}</span>
             <button onclick="deleteNote(${idx})" class="text-slate-400 hover:text-amber-500"><i class="fa-solid fa-xmark"></i></button>
           `;
           notesList.appendChild(li);
@@ -1313,6 +1392,9 @@
     }
 
     function createWeekRowElement(weekNum, daysArray, nowKST, year, month) {
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+
       const weekWrapper = document.createElement('div');
       weekWrapper.className = "bg-slate-50 dark:bg-slate-950 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm";
 
@@ -1325,8 +1407,6 @@
 
       const daysGrid = document.createElement('div');
       daysGrid.className = "grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3";
-
-      const dayNames = { 1: 'T2', 2: 'T3', 3: 'T4', 4: 'T5', 5: 'T6', 6: 'T7', 7: 'CN' };
 
       daysArray.forEach(day => {
         const isToday = (day.dateStr === nowKST);
@@ -1349,9 +1429,11 @@
           renderMonthDetail();
         };
 
+        const dayLabel = dict.daysMap[day.dayOfWeek] || day.dayOfWeek;
+
         dayBtn.innerHTML = `
           <div class="flex justify-between items-center w-full">
-            <span class="text-xs font-black uppercase ${isToday ? 'text-amber-800 dark:text-amber-300' : 'text-slate-400'}">${dayNames[day.dayOfWeek]}</span>
+            <span class="text-xs font-black uppercase ${isToday ? 'text-amber-800 dark:text-amber-300' : 'text-slate-400'}">${dayLabel}</span>
             ${isToday ? '<span class="text-[10px] bg-amber-500 text-slate-900 font-black px-2 py-0.5 rounded-full shadow">HÔM NAY</span>' : ''}
           </div>
           <div class="text-2xl font-black mt-2 ${isToday ? 'text-amber-950 dark:text-amber-100' : 'text-slate-900 dark:text-slate-100'}">
@@ -1386,6 +1468,8 @@
     function createInlineDayDetailsElement(dayObj, weekNum) {
       const { dateStr, dayOfWeek, dayNumber } = dayObj;
       const dayData = appData.dayData[dateStr] || { tasks: [], customClasses: [], dailyReport: "" };
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
 
       const container = document.createElement('div');
       container.className = "mt-4 p-6 bg-emerald-50/80 dark:bg-slate-900/90 rounded-3xl border-2 border-skkuGreen shadow-inner space-y-5 animate-fadeIn";
@@ -1408,10 +1492,12 @@
         dayCourses = dayCourses.concat(dayData.customClasses);
       }
 
+      const fullDayName = dict.daysFullMap[dayOfWeek] || dayOfWeek;
+
       container.innerHTML = `
         <div class="flex justify-between items-center border-b pb-3 border-emerald-200 dark:border-slate-800">
           <h5 class="text-xl font-black text-skkuNavy dark:text-emerald-400 flex items-center gap-2">
-            <i class="fa-solid fa-graduation-cap"></i> Chi Tiết Ngày ${dayNumber} (Thứ ${dayOfWeek === 7 ? 'Chủ Nhật' : dayOfWeek + 1})
+            <i class="fa-solid fa-graduation-cap"></i> Chi Tiết Ngày ${dayNumber} (${fullDayName})
           </h5>
           <span class="text-xs font-bold text-slate-500">${dateStr} • Tuần ${weekNum}</span>
         </div>
@@ -1459,7 +1545,7 @@
                     <li class="flex items-center justify-between p-2.5 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
                       <div class="flex items-center gap-2">
                         <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleDailyTask('${dateStr}',${idx})" class="w-5 h-5 accent-skkuGreen rounded cursor-pointer">
-                        <span class="${t.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'} text-sm">${t.text}</span>
+                        <span class="${t.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'} text-sm">${renderClickableLinks(t.text)}</span>
                       </div>
                       <button onclick="deleteDailyTask('${dateStr}',${idx})" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
                     </li>
@@ -1471,6 +1557,7 @@
         <div class="space-y-2">
           <h6 class="font-extrabold text-xs text-slate-700 dark:text-slate-200 uppercase tracking-wide">📝 Daily Report (Viết Báo Cáo Hàng Ngày):</h6>
           <textarea id="report-${dateStr}" oninput="saveDailyReport('${dateStr}')" rows="3" placeholder="Nhập những gì đã học, kết quả thí nghiệm hoặc tiến độ công việc hôm nay..." class="w-full p-3 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-skkuGreen font-medium text-sm text-slate-800 dark:text-slate-100">${dayData.dailyReport || ''}</textarea>
+          <div class="text-xs text-slate-600 dark:text-slate-300 font-medium">${renderClickableLinks(dayData.dailyReport || '')}</div>
         </div>
       `;
 
@@ -1591,7 +1678,7 @@
         li.innerHTML = `
           <div class="flex items-center gap-3">
             <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleWeekTask(${idx})" class="w-5 h-5 accent-skkuGreen rounded cursor-pointer">
-            <span class="${t.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'} text-sm">${t.text}</span>
+            <span class="${t.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'} text-sm">${renderClickableLinks(t.text)}</span>
           </div>
           <button onclick="deleteWeekTask(${idx})" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
         `;
@@ -1621,7 +1708,7 @@
       renderWeekTasks();
     }
 
-    // --- 13. RESEARCH TAB & TABLE LOGIC (FIXED NEW ROW ON TOP & DRAG-N-DROP) ---
+    // --- 13. RESEARCH TAB & TABLE LOGIC WITH AUTOMATIC LINK UNDERLINE DETECTION ---
     function renderResearchTab() {
       renderResearchTopics();
       renderResearchTable();
@@ -1694,8 +1781,18 @@
 
     function formatResearchDateText(rawText) {
       if (!rawText) return '';
-      if (rawText.includes(' (') && !rawText.includes('\n')) {
-        return rawText.replace(' (', '\n(');
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+
+      // Dynamically re-format day inside parentheses based on current active language
+      const dateMatch = rawText.match(/(\d{2}\/\d{2}\/\d{4})/);
+      if (dateMatch) {
+        const dateParts = dateMatch[1].split('/');
+        const dateObj = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
+        let dow = dateObj.getDay();
+        if (dow === 0) dow = 7;
+        const dayLabel = dict.daysMap[dow] || dow;
+        return `${dateMatch[1]}\n(${dayLabel})`;
       }
       return rawText;
     }
@@ -1750,6 +1847,10 @@
 
         const formattedDate = formatResearchDateText(log.dateText);
 
+        const tasksLinks = getExtractedLinks(log.tasks);
+        const notesLinks = getExtractedLinks(log.notes);
+        const planLinks = getExtractedLinks(log.plan);
+
         tr.innerHTML = `
           <!-- Cột 1: Ngày -->
           <td class="p-3 border-r border-slate-200 dark:border-slate-800 w-36 min-w-[130px] text-center">
@@ -1761,7 +1862,8 @@
 
           <!-- Cột 2: Việc Cần Làm -->
           <td class="p-3 border-r border-slate-200 dark:border-slate-800">
-            <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'tasks', this.value)" class="auto-expand w-full bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1.5 rounded border border-transparent focus:border-slate-300 text-sm leading-snug resize-none">${log.tasks || ''}</textarea>
+            <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'tasks', this.value); renderResearchTable();" class="auto-expand w-full bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1.5 rounded border border-transparent focus:border-slate-300 text-sm leading-snug resize-none">${log.tasks || ''}</textarea>
+            ${tasksLinks.length > 0 ? `<div class="mt-1 pt-1 border-t border-slate-200 dark:border-slate-700 text-xs font-semibold">${renderClickableLinks(log.tasks)}</div>` : ''}
           </td>
 
           <!-- Cột 3: Tiến Độ (%) -->
@@ -1775,12 +1877,14 @@
 
           <!-- Cột 4: Take Notes -->
           <td class="p-3 border-r border-slate-200 dark:border-slate-800">
-            <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'notes', this.value)" class="auto-expand w-full bg-transparent font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1.5 rounded border border-transparent focus:border-slate-300 text-sm leading-snug resize-none">${log.notes || ''}</textarea>
+            <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'notes', this.value); renderResearchTable();" class="auto-expand w-full bg-transparent font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1.5 rounded border border-transparent focus:border-slate-300 text-sm leading-snug resize-none">${log.notes || ''}</textarea>
+            ${notesLinks.length > 0 ? `<div class="mt-1 pt-1 border-t border-slate-200 dark:border-slate-700 text-xs font-semibold">${renderClickableLinks(log.notes)}</div>` : ''}
           </td>
 
           <!-- Cột 5: Plan Ngày Mai -->
           <td class="p-3 border-r border-slate-200 dark:border-slate-800">
-            <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'plan', this.value)" class="auto-expand w-full bg-transparent font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1.5 rounded border border-transparent focus:border-slate-300 text-sm leading-snug resize-none">${log.plan || ''}</textarea>
+            <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'plan', this.value); renderResearchTable();" class="auto-expand w-full bg-transparent font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1.5 rounded border border-transparent focus:border-slate-300 text-sm leading-snug resize-none">${log.plan || ''}</textarea>
+            ${planLinks.length > 0 ? `<div class="mt-1 pt-1 border-t border-slate-200 dark:border-slate-700 text-xs font-semibold">${renderClickableLinks(log.plan)}</div>` : ''}
           </td>
 
           <!-- Xóa dòng -->
@@ -1823,10 +1927,12 @@
       }
     }
 
-    // LUÔN THÊM DÒNG MỚI LÊN TRÊN CÙNG (INDEX 0) VÀ GIỮ NGUYÊN NGÀY BÊN TRÊN
     function addResearchRow() {
       const currentProj = appData.researchProjects[appData.activeProjectIndex];
       if (!currentProj) return;
+
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
 
       let dateString = "";
       if (currentProj.logs.length > 0) {
@@ -1834,8 +1940,10 @@
       } else {
         const now = new Date();
         const nowStr = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
-        const dayVi = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][now.getDay()];
-        dateString = `${nowStr}\n(${dayVi})`;
+        let dow = now.getDay();
+        if (dow === 0) dow = 7;
+        const dayLabel = dict.daysMap[dow] || dow;
+        dateString = `${nowStr}\n(${dayLabel})`;
       }
 
       currentProj.logs.unshift({
@@ -1851,10 +1959,12 @@
       renderResearchTable();
     }
 
-    // TÍNH NGÀY HÔM SAU DỰA TRÊN TRÊN HÀNG TRÊN CÙNG VÀ CHÈN LÊN TRÊN CÙNG (INDEX 0)
     function addResearchRowNextDay() {
       const currentProj = appData.researchProjects[appData.activeProjectIndex];
       if (!currentProj) return;
+
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
 
       let nextDate = new Date();
 
@@ -1867,11 +1977,13 @@
       }
 
       const dateStr = `${String(nextDate.getDate()).padStart(2, '0')}/${String(nextDate.getMonth() + 1).padStart(2, '0')}/${nextDate.getFullYear()}`;
-      const dayVi = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][nextDate.getDay()];
+      let dow = nextDate.getDay();
+      if (dow === 0) dow = 7;
+      const dayLabel = dict.daysMap[dow] || dow;
 
       currentProj.logs.unshift({
         id: "log_" + Date.now(),
-        dateText: `${dateStr}\n(${dayVi})`,
+        dateText: `${dateStr}\n(${dayLabel})`,
         tasks: "",
         progressStep: 0,
         notes: "",
