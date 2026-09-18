@@ -85,7 +85,7 @@
   <header class="bg-skkuNavy dark:bg-skkuNavyDark text-white shadow-xl border-b-4 border-skkuGreen sticky top-0 z-40">
     <div class="max-w-[98%] mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-4">
       
-      <!-- Left: Avatar & Tên Phòng Thí Nghiệm (Giữ nguyên Tiếng Anh) -->
+      <!-- Left: Avatar & Tên Phòng Thí Nghiệm -->
       <div class="flex items-center space-x-4 flex-wrap sm:flex-nowrap gap-y-2">
         <div class="relative group cursor-pointer w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border-2 border-skkuGreen shadow-md bg-slate-800 flex-shrink-0" onclick="openAvatarModal()" title="Phóng to / Thay đổi ảnh đại diện">
           <img id="main-avatar-img" src="https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab" alt="Avatar" class="w-full h-full object-cover group-hover:scale-105 transition duration-200">
@@ -386,6 +386,10 @@
         </div>
         
         <div class="flex items-center gap-2">
+          <!-- NÚT TẢI BÁO CÁO DAILY -->
+          <button onclick="downloadDailyReport()" class="bg-amber-600 hover:bg-amber-700 text-white font-extrabold px-4 py-2 rounded-xl text-sm flex items-center gap-1.5 shadow transition">
+            <i class="fa-solid fa-file-arrow-down"></i> <span data-i18n="btnDownloadReport">Tải Báo Cáo Daily</span>
+          </button>
           <button onclick="addResearchRowNextDay()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-4 py-2 rounded-xl text-sm flex items-center gap-1.5 shadow transition">
             <i class="fa-solid fa-calendar-plus"></i> <span data-i18n="btnAddNextDay">Thêm Ngày Hôm Sau</span>
           </button>
@@ -742,6 +746,7 @@
         btnAddTopic: "Thêm Đề Tài Mới",
         btnAddRow: "Thêm Dòng Mới",
         btnAddNextDay: "Thêm Ngày Hôm Sau",
+        btnDownloadReport: "Tải Báo Cáo Daily",
         colDate: "Ngày",
         colTasks: "Việc Cần Làm",
         colProgress: "Tiến Độ (%)",
@@ -843,6 +848,7 @@
         btnAddTopic: "Add New Topic",
         btnAddRow: "Add New Row",
         btnAddNextDay: "Add Next Day",
+        btnDownloadReport: "Download Daily Report",
         colDate: "Date",
         colTasks: "Tasks To Do",
         colProgress: "Progress (%)",
@@ -944,6 +950,7 @@
         btnAddTopic: "새 연구 주제 추가",
         btnAddRow: "새 행 추가",
         btnAddNextDay: "다음 날 추가",
+        btnDownloadReport: "일일 보고서 다운로드",
         colDate: "날짜",
         colTasks: "할 일",
         colProgress: "진행률 (%)",
@@ -1021,7 +1028,7 @@
       lang: 'vi',
       theme: 'light',
       users: {},
-      currentUser: null, // Bắt đầu chưa đăng nhập
+      currentUser: null,
       profile: {
         avatar: 'https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab',
         name: '',
@@ -1160,7 +1167,6 @@
       appData.users[email] = { name, email, pass };
       saveData();
 
-      // Đóng modal và hiện thông báo đăng ký thành công (không tự động đăng nhập)
       closeAuthModal();
       alert(dict.registerSuccessMsg);
     }
@@ -1190,7 +1196,6 @@
         }
       }
 
-      // Đăng nhập thành công -> Cập nhật thông tin
       appData.currentUser = email;
       appData.profile.name = userName;
       appData.profile.semail = email;
@@ -1218,7 +1223,6 @@
       const avatarSrc = p.avatar || 'https://placehold.co/100x100/002C5F/FFF?text=EESL';
       
       if (appData.currentUser) {
-        // Đã đăng nhập: Ẩn nút Đăng ký/Đăng nhập, Hiện Tên + Email + Đăng xuất
         if (loggedOutBox) loggedOutBox.classList.add('hidden');
         if (loggedInBox) loggedInBox.classList.remove('hidden');
         if (document.getElementById('header-avatar')) {
@@ -1231,7 +1235,6 @@
           document.getElementById('header-user-email').innerText = appData.currentUser || p.semail;
         }
       } else {
-        // Chưa đăng nhập: Hiện nút Đăng Nhập / Đăng Ký
         if (loggedOutBox) loggedOutBox.classList.remove('hidden');
         if (loggedInBox) loggedInBox.classList.add('hidden');
       }
@@ -1638,9 +1641,11 @@
           li.innerHTML = `
             <div class="flex items-center gap-2">
               <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleDeadline(${idx})" class="w-5 h-5 accent-red-500 rounded cursor-pointer">
-              <span class="${item.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'} text-sm">${renderClickableLinks(item.text)}</span>
+              <span class="${item.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-200'} text-sm">${renderClickableLinks(item.text)}</span>
             </div>
-            <button onclick="deleteDeadline(${idx})" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
+            <button onclick="deleteDeadline(${idx})" class="text-red-500 hover:text-red-700 text-xs p-1">
+              <i class="fa-solid fa-trash"></i>
+            </button>
           `;
           deadlineList.appendChild(li);
         });
@@ -1648,52 +1653,46 @@
 
       const notesList = document.getElementById('notes-list');
       notesList.innerHTML = '';
-      if (monthObj.notes) {
-        monthObj.notes.forEach((note, idx) => {
+      if (!monthObj.notes || monthObj.notes.length === 0) {
+        notesList.innerHTML = `<li class="text-xs text-slate-400 italic">Chưa có ghi chú nào.</li>`;
+      } else {
+        monthObj.notes.forEach((noteText, idx) => {
           const li = document.createElement('li');
-          li.className = "flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700";
+          li.className = "flex items-center justify-between p-2.5 bg-amber-50 dark:bg-slate-800 rounded-2xl border border-amber-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200";
           li.innerHTML = `
-            <span class="font-semibold text-sm text-slate-800 dark:text-slate-200">• ${renderClickableLinks(note)}</span>
-            <button onclick="deleteNote(${idx})" class="text-slate-400 hover:text-amber-500"><i class="fa-solid fa-xmark"></i></button>
+            <span>${renderClickableLinks(noteText)}</span>
+            <button onclick="deleteNote(${idx})" class="text-red-500 hover:text-red-700 text-xs p-1">
+              <i class="fa-solid fa-trash"></i>
+            </button>
           `;
           notesList.appendChild(li);
         });
-      }
-
-      renderWeeksGrid(monthObj.year, monthObj.month);
-    }
-
-    function addDeadlinePrompt() {
-      const text = prompt("Nhập tên Deadline & Thời hạn (VD: Báo cáo Lab - 15/09):");
-      if (text && text.trim()) {
-        const mKey = appData.selectedMonthKey;
-        if (!appData.months[mKey].deadlines) appData.months[mKey].deadlines = [];
-        appData.months[mKey].deadlines.push({ text: text.trim(), done: false });
-        saveData();
-        renderMonthDetail();
       }
     }
 
     function toggleDeadline(idx) {
       const mKey = appData.selectedMonthKey;
-      appData.months[mKey].deadlines[idx].done = !appData.months[mKey].deadlines[idx].done;
-      saveData();
-      renderMonthDetail();
+      if (appData.months[mKey] && appData.months[mKey].deadlines[idx]) {
+        appData.months[mKey].deadlines[idx].done = !appData.months[mKey].deadlines[idx].done;
+        saveData();
+        renderMonthDetail();
+      }
     }
 
     function deleteDeadline(idx) {
       const mKey = appData.selectedMonthKey;
-      appData.months[mKey].deadlines.splice(idx, 1);
-      saveData();
-      renderMonthDetail();
+      if (appData.months[mKey] && appData.months[mKey].deadlines[idx]) {
+        appData.months[mKey].deadlines.splice(idx, 1);
+        saveData();
+        renderMonthDetail();
+      }
     }
 
-    function addNotePrompt() {
-      const text = prompt("Nhập Ghi chú mới:");
-      if (text && text.trim()) {
-        const mKey = appData.selectedMonthKey;
-        if (!appData.months[mKey].notes) appData.months[mKey].notes = [];
-        appData.months[mKey].notes.push(text.trim());
+    function addDeadlinePrompt() {
+      const mKey = appData.selectedMonthKey;
+      const text = prompt("Nhập nội dung deadline mới:");
+      if (text && text.trim() && appData.months[mKey]) {
+        appData.months[mKey].deadlines.push({ text: text.trim(), done: false });
         saveData();
         renderMonthDetail();
       }
@@ -1701,558 +1700,157 @@
 
     function deleteNote(idx) {
       const mKey = appData.selectedMonthKey;
-      appData.months[mKey].notes.splice(idx, 1);
-      saveData();
-      renderMonthDetail();
-    }
-
-    // --- 9. WEEKS & DAYS GRID ---
-    function renderWeeksGrid(year, month) {
-      const weeksContainer = document.getElementById('weeks-container');
-      weeksContainer.innerHTML = '';
-
-      const nowKST = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
-      const lastDay = new Date(year, month, 0);
-
-      let currentWeekDays = [];
-      let weekNum = 1;
-
-      for (let d = 1; d <= lastDay.getDate(); d++) {
-        const dateObj = new Date(year, month - 1, d);
-        let dayOfWeek = dateObj.getDay();
-        if (dayOfWeek === 0) dayOfWeek = 7;
-
-        const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-        currentWeekDays.push({ dayNumber: d, dayOfWeek: dayOfWeek, dateStr: dateStr });
-
-        if (dayOfWeek === 7 || d === lastDay.getDate()) {
-          const weekRow = createWeekRowElement(weekNum, currentWeekDays, nowKST, year, month);
-          weeksContainer.appendChild(weekRow);
-          currentWeekDays = [];
-          weekNum++;
-        }
-      }
-    }
-
-    function createWeekRowElement(weekNum, daysArray, nowKST, year, month) {
-      const lang = appData.lang || 'vi';
-      const dict = i18nDict[lang] || i18nDict['vi'];
-
-      const weekWrapper = document.createElement('div');
-      weekWrapper.className = "bg-slate-50 dark:bg-slate-950 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm";
-
-      const weekKey = `${year}-M${month}-W${weekNum}`;
-
-      const header = document.createElement('div');
-      header.className = "flex justify-between items-center border-b pb-2 border-slate-200 dark:border-slate-800";
-
-      const weekLabel = (lang === 'ko')
-        ? `${weekNum}${dict.weekPrefix}${dict.weekSemesterSuffix}`
-        : `${dict.weekPrefix}${weekNum}${dict.weekSemesterSuffix}`;
-
-      header.innerHTML = `<h4 class="font-black text-lg text-skkuNavy dark:text-emerald-400">${weekLabel}</h4>`;
-      weekWrapper.appendChild(header);
-
-      const daysGrid = document.createElement('div');
-      daysGrid.className = "grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3";
-
-      daysArray.forEach(day => {
-        const isToday = (day.dateStr === nowKST);
-        
-        if (isToday && expandedDayKey === null) {
-          expandedDayKey = day.dateStr;
-        }
-
-        const isExpanded = (expandedDayKey === day.dateStr);
-
-        const dayBtn = document.createElement('button');
-        dayBtn.className = `p-4 rounded-2xl border-2 text-left transition-all flex flex-col justify-between ${
-          isToday 
-            ? 'bg-amber-100 dark:bg-amber-950/80 border-amber-500 font-extrabold shadow-lg ring-4 ring-amber-400/40 scale-105' 
-            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-skkuGreen'
-        } ${isExpanded ? 'ring-2 ring-skkuGreen border-skkuGreen' : ''}`;
-
-        dayBtn.onclick = () => {
-          expandedDayKey = (expandedDayKey === day.dateStr) ? null : day.dateStr;
-          renderMonthDetail();
-        };
-
-        const dayLabel = dict.daysMap[day.dayOfWeek] || day.dayOfWeek;
-
-        dayBtn.innerHTML = `
-          <div class="flex justify-between items-center w-full">
-            <span class="text-xs font-black uppercase ${isToday ? 'text-amber-800 dark:text-amber-300' : 'text-slate-400'}">${dayLabel}</span>
-            ${isToday ? `<span class="text-[10px] bg-amber-500 text-slate-900 font-black px-2 py-0.5 rounded-full shadow">${dict.todayBadge}</span>` : ''}
-          </div>
-          <div class="text-2xl font-black mt-2 ${isToday ? 'text-amber-950 dark:text-amber-100' : 'text-slate-900 dark:text-slate-100'}">
-            ${day.dayNumber}/${month}
-          </div>
-          <div class="text-[11px] font-bold mt-2 text-slate-500 flex items-center justify-between w-full">
-            <span>${isExpanded ? dict.collapse : dict.expand}</span>
-          </div>
-        `;
-
-        daysGrid.appendChild(dayBtn);
-      });
-
-      weekWrapper.appendChild(daysGrid);
-
-      const expandedDayInThisWeek = daysArray.find(d => d.dateStr === expandedDayKey);
-      if (expandedDayInThisWeek) {
-        const inlineBox = createInlineDayDetailsElement(expandedDayInThisWeek, weekNum);
-        weekWrapper.appendChild(inlineBox);
-      }
-
-      const weekTaskBtn = document.createElement('button');
-      weekTaskBtn.className = "w-full py-3 px-4 bg-skkuNavy hover:bg-slate-800 text-white font-extrabold rounded-2xl shadow-md flex items-center justify-center gap-2 transition text-sm mt-3 border border-emerald-500/30";
-      weekTaskBtn.onclick = () => openWeekTaskModal(weekKey, weekNum);
-      weekTaskBtn.innerHTML = `<i class="fa-solid fa-list-check text-skkuGreen"></i> ${dict.weekTasksBtn}${weekNum}`;
-      weekWrapper.appendChild(weekTaskBtn);
-
-      return weekWrapper;
-    }
-
-    // --- 10. INLINE DAY DETAILS EXPANSION ---
-    function createInlineDayDetailsElement(dayObj, weekNum) {
-      const { dateStr, dayOfWeek, dayNumber } = dayObj;
-      const dayData = appData.dayData[dateStr] || { tasks: [], customClasses: [], dailyReport: "" };
-      const lang = appData.lang || 'vi';
-      const dict = i18nDict[lang] || i18nDict['vi'];
-
-      const container = document.createElement('div');
-      container.className = "mt-4 p-5 bg-white dark:bg-slate-900 rounded-3xl border-2 border-skkuGreen/50 shadow-xl space-y-5 animate-fadeIn";
-
-      const headerTitle = `${dict.dayDetailsTitle} ${dayNumber} (${dict.daysFullMap[dayOfWeek] || dayOfWeek})`;
-
-      let todayCourses = [];
-      if (DEFAULT_FIXED_SCHEDULE[dayOfWeek]) {
-        const def = DEFAULT_FIXED_SCHEDULE[dayOfWeek];
-        todayCourses.push({ name: def.name, time: def.time, room: def.room });
-      }
-
-      if (appData.globalCourses) {
-        appData.globalCourses.forEach(c => {
-          const matchDow = parseInt(c.dow) === dayOfWeek;
-          let inRange = true;
-          if (c.startDate && c.endDate) {
-            inRange = (dateStr >= c.startDate && dateStr <= c.endDate);
-          }
-          if (matchDow && inRange) {
-            todayCourses.push({ name: c.name, time: `${c.start} - ${c.end}`, room: c.room });
-          }
-        });
-      }
-
-      if (dayData.customClasses) {
-        dayData.customClasses.forEach(c => {
-          todayCourses.push({ name: c.name, time: c.time, room: c.room });
-        });
-      }
-
-      container.innerHTML = `
-        <div class="flex justify-between items-center border-b pb-3 border-slate-200 dark:border-slate-800">
-          <h5 class="font-black text-lg text-skkuNavy dark:text-emerald-400 flex items-center gap-2">
-            <i class="fa-solid fa-calendar-day text-skkuGreen"></i>
-            <span>${headerTitle}</span>
-          </h5>
-          <button onclick="expandedDayKey = null; renderMonthDetail();" class="text-slate-400 hover:text-slate-600 font-bold text-xs bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-xl">
-            <i class="fa-solid fa-xmark"></i> ${dict.collapse}
-          </button>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div class="space-y-3">
-            <div class="flex justify-between items-center">
-              <h6 class="font-extrabold text-sm text-slate-800 dark:text-slate-200">${dict.todayClassesTitle}</h6>
-              <button onclick="addCustomClassPrompt('${dateStr}')" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded-lg">
-                <i class="fa-solid fa-plus"></i> ${dict.btnAddDayClass}
-              </button>
-            </div>
-            <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
-              ${
-                todayCourses.length === 0
-                  ? `<p class="text-xs text-slate-400 italic">${dict.noClassToday}</p>`
-                  : todayCourses.map(c => `
-                      <div class="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs flex justify-between items-center">
-                        <div>
-                          <div class="font-black text-slate-900 dark:text-slate-100">${c.name}</div>
-                          <div class="text-[11px] text-slate-500 font-semibold">⏰ ${c.time} • 📍 ${c.room}</div>
-                        </div>
-                      </div>
-                    `).join('')
-              }
-            </div>
-          </div>
-
-          <div class="space-y-3">
-            <div class="flex justify-between items-center">
-              <h6 class="font-extrabold text-sm text-slate-800 dark:text-slate-200">${dict.todayTasksTitle}</h6>
-              <button onclick="addDailyTaskPrompt('${dateStr}')" class="text-xs bg-skkuNavy hover:bg-slate-800 text-white font-bold px-2.5 py-1 rounded-lg">
-                <i class="fa-solid fa-plus"></i> ${dict.btnAddDailyTask}
-              </button>
-            </div>
-            <ul class="space-y-2 max-h-48 overflow-y-auto pr-1">
-              ${
-                !dayData.tasks || dayData.tasks.length === 0
-                  ? `<li class="text-xs text-slate-400 italic">${dict.noTasksAdded}</li>`
-                  : dayData.tasks.map((t, idx) => `
-                      <li class="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                          <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleDailyTask('${dateStr}',${idx})" class="w-4 h-4 accent-emerald-500">
-                          <span class="${t.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'}">${renderClickableLinks(t.text)}</span>
-                        </div>
-                        <button onclick="deleteDailyTask('${dateStr}',${idx})" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
-                      </li>
-                    `).join('')
-              }
-            </ul>
-          </div>
-        </div>
-
-        <div class="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
-          <label class="font-extrabold text-sm text-slate-800 dark:text-slate-200 block">${dict.dailyReportTitle}</label>
-          <textarea onchange="updateDailyReport('${dateStr}', this.value)" placeholder="${dict.dailyReportPlaceholder}" class="w-full p-3 rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold focus:ring-2 focus:ring-skkuGreen min-h-[70px] auto-expand">${dayData.dailyReport || ''}</textarea>
-        </div>
-      `;
-
-      return container;
-    }
-
-    function addCustomClassPrompt(dateStr) {
-      const name = prompt("Nhập tên môn học / Sự kiện:");
-      if (!name) return;
-      const time = prompt("Nhập thời gian (VD: 14:00 - 15:30):", "14:00 - 15:30") || "Cả ngày";
-      const room = prompt("Nhập địa điểm / Phòng học:", "Phòng Lab") || "Phòng Lab";
-
-      if (!appData.dayData[dateStr]) appData.dayData[dateStr] = { tasks: [], customClasses: [], dailyReport: "" };
-      if (!appData.dayData[dateStr].customClasses) appData.dayData[dateStr].customClasses = [];
-      appData.dayData[dateStr].customClasses.push({ name, time, room });
-      saveData();
-      renderMonthDetail();
-    }
-
-    function addDailyTaskPrompt(dateStr) {
-      const text = prompt("Nhập công việc cần làm hôm nay:");
-      if (text && text.trim()) {
-        if (!appData.dayData[dateStr]) appData.dayData[dateStr] = { tasks: [], customClasses: [], dailyReport: "" };
-        if (!appData.dayData[dateStr].tasks) appData.dayData[dateStr].tasks = [];
-        appData.dayData[dateStr].tasks.push({ text: text.trim(), done: false });
+      if (appData.months[mKey] && appData.months[mKey].notes[idx]) {
+        appData.months[mKey].notes.splice(idx, 1);
         saveData();
         renderMonthDetail();
       }
     }
 
-    function toggleDailyTask(dateStr, idx) {
-      appData.dayData[dateStr].tasks[idx].done = !appData.dayData[dateStr].tasks[idx].done;
-      saveData();
-      renderMonthDetail();
-    }
-
-    function deleteDailyTask(dateStr, idx) {
-      appData.dayData[dateStr].tasks.splice(idx, 1);
-      saveData();
-      renderMonthDetail();
-    }
-
-    function updateDailyReport(dateStr, value) {
-      if (!appData.dayData[dateStr]) appData.dayData[dateStr] = { tasks: [], customClasses: [], dailyReport: "" };
-      appData.dayData[dateStr].dailyReport = value;
-      saveData();
-    }
-
-    // --- 11. GLOBAL COURSE MODAL & WEEK TASK MODAL ---
-    function openAddCourseModal() {
-      document.getElementById('add-course-modal').classList.remove('hidden');
-    }
-
-    function closeAddCourseModal() {
-      document.getElementById('add-course-modal').classList.add('hidden');
-    }
-
-    function calculateCourseEndDate() {
-      const startDateVal = document.getElementById('course-start-date').value;
-      const weeksVal = parseInt(document.getElementById('course-duration-weeks').value) || 16;
-      if (startDateVal) {
-        const start = new Date(startDateVal);
-        const endDate = new Date(start.setDate(start.getDate() + (weeksVal * 7) - 1));
-        const yyyy = endDate.getFullYear();
-        const mm = String(endDate.getMonth() + 1).padStart(2, '0');
-        const dd = String(endDate.getDate()).padStart(2, '0');
-        document.getElementById('course-end-date').value = `${yyyy}-${mm}-${dd}`;
-      }
-    }
-
-    function saveGlobalCourse() {
-      const name = document.getElementById('course-name').value.trim();
-      const room = document.getElementById('course-room').value.trim();
-      const dow = document.getElementById('course-dow').value;
-      const start = document.getElementById('course-start').value.trim();
-      const end = document.getElementById('course-end').value.trim();
-      const startDate = document.getElementById('course-start-date').value;
-      const endDate = document.getElementById('course-end-date').value;
-
-      if (!name) {
-        alert("Vui lòng nhập tên môn học!");
-        return;
-      }
-
-      if (!appData.globalCourses) appData.globalCourses = [];
-      appData.globalCourses.push({ name, room, dow, start, end, startDate, endDate });
-      saveData();
-      closeAddCourseModal();
-      renderMonthDetail();
-      renderNotifications();
-      alert("Đã áp dụng lịch học nâng cao thành công!");
-    }
-
-    function openWeekTaskModal(weekKey, weekNum) {
-      activeWeekKeyForModal = weekKey;
-      const lang = appData.lang || 'vi';
-      const dict = i18nDict[lang] || i18nDict['vi'];
-
-      document.getElementById('modal-week-title').innerText = `${dict.weekPrefix}${weekNum} - ${dict.weekTaskDesc}`;
-      renderWeekTasksList();
-      document.getElementById('week-task-modal').classList.remove('hidden');
-    }
-
-    function closeWeekTaskModal() {
-      document.getElementById('week-task-modal').classList.add('hidden');
-    }
-
-    function renderWeekTasksList() {
-      const listEl = document.getElementById('week-task-list');
-      listEl.innerHTML = '';
-
-      if (!activeWeekKeyForModal) return;
-      const tasks = appData.weekTasks[activeWeekKeyForModal] || [];
-
-      if (tasks.length === 0) {
-        listEl.innerHTML = `<li class="text-xs text-slate-400 italic">Chưa có công việc nào cho tuần này. Bấm "Thêm Task" để tạo mới.</li>`;
-        return;
-      }
-
-      tasks.forEach((t, idx) => {
-        const li = document.createElement('li');
-        li.className = "p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 flex justify-between items-center text-sm";
-        li.innerHTML = `
-          <div class="flex items-center gap-2.5">
-            <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleWeekTask(${idx})" class="w-5 h-5 accent-emerald-500 rounded cursor-pointer">
-            <span class="${t.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-100'}">${renderClickableLinks(t.text)}</span>
-          </div>
-          <button onclick="deleteWeekTask(${idx})" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
-        `;
-        listEl.appendChild(li);
-      });
-    }
-
-    function addCustomWeekTaskPrompt() {
-      const text = prompt("Nhập nhiệm vụ/kế hoạch tuần:");
-      if (text && text.trim() && activeWeekKeyForModal) {
-        if (!appData.weekTasks[activeWeekKeyForModal]) appData.weekTasks[activeWeekKeyForModal] = [];
-        appData.weekTasks[activeWeekKeyForModal].push({ text: text.trim(), done: false });
+    function addNotePrompt() {
+      const mKey = appData.selectedMonthKey;
+      const text = prompt("Nhập ghi chú mới:");
+      if (text && text.trim() && appData.months[mKey]) {
+        appData.months[mKey].notes.push(text.trim());
         saveData();
-        renderWeekTasksList();
+        renderMonthDetail();
       }
     }
 
-    function toggleWeekTask(idx) {
-      if (activeWeekKeyForModal && appData.weekTasks[activeWeekKeyForModal]) {
-        appData.weekTasks[activeWeekKeyForModal][idx].done = !appData.weekTasks[activeWeekKeyForModal][idx].done;
-        saveData();
-        renderWeekTasksList();
-      }
-    }
-
-    function deleteWeekTask(idx) {
-      if (activeWeekKeyForModal && appData.weekTasks[activeWeekKeyForModal]) {
-        appData.weekTasks[activeWeekKeyForModal].splice(idx, 1);
-        saveData();
-        renderWeekTasksList();
-      }
-    }
-
-    // --- 12. TAB 2: RESEARCH LOGS TAB LOGIC ---
+    // --- 9. RESEARCH TAB & DAILY REPORT DOWNLOAD ---
     function renderResearchTab() {
-      renderResearchTopicsList();
-      renderResearchTable();
-    }
-
-    function renderResearchTopicsList() {
-      const container = document.getElementById('research-topics-list');
-      container.innerHTML = '';
+      const topicsList = document.getElementById('research-topics-list');
+      topicsList.innerHTML = '';
 
       if (!appData.researchProjects || appData.researchProjects.length === 0) {
-        appData.researchProjects = [{ id: "proj_1", title: "Energy & Environmental Catalysts Development", logs: [] }];
+        appData.researchProjects = [{ id: "proj_1", title: "Mặc định", logs: [] }];
         appData.activeProjectIndex = 0;
       }
 
       appData.researchProjects.forEach((proj, idx) => {
-        const isActive = (idx === appData.activeProjectIndex);
         const btn = document.createElement('button');
-        btn.className = `px-4 py-2 rounded-2xl font-bold text-xs whitespace-nowrap transition shadow-sm ${
+        const isActive = idx === appData.activeProjectIndex;
+        btn.className = `px-4 py-2 rounded-2xl font-bold text-xs sm:text-sm whitespace-nowrap transition shadow-sm ${
           isActive 
-            ? 'bg-skkuNavy text-white ring-2 ring-skkuGreen' 
+            ? 'bg-skkuNavy text-white border-2 border-skkuGreen' 
             : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
         }`;
+        btn.innerText = proj.title || `Đề tài ${idx + 1}`;
         btn.onclick = () => {
           appData.activeProjectIndex = idx;
           saveData();
           renderResearchTab();
         };
-        btn.innerHTML = `🧪 ${proj.title}`;
-        container.appendChild(btn);
+        topicsList.appendChild(btn);
       });
-    }
 
-    function renderResearchTable() {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex] || appData.researchProjects[0];
+      document.getElementById('current-project-title').innerText = currentProj.title || "Tên đề tài";
+
       const tbody = document.getElementById('research-table-body');
       tbody.innerHTML = '';
 
-      const proj = appData.researchProjects[appData.activeProjectIndex];
-      if (!proj) return;
-
-      document.getElementById('current-project-title').innerText = proj.title;
-
-      const lang = appData.lang || 'vi';
-      const dict = i18nDict[lang] || i18nDict['vi'];
-
-      if (!proj.logs || proj.logs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 italic">${dict.noResearchLogs}</td></tr>`;
+      if (!currentProj.logs || currentProj.logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Chưa có dữ liệu nhật ký nghiên cứu.</td></tr>`;
         return;
       }
 
-      proj.logs.forEach((log, idx) => {
+      currentProj.logs.forEach((log, lIdx) => {
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-800";
-
-        const formattedDate = formatLogDateText(log.dateText);
-
+        tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition";
         tr.innerHTML = `
-          <td class="p-3 border-r border-slate-200 dark:border-slate-800 text-center font-bold">
-            <textarea onchange="updateResearchLog(${idx}, 'dateText', this.value)" class="w-full text-center bg-transparent border-0 font-extrabold focus:ring-1 focus:ring-skkuGreen rounded auto-expand">${formattedDate || ''}</textarea>
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800 text-center font-bold text-xs whitespace-pre-line">
+            <input type="text" value="${log.dateText || ''}" onchange="updateResearchLog(${lIdx}, 'dateText', this.value)" class="w-full text-center bg-transparent border-b border-transparent hover:border-slate-300 focus:border-skkuGreen font-bold">
           </td>
           <td class="p-3 border-r border-slate-200 dark:border-slate-800">
-            <textarea onchange="updateResearchLog(${idx}, 'tasks', this.value)" class="w-full bg-transparent border-0 font-medium focus:ring-1 focus:ring-skkuGreen rounded auto-expand">${log.tasks || ''}</textarea>
-            <div class="mt-1">${renderClickableLinks(log.tasks)}</div>
+            <textarea onchange="updateResearchLog(${lIdx}, 'tasks', this.value)" class="w-full bg-transparent resize-y min-h-[60px] p-1 rounded border border-transparent hover:border-slate-300 focus:border-skkuGreen">${log.tasks || ''}</textarea>
           </td>
           <td class="p-3 border-r border-slate-200 dark:border-slate-800 text-center">
-            <select onchange="updateResearchLog(${idx}, 'progressStep', this.value)" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold text-xs border border-slate-300 dark:border-slate-700">
-              <option value="0" ${log.progressStep == 0 ? 'selected' : ''}>${dict.progress0}</option>
-              <option value="1" ${log.progressStep == 1 ? 'selected' : ''}>${dict.progress50}</option>
-              <option value="2" ${log.progressStep == 2 ? 'selected' : ''}>${dict.progress100}</option>
+            <select onchange="updateResearchLog(${lIdx}, 'progressStep', parseInt(this.value))" class="bg-slate-100 dark:bg-slate-800 p-1.5 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-700">
+              <option value="0" ${log.progressStep === 0 ? 'selected' : ''}>0%</option>
+              <option value="1" ${log.progressStep === 1 ? 'selected' : ''}>25%</option>
+              <option value="2" ${log.progressStep === 2 ? 'selected' : ''}>50%</option>
+              <option value="3" ${log.progressStep === 3 ? 'selected' : ''}>75%</option>
+              <option value="4" ${log.progressStep === 4 ? 'selected' : ''}>100%</option>
             </select>
           </td>
           <td class="p-3 border-r border-slate-200 dark:border-slate-800">
-            <textarea onchange="updateResearchLog(${idx}, 'notes', this.value)" class="w-full bg-transparent border-0 focus:ring-1 focus:ring-skkuGreen rounded auto-expand">${log.notes || ''}</textarea>
-            <div class="mt-1">${renderClickableLinks(log.notes)}</div>
+            <textarea onchange="updateResearchLog(${lIdx}, 'notes', this.value)" class="w-full bg-transparent resize-y min-h-[60px] p-1 rounded border border-transparent hover:border-slate-300 focus:border-skkuGreen">${log.notes || ''}</textarea>
           </td>
           <td class="p-3 border-r border-slate-200 dark:border-slate-800">
-            <textarea onchange="updateResearchLog(${idx}, 'plan', this.value)" class="w-full bg-transparent border-0 focus:ring-1 focus:ring-skkuGreen rounded auto-expand">${log.plan || ''}</textarea>
-            <div class="mt-1">${renderClickableLinks(log.plan)}</div>
+            <textarea onchange="updateResearchLog(${lIdx}, 'plan', this.value)" class="w-full bg-transparent resize-y min-h-[60px] p-1 rounded border border-transparent hover:border-slate-300 focus:border-skkuGreen">${log.plan || ''}</textarea>
           </td>
           <td class="p-3 text-center">
-            <button onclick="deleteResearchLogRow(${idx})" class="text-slate-400 hover:text-red-500 font-bold p-2"><i class="fa-solid fa-trash-can"></i></button>
+            <button onclick="deleteResearchRow(${lIdx})" class="text-red-500 hover:text-red-700 p-1">
+              <i class="fa-solid fa-trash"></i>
+            </button>
           </td>
         `;
-
         tbody.appendChild(tr);
       });
     }
 
-    function updateResearchLog(logIdx, field, val) {
-      const proj = appData.researchProjects[appData.activeProjectIndex];
-      if (proj && proj.logs[logIdx]) {
-        proj.logs[logIdx][field] = val;
+    function updateResearchLog(idx, field, val) {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (currentProj && currentProj.logs[idx]) {
+        currentProj.logs[idx][field] = val;
         saveData();
-        renderResearchTable();
       }
     }
 
     function addResearchRow() {
-      const proj = appData.researchProjects[appData.activeProjectIndex];
-      if (!proj) return;
-      if (!proj.logs) proj.logs = [];
-
-      const now = new Date();
-      const dd = String(now.getDate()).padStart(2, '0');
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const yyyy = now.getFullYear();
-
-      let dow = now.getDay();
-      if (dow === 0) dow = 7;
-      const lang = appData.lang || 'vi';
-      const dict = i18nDict[lang] || i18nDict['vi'];
-      const dowLabel = dict.daysMap[dow] || `T${dow}`;
-
-      proj.logs.unshift({
-        id: "log_" + Date.now(),
-        dateText: `${dd}/${mm}/${yyyy}\n(${dowLabel})`,
-        tasks: "",
-        progressStep: 0,
-        notes: "",
-        plan: ""
-      });
-
-      saveData();
-      renderResearchTable();
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (currentProj) {
+        if (!currentProj.logs) currentProj.logs = [];
+        const today = new Date();
+        const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+        currentProj.logs.push({
+          id: 'log_' + Date.now(),
+          dateText: dateStr,
+          tasks: '',
+          progressStep: 0,
+          notes: '',
+          plan: ''
+        });
+        saveData();
+        renderResearchTab();
+      }
     }
 
     function addResearchRowNextDay() {
-      const proj = appData.researchProjects[appData.activeProjectIndex];
-      if (!proj) return;
-      if (!proj.logs) proj.logs = [];
-
-      let baseDate = new Date();
-      if (proj.logs.length > 0) {
-        const firstLog = proj.logs[0];
-        const parts = firstLog.dateText.split('\n')[0].split('/');
-        if (parts.length === 3) {
-          const d = parseInt(parts[0]);
-          const m = parseInt(parts[1]) - 1;
-          const y = parseInt(parts[2]);
-          if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
-            baseDate = new Date(y, m, d + 1);
-          }
-        }
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (currentProj) {
+        if (!currentProj.logs) currentProj.logs = [];
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const dateStr = `${String(tomorrow.getDate()).padStart(2, '0')}/${String(tomorrow.getMonth() + 1).padStart(2, '0')}/${tomorrow.getFullYear()}`;
+        currentProj.logs.push({
+          id: 'log_' + Date.now(),
+          dateText: dateStr,
+          tasks: '',
+          progressStep: 0,
+          notes: '',
+          plan: ''
+        });
+        saveData();
+        renderResearchTab();
       }
-
-      const dd = String(baseDate.getDate()).padStart(2, '0');
-      const mm = String(baseDate.getMonth() + 1).padStart(2, '0');
-      const yyyy = baseDate.getFullYear();
-
-      let dow = baseDate.getDay();
-      if (dow === 0) dow = 7;
-      const lang = appData.lang || 'vi';
-      const dict = i18nDict[lang] || i18nDict['vi'];
-      const dowLabel = dict.daysMap[dow] || `T${dow}`;
-
-      proj.logs.unshift({
-        id: "log_" + Date.now(),
-        dateText: `${dd}/${mm}/${yyyy}\n(${dowLabel})`,
-        tasks: "",
-        progressStep: 0,
-        notes: "",
-        plan: ""
-      });
-
-      saveData();
-      renderResearchTable();
     }
 
-    function deleteResearchLogRow(idx) {
-      const proj = appData.researchProjects[appData.activeProjectIndex];
-      if (proj && proj.logs) {
-        proj.logs.splice(idx, 1);
+    function deleteResearchRow(idx) {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (currentProj && currentProj.logs[idx]) {
+        currentProj.logs.splice(idx, 1);
         saveData();
-        renderResearchTable();
+        renderResearchTab();
       }
     }
 
     function addNewResearchTopicPrompt() {
-      const title = prompt("Nhập tên đề tài nghiên cứu mới:");
+      const title = prompt("Nhập tên đề tài mới:");
       if (title && title.trim()) {
         appData.researchProjects.push({
-          id: "proj_" + Date.now(),
+          id: 'proj_' + Date.now(),
           title: title.trim(),
           logs: []
         });
@@ -2263,31 +1861,69 @@
     }
 
     function editCurrentProjectTitle() {
-      const proj = appData.researchProjects[appData.activeProjectIndex];
-      if (!proj) return;
-      const newTitle = prompt("Sửa tên đề tài:", proj.title);
-      if (newTitle && newTitle.trim()) {
-        proj.title = newTitle.trim();
-        saveData();
-        renderResearchTab();
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (currentProj) {
+        const newTitle = prompt("Sửa tên đề tài:", currentProj.title);
+        if (newTitle && newTitle.trim()) {
+          currentProj.title = newTitle.trim();
+          saveData();
+          renderResearchTab();
+        }
       }
     }
 
     function deleteCurrentProject() {
-      if (appData.researchProjects.length <= 1) {
-        alert("Phải giữ lại ít nhất 1 đề tài nghiên cứu!");
-        return;
-      }
-      if (confirm("Bạn có chắc chắn muốn xóa đề tài này?")) {
+      if (confirm("Bạn có chắc chắn muốn xóa đề tài này không?")) {
         appData.researchProjects.splice(appData.activeProjectIndex, 1);
-        appData.activeProjectIndex = 0;
+        if (appData.activeProjectIndex >= appData.researchProjects.length) {
+          appData.activeProjectIndex = Math.max(0, appData.researchProjects.length - 1);
+        }
         saveData();
         renderResearchTab();
       }
     }
 
+    // HÀM XUẤT VÀ TẢI FILE BÁO CÁO DAILY REPORT
+    function downloadDailyReport() {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (!currentProj) {
+        alert("Không tìm thấy dữ liệu báo cáo!");
+        return;
+      }
+
+      let content = `========================================\n`;
+      content += `EES LAB - DAILY RESEARCH REPORT\n`;
+      content += `Đề tài: ${currentProj.title}\n`;
+      content += `Ngày xuất báo cáo: ${new Date().toLocaleDateString('vi-VN')}\n`;
+      content += `========================================\n\n`;
+
+      if (!currentProj.logs || currentProj.logs.length === 0) {
+        content += `Chưa có dữ liệu nhật ký nghiên cứu.\n`;
+      } else {
+        currentProj.logs.forEach((log, index) => {
+          content += `[Nhật ký ngày ${index + 1}]\n`;
+          content += `- Ngày: ${log.dateText || 'N/A'}\n`;
+          content += `- Việc Cần Làm: ${log.tasks || 'N/A'}\n`;
+          content += `- Tiến Độ: ${log.progressStep ? log.progressStep * 25 : 0}%\n`;
+          content += `- Ghi Chú & Bài Học: ${log.notes || 'N/A'}\n`;
+          content += `- Kế Hoạch Ngày Mai: ${log.plan || 'N/A'}\n`;
+          content += `----------------------------------------\n`;
+        });
+      }
+
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Daily_Report_${(currentProj.title || 'EES_Lab').replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().slice(0,10)}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
     // --- INITIALIZATION ---
-    window.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
       applyTheme();
       applyLanguageUI();
       renderMonthsGrid();
