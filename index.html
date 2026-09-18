@@ -85,7 +85,7 @@
   <header class="bg-skkuNavy dark:bg-skkuNavyDark text-white shadow-xl border-b-4 border-skkuGreen sticky top-0 z-40">
     <div class="max-w-[98%] mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-4">
       
-      <!-- Left: Avatar & Tên Phòng Thí Nghiệm (Tăng kích thước chữ) -->
+      <!-- Left: Avatar & Tên Phòng Thí Nghiệm -->
       <div class="flex items-center space-x-4 flex-wrap sm:flex-nowrap gap-y-2">
         <div class="relative group cursor-pointer w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border-2 border-skkuGreen shadow-md bg-slate-800 flex-shrink-0" onclick="openAvatarModal()" title="Phóng to / Thay đổi ảnh đại diện">
           <img id="main-avatar-img" src="https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab" alt="Avatar" class="w-full h-full object-cover group-hover:scale-105 transition duration-200">
@@ -103,7 +103,7 @@
         </div>
       </div>
 
-      <!-- Center: Giờ KST (Đã thêm Thứ) & Thời tiết Suwon -->
+      <!-- Center: Giờ KST & Thời tiết Suwon -->
       <div class="flex items-center gap-3 bg-slate-800/90 dark:bg-slate-900/90 px-4 py-2 rounded-2xl border border-slate-700/80 shadow-inner">
         <div class="text-center pr-3 border-r border-slate-700">
           <div class="text-[10px] text-amber-400 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
@@ -388,7 +388,7 @@
             <tr class="bg-skkuNavy text-white font-black text-sm uppercase tracking-wider">
               <th class="p-4 w-36 border-r border-slate-700 text-center" data-i18n="colDate">Ngày</th>
               <th class="p-4 w-1/4 border-r border-slate-700" data-i18n="colTasks">Việc Cần Làm</th>
-              <th class="p-4 w-52 border-r border-slate-700 text-center" data-i18n="colProgress">Tiến Độ (%)</th>
+              <th class="p-4 w-56 border-r border-slate-700 text-center" data-i18n="colProgress">Tiến Độ (%)</th>
               <th class="p-4 w-1/4 border-r border-slate-700" data-i18n="colNotes">Ghi Chú & Bài Học</th>
               <th class="p-4 w-1/4 border-r border-slate-700" data-i18n="colPlan">Kế Hoạch Ngày Mai</th>
               <th class="p-4 w-12 text-center" data-i18n="colDelete">Xóa</th>
@@ -690,6 +690,36 @@
         lblCurrentMonth: "THÁNG HIỆN TẠI",
         lblScheduleFolder: "Thư Mục Lịch Học",
         viewWeekDetails: "Xem chi tiết lịch tuần →",
+        todaySchedule: "LỊCH HỌC HÔM NAY",
+        confirmed: "Đã xác nhận",
+        attention: "Chú ý",
+        todayScheduleDesc: "Tổng hợp toàn bộ lịch học và báo cáo cần thực hiện trong ngày hôm nay.",
+        noFixedSchedule: "Hôm nay không có lịch học cố định. Hãy tập trung thí nghiệm & viết báo cáo lab!",
+        confirmInfo: "Xác Nhận Đã Nắm Thông Tin",
+        infoConfirmed: "Đã Nhận Thông Tin Hôm Nay",
+        yearPrefix: "Năm ",
+        yearSuffix: "",
+        monthPrefix: "Tháng ",
+        monthSuffix: "",
+        weekPrefix: "Tuần ",
+        weekSemesterSuffix: " (Học kỳ 16 tuần)",
+        todayBadge: "HÔM NAY",
+        collapse: "▲ Thu gọn",
+        expand: "▼ Chi tiết",
+        weekTasksBtn: "Kế Hoạch & Task Tuần ",
+        dayDetailsTitle: "Chi Tiết Ngày ",
+        todayClassesTitle: "📚 Lịch Học & Môn Học Ngày Hôm Nay:",
+        btnAddDayClass: "Thêm Môn Lớp Hôm Nay",
+        noClassToday: "Không có lịch học cố định hôm nay (Tập trung Lab / Thí nghiệm).",
+        todayTasksTitle: "✅ Việc Cần Làm Hôm Đó:",
+        btnAddDailyTask: "Thêm Việc",
+        noTasksAdded: "Chưa có công việc nào được thêm.",
+        dailyReportTitle: "📝 Daily Report (Viết Báo Cáo Hàng Ngày):",
+        dailyReportPlaceholder: "Nhập những gì đã học, kết quả thí nghiệm hoặc tiến độ công việc hôm nay...",
+        noResearchLogs: "Chưa có nhật ký nghiên cứu nào. Bấm \"Thêm Dòng Mới\" hoặc \"Thêm Ngày Hôm Sau\" để bắt đầu.",
+        progress0: "0% (Chưa hoàn thành)",
+        progress50: "50% (Đang làm)",
+        progress100: "100% (Đã hoàn thành)",
         daysMap: { 1: 'T2', 2: 'T3', 3: 'T4', 4: 'T5', 5: 'T6', 6: 'T7', 7: 'CN' },
         daysFullMap: { 1: 'Thứ 2', 2: 'Thứ 3', 3: 'Thứ 4', 4: 'Thứ 5', 5: 'Thứ 6', 6: 'Thứ 7', 7: 'Chủ Nhật' }
       },
@@ -756,6 +786,36 @@
         lblCurrentMonth: "CURRENT MONTH",
         lblScheduleFolder: "Schedule Folder",
         viewWeekDetails: "View weekly details →",
+        todaySchedule: "TODAY'S SCHEDULE",
+        confirmed: "Confirmed",
+        attention: "Attention",
+        todayScheduleDesc: "Summary of all courses and reports to be completed today.",
+        noFixedSchedule: "No fixed courses today. Focus on lab experiments & research reports!",
+        confirmInfo: "Acknowledge Information",
+        infoConfirmed: "Information Acknowledged Today",
+        yearPrefix: "Year ",
+        yearSuffix: "",
+        monthPrefix: "Month ",
+        monthSuffix: "",
+        weekPrefix: "Week ",
+        weekSemesterSuffix: " (16-week Semester)",
+        todayBadge: "TODAY",
+        collapse: "▲ Collapse",
+        expand: "▼ Details",
+        weekTasksBtn: "Weekly Plan & Tasks Week ",
+        dayDetailsTitle: "Details for Day ",
+        todayClassesTitle: "📚 Today's Schedule & Courses:",
+        btnAddDayClass: "Add Class Today",
+        noClassToday: "No fixed courses today (Focus on Lab / Experiments).",
+        todayTasksTitle: "✅ Tasks To Do Today:",
+        btnAddDailyTask: "Add Task",
+        noTasksAdded: "No tasks added yet.",
+        dailyReportTitle: "📝 Daily Report (Write Daily Log):",
+        dailyReportPlaceholder: "Enter what you learned, experiment results or progress today...",
+        noResearchLogs: "No research logs yet. Click \"Add New Row\" or \"Add Next Day\" to start.",
+        progress0: "0% (Not completed)",
+        progress50: "50% (In progress)",
+        progress100: "100% (Completed)",
         daysMap: { 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat', 7: 'Sun' },
         daysFullMap: { 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday', 7: 'Sunday' }
       },
@@ -822,6 +882,36 @@
         lblCurrentMonth: "현재 월",
         lblScheduleFolder: "수업 일정",
         viewWeekDetails: "주간 일정 상세보기 →",
+        todaySchedule: "오늘의 수업 일정",
+        confirmed: "확인됨",
+        attention: "주의",
+        todayScheduleDesc: "오늘 진행해야 할 모든 수업 및 보고서 요약.",
+        noFixedSchedule: "오늘 고정 수업이 없습니다. 실험 및 연구 보고서에 집중하세요!",
+        confirmInfo: "오늘 정보 확인 완료",
+        infoConfirmed: "오늘 정보 확인됨",
+        yearPrefix: "",
+        yearSuffix: "년",
+        monthPrefix: "",
+        monthSuffix: "월",
+        weekPrefix: "",
+        weekSemesterSuffix: "주차 (16주 학기)",
+        todayBadge: "오늘",
+        collapse: "▲ 접기",
+        expand: "▼ 상세보기",
+        weekTasksBtn: "주간 계획 및 과제 ",
+        dayDetailsTitle: "일자 상세 ",
+        todayClassesTitle: "📚 오늘의 수업 및 과목:",
+        btnAddDayClass: "오늘 수업 추가",
+        noClassToday: "오늘 고정 수업이 없습니다 (실험/연구 집중).",
+        todayTasksTitle: "✅ 오늘 할 일:",
+        btnAddDailyTask: "할 일 추가",
+        noTasksAdded: "추가된 할 일이 없습니다.",
+        dailyReportTitle: "📝 일간 보고서 (매일 일지 작성):",
+        dailyReportPlaceholder: "오늘 배운 내용, 실험 결과 또는 진행 상황을 입력하세요...",
+        noResearchLogs: "연구 일지가 없습니다. \"새 행 추가\" 또는 \"다음 날 추가\"를 클릭하여 시작하세요.",
+        progress0: "0% (미완료)",
+        progress50: "50% (진행 중)",
+        progress100: "100% (완료)",
         daysMap: { 1: '월', 2: '화', 3: '수', 4: '목', 5: '금', 6: '토', 7: '일' },
         daysFullMap: { 1: '월요일', 2: '화요일', 3: '수요일', 4: '목요일', 5: '금요일', 6: '토요일', 7: '일요일' }
       }
@@ -875,7 +965,6 @@
 
     let activeWeekKeyForModal = null;
     let expandedDayKey = null;
-    let draggedRowIndex = null;
 
     function saveData() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
@@ -903,6 +992,32 @@
         let href = url.startsWith('http') ? url : 'http://' + url;
         return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline font-bold text-xs"><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> ${url}</a>`;
       }).join('<br>');
+    }
+
+    // Helper: Translate Day of Week inside Research Log Date Column automatically
+    function formatLogDateText(dateText) {
+      if (!dateText) return '';
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+
+      const allDayMaps = [i18nDict.vi.daysMap, i18nDict.en.daysMap, i18nDict.ko.daysMap];
+
+      return dateText.replace(/\(([A-Za-z0-9T월화수목금토일]+)\)/g, (match, p1) => {
+        let foundDow = null;
+        for (const map of allDayMaps) {
+          for (const [dow, label] of Object.entries(map)) {
+            if (label === p1) {
+              foundDow = dow;
+              break;
+            }
+          }
+          if (foundDow) break;
+        }
+        if (foundDow && dict.daysMap[foundDow]) {
+          return `(${dict.daysMap[foundDow]})`;
+        }
+        return match;
+      });
     }
 
     // --- 2. MULTI-LANGUAGE SYSTEM ---
@@ -938,7 +1053,7 @@
       updateKSTClock();
     }
 
-    // --- 3. KST CLOCK (INCLUDES DAY OF WEEK) & WEATHER ---
+    // --- 3. KST CLOCK & WEATHER ---
     function updateKSTClock() {
       const now = new Date();
       const optionsTime = { timeZone: 'Asia/Seoul', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
@@ -1004,6 +1119,9 @@
       const container = document.getElementById('notifications-box');
       if (!container) return;
 
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+
       const nowKSTDate = new Date();
       const optionsKST = { timeZone: 'Asia/Seoul' };
       const nowKST = new Date(nowKSTDate.toLocaleString('en-US', optionsKST));
@@ -1039,6 +1157,10 @@
 
       container.className = `p-5 rounded-3xl transition-all duration-300 ${isAck ? ackStyle : activeStyle}`;
 
+      const dateDisplay = (lang === 'ko')
+        ? `${nowKST.getFullYear()}년 ${String(nowKST.getMonth() + 1).padStart(2, '0')}월 ${String(nowKST.getDate()).padStart(2, '0')}일`
+        : `${String(nowKST.getDate()).padStart(2, '0')}/${String(nowKST.getMonth() + 1).padStart(2, '0')}/${nowKST.getFullYear()}`;
+
       container.innerHTML = `
         <div class="flex flex-wrap items-center justify-between gap-3 border-b pb-3 border-amber-500/30">
           <div class="flex items-center gap-3">
@@ -1047,10 +1169,10 @@
             </div>
             <div>
               <h4 class="text-lg font-black tracking-tight flex items-center gap-2">
-                <span>LỊCH HỌC HÔM NAY (${String(nowKST.getDate()).padStart(2, '0')}/${String(nowKST.getMonth() + 1).padStart(2, '0')}/${nowKST.getFullYear()})</span>
-                ${isAck ? '<span class="text-xs bg-slate-500 text-white font-bold px-2.5 py-0.5 rounded-full">Đã xác nhận</span>' : '<span class="text-xs bg-red-500 text-white font-bold px-2.5 py-0.5 rounded-full animate-pulse">Chú ý</span>'}
+                <span>${dict.todaySchedule} (${dateDisplay})</span>
+                ${isAck ? `<span class="text-xs bg-slate-500 text-white font-bold px-2.5 py-0.5 rounded-full">${dict.confirmed}</span>` : `<span class="text-xs bg-red-500 text-white font-bold px-2.5 py-0.5 rounded-full animate-pulse">${dict.attention}</span>`}
               </h4>
-              <p class="text-xs font-semibold opacity-90">Tổng hợp toàn bộ lịch học và báo cáo cần thực hiện trong ngày hôm nay.</p>
+              <p class="text-xs font-semibold opacity-90">${dict.todayScheduleDesc}</p>
             </div>
           </div>
         </div>
@@ -1058,7 +1180,7 @@
         <div class="mt-4 space-y-2">
           ${
             todayCourses.length === 0
-              ? '<p class="text-sm font-bold italic opacity-75">Hôm nay không có lịch học cố định. Hãy tập trung thí nghiệm & viết báo cáo lab!</p>'
+              ? `<p class="text-sm font-bold italic opacity-75">${dict.noFixedSchedule}</p>`
               : todayCourses.map(c => `
                   <div class="p-3 bg-white/80 dark:bg-slate-900/80 rounded-2xl border border-amber-500/20 shadow-sm flex items-center justify-between">
                     <div class="flex items-center gap-3">
@@ -1080,7 +1202,7 @@
               : 'bg-amber-500 hover:bg-amber-600 text-slate-950 transform hover:scale-105'
           }">
             <i class="fa-solid ${isAck ? 'fa-check-double' : 'fa-check'}"></i>
-            <span>${isAck ? 'Đã Nhận Thông Tin Hôm Nay' : 'Xác Nhận Đã Nắm Thông Tin'}</span>
+            <span>${isAck ? dict.infoConfirmed : dict.confirmInfo}</span>
           </button>
         </div>
       `;
@@ -1209,7 +1331,7 @@
       saveData();
       document.getElementById('month-selection-subview').classList.add('hidden');
       document.getElementById('month-detail-subview').classList.remove('hidden');
-      document.getElementById('selected-month-title').innerText = `Tháng ${key}`;
+      
       renderMonthDetail();
     }
 
@@ -1245,7 +1367,7 @@
               <i class="fa-solid fa-folder-open text-2xl ${isCurrentMonth ? 'text-skkuGreen' : 'text-slate-400'} group-hover:scale-110 transition"></i>
             </div>
             <h4 class="text-3xl font-black mt-3 text-slate-900 dark:text-slate-100">${key}</h4>
-            <p class="text-xs text-slate-500 font-semibold mt-1">Năm ${m.year}</p>
+            <p class="text-xs text-slate-500 font-semibold mt-1">${dict.yearPrefix}${m.year}${dict.yearSuffix}</p>
           </div>
           <div class="mt-4 flex justify-between items-center text-xs font-black text-skkuNavy dark:text-emerald-400">
             <span>${dict.viewWeekDetails}</span>
@@ -1279,6 +1401,20 @@
       const mKey = appData.selectedMonthKey;
       const monthObj = appData.months[mKey];
       if (!monthObj) return;
+
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+
+      const parts = mKey.split('/');
+      let formattedTitle = `${dict.monthPrefix}${parts[0]}${dict.monthSuffix}/${parts[1]}`;
+      if (lang === 'ko') {
+        formattedTitle = `${parts[1]}년 ${parts[0]}월`;
+      } else if (lang === 'en') {
+        formattedTitle = `Month ${parts[0]}/${parts[1]}`;
+      } else {
+        formattedTitle = `Tháng ${parts[0]}/${parts[1]}`;
+      }
+      document.getElementById('selected-month-title').innerText = formattedTitle;
 
       const deadlineList = document.getElementById('deadline-list');
       deadlineList.innerHTML = '';
@@ -1398,7 +1534,12 @@
 
       const header = document.createElement('div');
       header.className = "flex justify-between items-center border-b pb-2 border-slate-200 dark:border-slate-800";
-      header.innerHTML = `<h4 class="font-black text-lg text-skkuNavy dark:text-emerald-400">Tuần ${weekNum} (Học kỳ 16 tuần)</h4>`;
+
+      const weekLabel = (lang === 'ko')
+        ? `${weekNum}${dict.weekPrefix}${dict.weekSemesterSuffix}`
+        : `${dict.weekPrefix}${weekNum}${dict.weekSemesterSuffix}`;
+
+      header.innerHTML = `<h4 class="font-black text-lg text-skkuNavy dark:text-emerald-400">${weekLabel}</h4>`;
       weekWrapper.appendChild(header);
 
       const daysGrid = document.createElement('div');
@@ -1430,13 +1571,13 @@
         dayBtn.innerHTML = `
           <div class="flex justify-between items-center w-full">
             <span class="text-xs font-black uppercase ${isToday ? 'text-amber-800 dark:text-amber-300' : 'text-slate-400'}">${dayLabel}</span>
-            ${isToday ? '<span class="text-[10px] bg-amber-500 text-slate-900 font-black px-2 py-0.5 rounded-full shadow">HÔM NAY</span>' : ''}
+            ${isToday ? `<span class="text-[10px] bg-amber-500 text-slate-900 font-black px-2 py-0.5 rounded-full shadow">${dict.todayBadge}</span>` : ''}
           </div>
           <div class="text-2xl font-black mt-2 ${isToday ? 'text-amber-950 dark:text-amber-100' : 'text-slate-900 dark:text-slate-100'}">
             ${day.dayNumber}/${month}
           </div>
           <div class="text-[11px] font-bold mt-2 text-slate-500 flex items-center justify-between w-full">
-            <span>${isExpanded ? '▲ Thu gọn' : '▼ Chi tiết'}</span>
+            <span>${isExpanded ? dict.collapse : dict.expand}</span>
           </div>
         `;
 
@@ -1454,7 +1595,7 @@
       const weekTaskBtn = document.createElement('button');
       weekTaskBtn.className = "w-full py-3 px-4 bg-skkuNavy hover:bg-slate-800 text-white font-extrabold rounded-2xl shadow-md flex items-center justify-center gap-2 transition text-sm mt-3 border border-emerald-500/30";
       weekTaskBtn.onclick = () => openWeekTaskModal(weekKey, weekNum);
-      weekTaskBtn.innerHTML = `<i class="fa-solid fa-list-check text-skkuGreen"></i> Kế Hoạch & Task Tuần ${weekNum}`;
+      weekTaskBtn.innerHTML = `<i class="fa-solid fa-list-check text-skkuGreen"></i> ${dict.weekTasksBtn}${weekNum}`;
       weekWrapper.appendChild(weekTaskBtn);
 
       return weekWrapper;
@@ -1489,27 +1630,28 @@
       }
 
       const fullDayName = dict.daysFullMap[dayOfWeek] || dayOfWeek;
+      const weekStr = (lang === 'ko') ? `${weekNum}주차` : `${dict.weekPrefix}${weekNum}`;
 
       container.innerHTML = `
         <div class="flex justify-between items-center border-b pb-3 border-emerald-200 dark:border-slate-800">
           <h5 class="text-xl font-black text-skkuNavy dark:text-emerald-400 flex items-center gap-2">
-            <i class="fa-solid fa-graduation-cap"></i> Chi Tiết Ngày ${dayNumber} (${fullDayName})
+            <i class="fa-solid fa-graduation-cap"></i> ${dict.dayDetailsTitle}${dayNumber} (${fullDayName})
           </h5>
-          <span class="text-xs font-bold text-slate-500">${dateStr} • Tuần ${weekNum}</span>
+          <span class="text-xs font-bold text-slate-500">${dateStr} • ${weekStr}</span>
         </div>
 
         <div class="bg-white dark:bg-slate-950 p-4 rounded-2xl shadow-sm border border-emerald-200 dark:border-slate-800 space-y-3">
           <div class="flex justify-between items-center">
-            <h6 class="font-extrabold text-xs text-skkuDarkGreen dark:text-emerald-300 uppercase tracking-wide">📚 Lịch Học & Môn Học Ngày Hôm Nay:</h6>
+            <h6 class="font-extrabold text-xs text-skkuDarkGreen dark:text-emerald-300 uppercase tracking-wide">${dict.todayClassesTitle}</h6>
             <button onclick="addCustomDayClassPrompt('${dateStr}')" class="bg-emerald-600 text-white font-bold px-2.5 py-1 rounded-xl text-xs flex items-center gap-1 shadow">
-              <i class="fa-solid fa-plus"></i> Thêm Môn Lớp Hôm Nay
+              <i class="fa-solid fa-plus"></i> ${dict.btnAddDayClass}
             </button>
           </div>
 
           <div class="space-y-2">
             ${
               dayCourses.length === 0 
-                ? '<p class="text-xs text-slate-400 italic">Không có lịch học cố định hôm nay (Tập trung Lab / Thí nghiệm).</p>'
+                ? `<p class="text-xs text-slate-400 italic">${dict.noClassToday}</p>`
                 : dayCourses.map((c, idx) => `
                     <div class="p-3 bg-emerald-100/70 dark:bg-slate-800 rounded-xl font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center justify-between border border-emerald-200 dark:border-slate-700">
                       <div class="flex items-center gap-2">
@@ -1528,15 +1670,15 @@
 
         <div class="space-y-3">
           <div class="flex justify-between items-center">
-            <h6 class="font-extrabold text-xs text-slate-700 dark:text-slate-200 uppercase tracking-wide">✅ Việc Cần Làm Hôm Đó:</h6>
+            <h6 class="font-extrabold text-xs text-slate-700 dark:text-slate-200 uppercase tracking-wide">${dict.todayTasksTitle}</h6>
             <button onclick="addDailyTaskPrompt('${dateStr}')" class="bg-skkuGreen hover:bg-emerald-600 text-slate-900 font-bold px-3 py-1 rounded-xl text-xs flex items-center gap-1 shadow">
-              <i class="fa-solid fa-plus"></i> Thêm Việc
+              <i class="fa-solid fa-plus"></i> ${dict.btnAddDailyTask}
             </button>
           </div>
           <ul class="space-y-2">
             ${
               dayData.tasks.length === 0 
-                ? '<li class="text-xs text-slate-400 italic">Chưa có công việc nào được thêm.</li>'
+                ? `<li class="text-xs text-slate-400 italic">${dict.noTasksAdded}</li>`
                 : dayData.tasks.map((t, idx) => `
                     <li class="flex items-center justify-between p-2.5 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
                       <div class="flex items-center gap-2">
@@ -1551,8 +1693,8 @@
         </div>
 
         <div class="space-y-2">
-          <h6 class="font-extrabold text-xs text-slate-700 dark:text-slate-200 uppercase tracking-wide">📝 Daily Report (Viết Báo Cáo Hàng Ngày):</h6>
-          <textarea id="report-${dateStr}" oninput="saveDailyReport('${dateStr}')" rows="3" placeholder="Nhập những gì đã học, kết quả thí nghiệm hoặc tiến độ công việc hôm nay..." class="w-full p-3 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-skkuGreen font-medium text-sm text-slate-800 dark:text-slate-100">${dayData.dailyReport || ''}</textarea>
+          <h6 class="font-extrabold text-xs text-slate-700 dark:text-slate-200 uppercase tracking-wide">${dict.dailyReportTitle}</h6>
+          <textarea id="report-${dateStr}" oninput="saveDailyReport('${dateStr}')" rows="3" placeholder="${dict.dailyReportPlaceholder}" class="w-full p-3 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-skkuGreen font-medium text-sm text-slate-800 dark:text-slate-100">${dayData.dailyReport || ''}</textarea>
           <div class="text-xs text-slate-600 dark:text-slate-300 font-medium">${renderClickableLinks(dayData.dailyReport || '')}</div>
         </div>
       `;
@@ -1647,7 +1789,9 @@
     // --- 12. WEEK TASK MODAL LOGIC ---
     function openWeekTaskModal(weekKey, weekNum) {
       activeWeekKeyForModal = weekKey;
-      document.getElementById('modal-week-title').innerText = `Kế Hoạch Task Tuần ${weekNum}`;
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+      document.getElementById('modal-week-title').innerText = `${dict.weekTasksBtn}${weekNum}`;
       renderWeekTasks();
       document.getElementById('week-task-modal').classList.remove('hidden');
     }
@@ -1704,7 +1848,7 @@
       renderWeekTasks();
     }
 
-    // --- 13. RESEARCH TAB & TABLE LOGIC (FIXED CURSOR & AUTO-ADD ROW BUG) ---
+    // --- 13. RESEARCH TAB & TABLE LOGIC ---
     function renderResearchTab() {
       renderResearchTopics();
       renderResearchTable();
@@ -1786,7 +1930,6 @@
         currentProj.logs[idx][field] = value;
         saveData();
         
-        // Dynamically update link preview without destroying focus
         const links = getExtractedLinks(value);
         const container = document.getElementById(`links-${field}-${idx}`);
         if (container) {
@@ -1795,47 +1938,68 @@
       }
     }
 
+    function setLogProgress(idx, step) {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (currentProj && currentProj.logs[idx]) {
+        currentProj.logs[idx].progressStep = step;
+        saveData();
+        renderResearchTable();
+      }
+    }
+
     function renderResearchTable() {
       const tbody = document.getElementById('research-table-body');
       if (!tbody) return;
       tbody.innerHTML = '';
 
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+
       const currentProj = appData.researchProjects[appData.activeProjectIndex];
       if (!currentProj || !currentProj.logs || currentProj.logs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-bold italic">Chưa có nhật ký nghiên cứu nào. Bấm "Thêm Dòng Mới" hoặc "Thêm Ngày Hôm Sau" để bắt đầu.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-bold italic">${dict.noResearchLogs}</td></tr>`;
         return;
       }
 
       currentProj.logs.forEach((log, idx) => {
         const tr = document.createElement('tr');
-        tr.className = "draggable-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-800";
-        tr.draggable = true;
+        tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-800";
         tr.dataset.index = idx;
-
-        tr.ondragstart = (e) => handleDragStart(e, idx);
-        tr.ondragover = (e) => handleDragOver(e);
-        tr.ondrop = (e) => handleDrop(e, idx);
 
         const extractedLinksTasks = getExtractedLinks(log.tasks);
         const extractedLinksNotes = getExtractedLinks(log.notes);
         const extractedLinksPlan = getExtractedLinks(log.plan);
 
+        const formattedDateText = formatLogDateText(log.dateText || '');
+
+        // Map step values: 0 = Red (0%), 1/2/3/50 = Yellow (50%), 4/100 = Green (100%)
+        let stepVal = 0;
+        if (log.progressStep == 1 || log.progressStep == 2 || log.progressStep == 3 || log.progressStep == 50) {
+          stepVal = 1;
+        } else if (log.progressStep == 4 || log.progressStep == 100) {
+          stepVal = 2;
+        }
+
         tr.innerHTML = `
           <td class="p-3 text-center align-top font-bold text-slate-700 dark:text-slate-200">
-            <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'dateText', this.value); autoResizeTextarea(this);" class="w-full text-center auto-expand bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-skkuGreen rounded p-1 font-bold text-xs" rows="2">${log.dateText || ''}</textarea>
+            <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'dateText', this.value); autoResizeTextarea(this);" class="w-full text-center auto-expand bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-skkuGreen rounded p-1 font-bold text-xs" rows="2">${formattedDateText}</textarea>
           </td>
           <td class="p-3 align-top">
             <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'tasks', this.value); autoResizeTextarea(this);" class="w-full auto-expand bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-skkuGreen rounded p-1 font-medium text-slate-800 dark:text-slate-100" rows="2">${log.tasks || ''}</textarea>
             <div id="links-tasks-${idx}" class="text-xs mt-1 space-y-1">${renderExtractedLinksHtml(extractedLinksTasks)}</div>
           </td>
           <td class="p-3 text-center align-top">
-            <select onchange="updateResearchLogFieldNoRender(${idx}, 'progressStep', this.value)" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-bold text-xs cursor-pointer">
-              <option value="0" ${log.progressStep == 0 ? 'selected' : ''}>0% (Mới bắt đầu)</option>
-              <option value="1" ${log.progressStep == 1 ? 'selected' : ''}>25% (Đang làm)</option>
-              <option value="2" ${log.progressStep == 2 ? 'selected' : ''}>50% (Nửa chặng đường)</option>
-              <option value="3" ${log.progressStep == 3 ? 'selected' : ''}>75% (Gần hoàn thành)</option>
-              <option value="4" ${log.progressStep == 4 ? 'selected' : ''}>100% (Hoàn thành)</option>
-            </select>
+            <div class="flex items-center justify-center gap-1.5 mt-1" id="progress-btns-${idx}">
+              <button type="button" onclick="setLogProgress(${idx}, 0)" title="${dict.progress0}" class="px-2.5 py-1.5 rounded-xl font-extrabold text-xs flex items-center gap-1 transition shadow-sm ${stepVal === 0 ? 'bg-red-500 text-white ring-2 ring-red-400 scale-105' : 'bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 hover:bg-red-200 border border-red-200 dark:border-red-900/50 opacity-60 hover:opacity-100'}">
+                <i class="fa-solid fa-check text-xs"></i> 0%
+              </button>
+              <button type="button" onclick="setLogProgress(${idx}, 1)" title="${dict.progress50}" class="px-2.5 py-1.5 rounded-xl font-extrabold text-xs flex items-center gap-1 transition shadow-sm ${stepVal === 1 ? 'bg-amber-500 text-slate-950 ring-2 ring-amber-400 scale-105' : 'bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 hover:bg-amber-200 border border-amber-200 dark:border-amber-900/50 opacity-60 hover:opacity-100'}">
+                <i class="fa-solid fa-check text-xs"></i> 50%
+              </button>
+              <button type="button" onclick="setLogProgress(${idx}, 2)" title="${dict.progress100}" class="px-2.5 py-1.5 rounded-xl font-extrabold text-xs flex items-center gap-1 transition shadow-sm ${stepVal === 2 ? 'bg-emerald-600 text-white ring-2 ring-emerald-400 scale-105' : 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200 border border-emerald-200 dark:border-emerald-900/50 opacity-60 hover:opacity-100'}">
+                <i class="fa-solid fa-check text-xs"></i> 100%
+              </button>
+            </div>
           </td>
           <td class="p-3 align-top">
             <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'notes', this.value); autoResizeTextarea(this);" class="w-full auto-expand bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-skkuGreen rounded p-1 font-medium text-slate-800 dark:text-slate-100" rows="2">${log.notes || ''}</textarea>
@@ -1927,34 +2091,12 @@
       }
     }
 
-    function handleDragStart(e, index) {
-      draggedRowIndex = index;
-      e.dataTransfer.effectAllowed = 'move';
-    }
-
-    function handleDragOver(e) {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-    }
-
-    function handleDrop(e, targetIndex) {
-      e.preventDefault();
-      if (draggedRowIndex !== null && draggedRowIndex !== targetIndex) {
-        const currentProj = appData.researchProjects[appData.activeProjectIndex];
-        const movedItem = currentProj.logs.splice(draggedRowIndex, 1)[0];
-        currentProj.logs.splice(targetIndex, 0, movedItem);
-        saveData();
-        renderResearchTable();
-      }
-      draggedRowIndex = null;
-    }
-
-    // --- INITIALIZATION ---
+    // --- INITIAL APP STARTUP ---
     window.addEventListener('DOMContentLoaded', () => {
       applyTheme();
       applyLanguageUI();
       renderMonthsGrid();
-      updateKSTClock();
+      updateHeaderProfileUI();
     });
   </script>
 </body>
