@@ -83,42 +83,27 @@
 
   <!-- HEADER & NAVBAR -->
   <header class="bg-skkuNavy dark:bg-skkuNavyDark text-white shadow-xl border-b-4 border-skkuGreen sticky top-0 z-40">
-    <div class="max-w-[98%] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+    <div class="max-w-[98%] mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-4">
       
-      <!-- Left: Avatar & Fixed Lab Info & SKKU Title Banner -->
-      <div class="flex items-center space-x-3 flex-wrap sm:flex-nowrap gap-y-2">
-        <!-- Main Avatar -->
-        <div class="relative group cursor-pointer w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border-2 border-skkuGreen shadow-md bg-slate-800 flex-shrink-0" onclick="openAvatarModal()" title="Phóng to / Thay đổi ảnh đại diện">
+      <!-- Left: Avatar & Tên Phòng Thí Nghiệm (Tăng kích thước chữ) -->
+      <div class="flex items-center space-x-4 flex-wrap sm:flex-nowrap gap-y-2">
+        <div class="relative group cursor-pointer w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border-2 border-skkuGreen shadow-md bg-slate-800 flex-shrink-0" onclick="openAvatarModal()" title="Phóng to / Thay đổi ảnh đại diện">
           <img id="main-avatar-img" src="https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab" alt="Avatar" class="w-full h-full object-cover group-hover:scale-105 transition duration-200">
           <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition text-white text-xs font-bold">
             <i class="fa-solid fa-expand"></i>
           </div>
         </div>
 
-        <!-- Lab Name & Group Name (FIXED IN ALL LANGUAGES) -->
         <div class="flex flex-col">
           <div class="flex items-center gap-2">
-            <span class="text-white font-black text-base sm:text-lg tracking-tight">Energy & Environmental Sustainability Lab</span>
-            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-400/30">EES Lab</span>
+            <span class="text-white font-black text-xl sm:text-2xl md:text-3xl tracking-tight">Energy & Environmental Sustainability Lab</span>
+            <span class="text-xs bg-emerald-500/20 text-emerald-300 font-bold px-2.5 py-1 rounded-full border border-emerald-400/30">EES Lab</span>
           </div>
-          <p class="text-xs text-skkuGreen font-bold tracking-wide">Chungseok Choi Group</p>
-        </div>
-
-        <!-- SKKU University Header Title Banner (Korean + English + Logo Banner) -->
-        <div class="hidden xl:flex items-center bg-white/10 dark:bg-slate-900/60 px-3 py-1.5 rounded-2xl border border-white/20 ml-2">
-          <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-full bg-skkuGreen/20 flex items-center justify-center">
-              <i class="fa-solid fa-graduation-cap text-skkuGreen text-sm"></i>
-            </div>
-            <div class="text-left leading-tight">
-              <div class="text-xs font-black text-white tracking-wider">성균관대학교</div>
-              <div class="text-[10px] text-slate-200 font-semibold">SUNGKYUNKWAN UNIVERSITY (SKKU)</div>
-            </div>
-          </div>
+          <p class="text-sm sm:text-base text-skkuGreen font-bold tracking-wide mt-0.5">Chungseok Choi Group</p>
         </div>
       </div>
 
-      <!-- Center: KST Clock & Suwon Weather -->
+      <!-- Center: Giờ KST (Đã thêm Thứ) & Thời tiết Suwon -->
       <div class="flex items-center gap-3 bg-slate-800/90 dark:bg-slate-900/90 px-4 py-2 rounded-2xl border border-slate-700/80 shadow-inner">
         <div class="text-center pr-3 border-r border-slate-700">
           <div class="text-[10px] text-amber-400 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
@@ -137,20 +122,8 @@
         </div>
       </div>
 
-      <!-- Right: SAINT Logo & User Profile & Controls -->
+      <!-- Right: Thông tin cá nhân & Điều khiển -->
       <div class="flex items-center gap-3">
-        <!-- SAINT Logo Card (FIXED POSITION ON THE RIGHT) -->
-        <div class="hidden lg:flex items-center bg-white px-3 py-1.5 rounded-2xl shadow border border-slate-200">
-          <div class="flex items-center gap-1.5 text-skkuNavy font-black text-xs">
-            <i class="fa-solid fa-atom text-cyan-600 text-sm"></i>
-            <div class="leading-none text-left">
-              <span class="text-[9px] block text-slate-500 font-bold">SKKU</span>
-              <span class="text-xs font-black tracking-tight text-skkuNavy">SAINT</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Profile Header Summary Card -->
         <div onclick="openProfileModal()" class="flex items-center gap-2.5 bg-slate-800/80 hover:bg-slate-700/80 p-1.5 pr-3 rounded-2xl cursor-pointer transition border border-slate-700 shadow">
           <img id="header-avatar" src="https://placehold.co/100x100/002C5F/FFF?text=EESL" alt="Avatar" class="w-9 h-9 rounded-xl object-cover border-2 border-skkuGreen shadow-sm">
           <div class="text-left hidden md:block">
@@ -161,7 +134,6 @@
           </div>
         </div>
 
-        <!-- Language & Dark Mode Controls -->
         <div class="flex items-center gap-1.5">
           <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-slate-800 text-white font-bold text-xs px-2.5 py-2 rounded-xl border border-slate-700 focus:ring-2 focus:ring-skkuGreen cursor-pointer">
             <option value="vi">🇻🇳 VI</option>
@@ -190,7 +162,7 @@
 
         <button id="tab-btn-research" onclick="switchMainTab('research')" class="px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">
           <i class="fa-solid fa-flask-vial text-amber-500"></i>
-          <span data-i18n="tabResearch">Nghiên Cứu (Research Logs)</span>
+          <span data-i18n="tabResearch">Nghiên Cứu</span>
         </button>
       </div>
 
@@ -219,7 +191,7 @@
       <div class="relative overflow-hidden bg-gradient-to-r from-skkuNavy via-slate-900 to-emerald-900 text-white rounded-3xl p-6 md:p-8 shadow-2xl border-2 border-skkuGreen/30">
         <div class="max-w-3xl space-y-2">
           <h2 class="text-2xl md:text-3xl font-black" data-i18n="bannerTitle">Chào Mừng Đến Với Bảng Quản Lý Academic EES Lab 🎓</h2>
-          <p class="text-slate-200 text-base leading-relaxed" data-i18n="bannerSubtitle">Theo dõi lịch học, báo cáo lab định kỳ, quản lý deadline và nhật ký nghiên cứu hàng ngày)</p>
+          <p class="text-slate-200 text-base leading-relaxed" data-i18n="bannerSubtitle">Theo dõi lịch học, báo cáo lab định kỳ, quản lý deadline và nhật ký nghiên cứu hàng ngày</p>
         </div>
       </div>
 
@@ -228,7 +200,7 @@
         <!-- Injected dynamically by JS -->
       </div>
 
-      <!-- UTILITIES / QUICK LINKS SECTION (MỤC TIỆN ÍCH NGOÀI TRANG CHỦ) -->
+      <!-- UTILITIES / QUICK LINKS SECTION -->
       <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-4">
         <div class="flex items-center justify-between border-b pb-3 border-slate-200 dark:border-slate-800">
           <h3 class="text-xl font-black text-skkuNavy dark:text-emerald-400 flex items-center gap-2">
@@ -239,7 +211,6 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- Kingo Portal Shortcut Button -->
           <a href="https://login.skku.edu/?retUrl=kc213u9an72n4n33c5l9" target="_blank" rel="noopener noreferrer" class="group flex items-center p-4 bg-slate-50 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700/80 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-skkuGreen transition shadow-md">
             <div class="w-12 h-12 rounded-xl bg-skkuNavy text-skkuGreen flex items-center justify-center text-xl font-black mr-4 flex-shrink-0 group-hover:scale-110 transition shadow">
               <i class="fa-solid fa-university"></i>
@@ -253,7 +224,6 @@
             </div>
           </a>
 
-          <!-- SKKU Canvas Shortcut Button -->
           <a href="https://canvas.skku.edu/courses" target="_blank" rel="noopener noreferrer" class="group flex items-center p-4 bg-slate-50 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700/80 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-skkuGreen transition shadow-md">
             <div class="w-12 h-12 rounded-xl bg-skkuGreen text-slate-900 flex items-center justify-center text-xl font-black mr-4 flex-shrink-0 group-hover:scale-110 transition shadow">
               <i class="fa-solid fa-book-open"></i>
@@ -280,7 +250,6 @@
         </button>
       </div>
 
-      <!-- Grid of Month Folder Buttons -->
       <div id="months-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         <!-- Injected dynamically by JS -->
       </div>
@@ -289,21 +258,19 @@
     <!-- MONTH DETAIL SUB-VIEW -->
     <div id="month-detail-subview" class="hidden space-y-8">
       
-      <!-- Back Header -->
       <div class="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-800">
         <button onclick="showMonthSelectionView()" class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 px-5 py-3 rounded-2xl font-black flex items-center gap-2 text-base transition">
           <i class="fa-solid fa-arrow-left"></i> <span data-i18n="btnBackToMonths">Quay Lại Chọn Tháng</span>
         </button>
         <div class="text-right">
           <h2 id="selected-month-title" class="text-2xl md:text-3xl font-black text-skkuNavy dark:text-emerald-400">Tháng 9/2026</h2>
-          <p class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="semesterSubtitle">Học kỳ Fall 2026 • EES Lab Research</p>
+          <p class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="semesterSubtitle">Học kỳ Fall 2026 • Nghiên Cứu EES Lab</p>
         </div>
       </div>
 
       <!-- TOP DEADLINES & IMPORTANT NOTES SECTION -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         
-        <!-- CARD 1: DEADLINES -->
         <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-xl border-2 border-red-500/30 flex flex-col justify-between">
           <div>
             <div class="flex justify-between items-center mb-4">
@@ -320,7 +287,6 @@
           </div>
         </div>
 
-        <!-- CARD 2: IMPORTANT NOTES -->
         <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-xl border-2 border-amber-500/30 flex flex-col justify-between">
           <div>
             <div class="flex justify-between items-center mb-4">
@@ -334,7 +300,7 @@
             
             <div class="bg-amber-100 dark:bg-amber-950/70 border-l-4 border-amber-500 p-3.5 rounded-r-2xl mb-3 text-amber-950 dark:text-amber-200 font-extrabold text-base flex items-start gap-2 shadow-sm">
               <span class="text-xl">📌</span>
-              <span data-i18n="permanentAdvisorNote">Report với giáo sư hướng dẫn sáng thứ 2 hàng tuần lúc 9h</span>
+              <span data-i18n="permanentAdvisorNote">Báo cáo với giáo sư hướng dẫn sáng thứ 2 hàng tuần lúc 9h</span>
             </div>
 
             <ul id="notes-list" class="space-y-2.5 max-h-44 overflow-y-auto pr-1">
@@ -350,7 +316,7 @@
         <div class="flex items-center justify-between border-b pb-4 border-slate-200 dark:border-slate-800">
           <h3 class="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <i class="fa-solid fa-calendar-week text-skkuGreen"></i>
-            <span data-i18n="scheduleTitle">Lịch Học & Công Việc Hàng Tuần (Mon -> Sun)</span>
+            <span data-i18n="scheduleTitle">Lịch Học & Công Việc Hàng Tuần</span>
           </h3>
           <span class="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-950 px-3 py-1 rounded-full border border-amber-500/30">
             ★ <span data-i18n="todayAutoExpandedNote">Hôm nay được tự động tô đậm & hiển thị chi tiết</span>
@@ -375,9 +341,9 @@
         <div>
           <h2 class="text-2xl md:text-3xl font-black text-skkuNavy dark:text-emerald-400 flex items-center gap-2">
             <i class="fa-solid fa-microscope text-amber-500"></i>
-            <span data-i18n="researchHeader">Sổ Nhật Ký Nghiên Cứu Lab (Research Log Table)</span>
+            <span data-i18n="researchHeader">Sổ Nhật Ký Nghiên Cứu Lab</span>
           </h2>
-          <p class="text-sm font-semibold text-slate-500 dark:text-slate-400" data-i18n="researchSubtitle">Quản lý tiến độ thí nghiệm, ghi chú bài học & plan ngày tiếp theo.</p>
+          <p class="text-sm font-semibold text-slate-500 dark:text-slate-400" data-i18n="researchSubtitle">Quản lý tiến độ thí nghiệm, ghi chú bài học và kế hoạch ngày tiếp theo.</p>
         </div>
 
         <button onclick="addNewResearchTopicPrompt()" class="bg-skkuGreen hover:bg-emerald-600 text-slate-900 font-black px-4 py-2.5 rounded-2xl text-sm flex items-center gap-2 shadow">
@@ -403,11 +369,9 @@
         </div>
         
         <div class="flex items-center gap-2">
-          <!-- Add Next Day Button -->
           <button onclick="addResearchRowNextDay()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-4 py-2 rounded-xl text-sm flex items-center gap-1.5 shadow transition">
             <i class="fa-solid fa-calendar-plus"></i> <span data-i18n="btnAddNextDay">Thêm Ngày Hôm Sau</span>
           </button>
-          <!-- Add New Row Button -->
           <button onclick="addResearchRow()" class="bg-skkuNavy hover:bg-slate-800 text-white font-extrabold px-4 py-2 rounded-xl text-sm flex items-center gap-1.5 shadow transition">
             <i class="fa-solid fa-plus"></i> <span data-i18n="btnAddRow">Thêm Dòng Mới</span>
           </button>
@@ -417,16 +381,16 @@
         </div>
       </div>
 
-      <!-- 5-COLUMN RESEARCH TABLE WITH DRAG AND DROP & AUTO LINK DETECTION -->
+      <!-- 5-COLUMN RESEARCH TABLE WITH AUTOLINK DETECTION -->
       <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
         <table class="w-full text-left border-collapse min-w-[950px]">
           <thead>
             <tr class="bg-skkuNavy text-white font-black text-sm uppercase tracking-wider">
-              <th class="p-4 w-36 border-r border-slate-700 text-center" data-i18n="colDate">1. Ngày</th>
-              <th class="p-4 w-1/4 border-r border-slate-700" data-i18n="colTasks">2. Việc Cần Làm</th>
-              <th class="p-4 w-56 border-r border-slate-700 text-center" data-i18n="colProgress">3. Tiến Độ (%)</th>
-              <th class="p-4 w-1/4 border-r border-slate-700" data-i18n="colNotes">4. Take Notes (Đã học)</th>
-              <th class="p-4 w-1/4 border-r border-slate-700" data-i18n="colPlan">5. Plan Ngày Mai</th>
+              <th class="p-4 w-36 border-r border-slate-700 text-center" data-i18n="colDate">Ngày</th>
+              <th class="p-4 w-1/4 border-r border-slate-700" data-i18n="colTasks">Việc Cần Làm</th>
+              <th class="p-4 w-52 border-r border-slate-700 text-center" data-i18n="colProgress">Tiến Độ (%)</th>
+              <th class="p-4 w-1/4 border-r border-slate-700" data-i18n="colNotes">Ghi Chú & Bài Học</th>
+              <th class="p-4 w-1/4 border-r border-slate-700" data-i18n="colPlan">Kế Hoạch Ngày Mai</th>
               <th class="p-4 w-12 text-center" data-i18n="colDelete">Xóa</th>
             </tr>
           </thead>
@@ -443,7 +407,7 @@
   <!-- FOOTER -->
   <footer class="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 mt-auto">
     <div class="max-w-[98%] mx-auto px-4 text-center text-xs space-y-2">
-      <div class="font-extrabold text-sm text-slate-200">Energy & Environmental Sustainability Lab • Chungseok Choi Group • SKKU</div>
+      <div class="font-extrabold text-sm text-slate-200">Energy & Environmental Sustainability Lab • Chungseok Choi Group</div>
       <p>© 2026 Academic & Research Tracker. Designed for Researchers & Graduate Students.</p>
     </div>
   </footer>
@@ -496,12 +460,12 @@
         </div>
 
         <div>
-          <label class="text-xs text-slate-500 uppercase" data-i18n="lblPassport">Số Hộ Chiếu (Passport No.):</label>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblPassport">Số Hộ Chiếu:</label>
           <input type="text" id="prof-passport" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
         </div>
 
         <div>
-          <label class="text-xs text-slate-500 uppercase" data-i18n="lblArc">Số Thẻ Cư Trú (ARC No.):</label>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblArc">Số Thẻ Cư Trú (ARC):</label>
           <input type="text" id="prof-arc" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
         </div>
 
@@ -553,18 +517,18 @@
           <div>
             <label class="text-xs text-slate-500 uppercase" data-i18n="lblDayOfWeek">Thứ Trong Tuần:</label>
             <select id="course-dow" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
-              <option value="1">Thứ 2 (Mon)</option>
-              <option value="2">Thứ 3 (Tue)</option>
-              <option value="3">Thứ 4 (Wed)</option>
-              <option value="4">Thứ 5 (Thu)</option>
-              <option value="5">Thứ 6 (Fri)</option>
-              <option value="6">Thứ 7 (Sat)</option>
-              <option value="7">Chủ Nhật (Sun)</option>
+              <option value="1">Thứ 2</option>
+              <option value="2">Thứ 3</option>
+              <option value="3">Thứ 4</option>
+              <option value="4">Thứ 5</option>
+              <option value="5">Thứ 6</option>
+              <option value="6">Thứ 7</option>
+              <option value="7">Chủ Nhật</option>
             </select>
           </div>
 
           <div>
-            <label class="text-xs text-slate-500 uppercase" data-i18n="lblTime">Thời Gian (Start - End):</label>
+            <label class="text-xs text-slate-500 uppercase" data-i18n="lblTime">Thời Gian (Bắt đầu - Kết thúc):</label>
             <div class="flex gap-1 mt-1">
               <input type="text" id="course-start" placeholder="09:00" class="w-1/2 p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs">
               <input type="text" id="course-end" placeholder="11:45" class="w-1/2 p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs">
@@ -599,8 +563,8 @@
       
       <div class="flex justify-between items-center border-b pb-4 border-slate-200 dark:border-slate-800">
         <div>
-          <h3 id="modal-week-title" class="text-2xl font-black text-skkuNavy dark:text-emerald-400">Task Tuần</h3>
-          <p class="text-xs font-semibold text-slate-500" data-i18n="weekTaskDesc">Kế hoạch báo cáo giáo sư & nhiệm vụ tuần</p>
+          <h3 id="modal-week-title" class="text-2xl font-black text-skkuNavy dark:text-emerald-400">Nhiệm Vụ Tuần</h3>
+          <p class="text-xs font-semibold text-slate-500" data-i18n="weekTaskDesc">Kế hoạch báo cáo giáo sư và nhiệm vụ tuần</p>
         </div>
         <button onclick="closeWeekTaskModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">
           <i class="fa-solid fa-xmark"></i>
@@ -609,7 +573,7 @@
 
       <div class="space-y-4">
         <div class="flex justify-between items-center">
-          <h4 class="font-extrabold text-base" data-i18n="lblWeekTaskList">Danh Sách Task Tuần Này:</h4>
+          <h4 class="font-extrabold text-base" data-i18n="lblWeekTaskList">Danh Sách Công Việc Tuần Này:</h4>
           <button onclick="addCustomWeekTaskPrompt()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1 shadow">
             <i class="fa-solid fa-plus"></i> <span data-i18n="btnAdd">Thêm Task</span>
           </button>
@@ -653,7 +617,7 @@
 
   <script>
     // --- 1. LOCALSTORAGE KEY & APP STATE ---
-    const STORAGE_KEY = 'EESL_ACADEMIC_TRACKER_V6';
+    const STORAGE_KEY = 'EESL_ACADEMIC_TRACKER_V7';
 
     const DEFAULT_FIXED_SCHEDULE = {
       1: { name: "Academic Writing", time: "Online", room: "Video Course" },
@@ -667,11 +631,11 @@
         kstClock: "Giờ Hàn Quốc (KST)",
         editProfile: "Hồ sơ cá nhân",
         tabCalendar: "Thư Mục Tháng & Lịch Học",
-        tabResearch: "Nghiên Cứu (Research Logs)",
+        tabResearch: "Nghiên Cứu",
         btnAddSchedule: "Thêm Lịch Học Nâng Cao",
         btnProfileInfo: "Thông Tin Cá Nhân",
         bannerTitle: "Chào Mừng Đến Với Bảng Quản Lý Academic EES Lab 🎓",
-        bannerSubtitle: "Theo dõi lịch học, báo cáo lab định kỳ, quản lý deadline và nhật ký nghiên cứu hàng ngày)",
+        bannerSubtitle: "Theo dõi lịch học, báo cáo lab định kỳ, quản lý deadline và nhật ký nghiên cứu hàng ngày",
         utilitiesTitle: "Mục Tiện Ích & Liên Kết Nhanh",
         utilitiesSubtitle: "Truy cập nhanh cổng thông tin SKKU & Canvas",
         kingoDesc: "Cổng thông tin sinh viên SKKU Kingo ID",
@@ -679,23 +643,23 @@
         monthFoldersHeader: "Danh Sách Thư Mục Tháng",
         btnAddMonth: "Thêm Tháng Mới",
         btnBackToMonths: "Quay Lại Chọn Tháng",
-        semesterSubtitle: "Học kỳ Fall 2026 • EES Lab Research",
+        semesterSubtitle: "Học kỳ Fall 2026 • Nghiên Cứu EES Lab",
         cardDeadlines: "Deadline Trong Tháng",
         cardNotes: "Ghi Chú Quan Trọng",
         btnAdd: "Thêm",
-        permanentAdvisorNote: "Report với giáo sư hướng dẫn sáng thứ 2 hàng tuần lúc 9h",
-        scheduleTitle: "Lịch Học & Công Việc Hàng Tuần (Mon -> Sun)",
+        permanentAdvisorNote: "Báo cáo với giáo sư hướng dẫn sáng thứ 2 hàng tuần lúc 9h",
+        scheduleTitle: "Lịch Học & Công Việc Hàng Tuần",
         todayAutoExpandedNote: "Hôm nay được tự động tô đậm & hiển thị chi tiết",
-        researchHeader: "Sổ Nhật Ký Nghiên Cứu Lab (Research Log Table)",
-        researchSubtitle: "Quản lý tiến độ thí nghiệm, ghi chú bài học & plan ngày tiếp theo.",
+        researchHeader: "Sổ Nhật Ký Nghiên Cứu Lab",
+        researchSubtitle: "Quản lý tiến độ thí nghiệm, ghi chú bài học và kế hoạch ngày tiếp theo.",
         btnAddTopic: "Thêm Đề Tài Mới",
         btnAddRow: "Thêm Dòng Mới",
         btnAddNextDay: "Thêm Ngày Hôm Sau",
-        colDate: "1. Ngày",
-        colTasks: "2. Việc Cần Làm",
-        colProgress: "3. Tiến Độ (%)",
-        colNotes: "4. Take Notes (Đã học)",
-        colPlan: "5. Plan Ngày Mai",
+        colDate: "Ngày",
+        colTasks: "Việc Cần Làm",
+        colProgress: "Tiến Độ (%)",
+        colNotes: "Ghi Chú & Bài Học",
+        colPlan: "Kế Hoạch Ngày Mai",
         colDelete: "Xóa",
         modalProfileTitle: "Thông Tin Cá Nhân & Hồ Sơ",
         lblAvatarUrl: "Link Ảnh Đại Diện (Avatar URL):",
@@ -704,8 +668,8 @@
         lblPersonalEmail: "Email Cá Nhân:",
         lblSchoolEmail: "Email Trường (@skku.edu):",
         lblDob: "Ngày Tháng Năm Sinh:",
-        lblPassport: "Số Hộ Chiếu (Passport No.):",
-        lblArc: "Số Thẻ Cư Trú (ARC No.):",
+        lblPassport: "Số Hộ Chiếu:",
+        lblArc: "Số Thẻ Cư Trú (ARC):",
         lblBankName: "Tên Ngân Hàng:",
         lblBankAccount: "Số Tài Khoản Ngân Hàng:",
         btnSaveProfile: "Lưu Thông Tin",
@@ -715,14 +679,17 @@
         lblCourseName: "Tên Môn Học:",
         lblCourseRoom: "Phòng Học / Hình Thức:",
         lblDayOfWeek: "Thứ Trong Tuần:",
-        lblTime: "Thời Gian (Start - End):",
+        lblTime: "Thời Gian (Bắt đầu - Kết thúc):",
         lblStartWeek: "Tuần Bắt Đầu (1-16):",
         lblEndWeek: "Tuần Kết Thúc (1-16):",
         btnApplyCourse: "Áp Dụng Lịch Học",
-        weekTaskDesc: "Kế hoạch báo cáo giáo sư & nhiệm vụ tuần",
-        lblWeekTaskList: "Danh Sách Task Tuần Này:",
+        weekTaskDesc: "Kế hoạch báo cáo giáo sư và nhiệm vụ tuần",
+        lblWeekTaskList: "Danh Sách Công Việc Tuần Này:",
         modalAvatarTitle: "Ảnh Đại Diện Cá Nhân",
         btnUploadNewPhoto: "Tải Ảnh Khác Để Thay Thế",
+        lblCurrentMonth: "THÁNG HIỆN TẠI",
+        lblScheduleFolder: "Thư Mục Lịch Học",
+        viewWeekDetails: "Xem chi tiết lịch tuần →",
         daysMap: { 1: 'T2', 2: 'T3', 3: 'T4', 4: 'T5', 5: 'T6', 6: 'T7', 7: 'CN' },
         daysFullMap: { 1: 'Thứ 2', 2: 'Thứ 3', 3: 'Thứ 4', 4: 'Thứ 5', 5: 'Thứ 6', 6: 'Thứ 7', 7: 'Chủ Nhật' }
       },
@@ -734,7 +701,7 @@
         btnAddSchedule: "Add Advanced Course",
         btnProfileInfo: "Personal Profile",
         bannerTitle: "Welcome to EES Lab Academic Portal 🎓",
-        bannerSubtitle: "Track course schedule, weekly advisor reports, deadlines, and lab research logs)",
+        bannerSubtitle: "Track course schedule, weekly advisor reports, deadlines, and lab research logs",
         utilitiesTitle: "Quick Utilities & Links",
         utilitiesSubtitle: "Quick access to SKKU Kingo Portal & Canvas",
         kingoDesc: "SKKU Student Kingo ID Portal",
@@ -747,18 +714,18 @@
         cardNotes: "Important Notes",
         btnAdd: "Add",
         permanentAdvisorNote: "Weekly advisor report every Monday morning at 09:00",
-        scheduleTitle: "Weekly Courses & Tasks (Mon -> Sun)",
+        scheduleTitle: "Weekly Courses & Tasks",
         todayAutoExpandedNote: "Today is auto-highlighted and expanded",
         researchHeader: "Lab Research Journal & Logs",
         researchSubtitle: "Manage experimental progress, key takeaways & next day plans.",
         btnAddTopic: "Add New Topic",
         btnAddRow: "Add New Row",
         btnAddNextDay: "Add Next Day",
-        colDate: "1. Date",
-        colTasks: "2. Tasks To Do",
-        colProgress: "3. Progress (%)",
-        colNotes: "4. Take Notes / Learnings",
-        colPlan: "5. Plan for Tomorrow",
+        colDate: "Date",
+        colTasks: "Tasks To Do",
+        colProgress: "Progress (%)",
+        colNotes: "Take Notes / Learnings",
+        colPlan: "Plan for Tomorrow",
         colDelete: "Delete",
         modalProfileTitle: "Personal Information & Profile",
         lblAvatarUrl: "Avatar Image URL:",
@@ -786,6 +753,9 @@
         lblWeekTaskList: "This Week's Task List:",
         modalAvatarTitle: "Personal Profile Picture",
         btnUploadNewPhoto: "Upload Alternative Photo",
+        lblCurrentMonth: "CURRENT MONTH",
+        lblScheduleFolder: "Schedule Folder",
+        viewWeekDetails: "View weekly details →",
         daysMap: { 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat', 7: 'Sun' },
         daysFullMap: { 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday', 7: 'Sunday' }
       },
@@ -793,11 +763,11 @@
         kstClock: "한국 표준시 (KST)",
         editProfile: "개인 프로필",
         tabCalendar: "월별 폴더 & 수업 일정",
-        tabResearch: "연구 일지 (Research Logs)",
+        tabResearch: "연구 일지",
         btnAddSchedule: "고급 수업 일정 추가",
         btnProfileInfo: "개인 정보",
         bannerTitle: "EES Lab 학업 및 연구 관리 Portal 🎓",
-        bannerSubtitle: "수업 일정, 주간 지도교수 보고, 마감일 및 연구 일지를 효율적으로 관리하세요)",
+        bannerSubtitle: "수업 일정, 주간 지도교수 보고, 마감일 및 연구 일지를 효율적으로 관리하세요",
         utilitiesTitle: "유틸리티 및 빠른 링크",
         utilitiesSubtitle: "성균관대 킹고 포털 및 Canvas 빠른 접속",
         kingoDesc: "성균관대학교 킹고 포털 시스템",
@@ -806,22 +776,22 @@
         btnAddMonth: "새 월 추가",
         btnBackToMonths: "월 선택으로 돌아가기",
         semesterSubtitle: "2026 가을학기 • EES Lab 연구실",
-        cardDeadlines: "이달의 마감일 (Deadlines)",
-        cardNotes: "중요 메모 (Notes)",
+        cardDeadlines: "이달의 마감일",
+        cardNotes: "중요 메모",
         btnAdd: "추가",
         permanentAdvisorNote: "매주 월요일 오전 9시 지도교수님 주간 보고",
-        scheduleTitle: "주간 수업 및 할 일 (월 -> 일)",
+        scheduleTitle: "주간 수업 및 할 일",
         todayAutoExpandedNote: "오늘 일정이 자동으로 강조 및 확장됩니다",
-        researchHeader: "연구실 연구 일지 (Research Table)",
+        researchHeader: "연구실 연구 일지",
         researchSubtitle: "실험 진행 상황, 학습 내용 및 다음 날 계획을 기록하세요.",
         btnAddTopic: "새 연구 주제 추가",
         btnAddRow: "새 행 추가",
         btnAddNextDay: "다음 날 추가",
-        colDate: "1. 날짜",
-        colTasks: "2. 할 일 (Tasks)",
-        colProgress: "3. 진행률 (%)",
-        colNotes: "4. 노트 / 학습 내용",
-        colPlan: "5. 내일 계획",
+        colDate: "날짜",
+        colTasks: "할 일",
+        colProgress: "진행률 (%)",
+        colNotes: "노트 / 학습 내용",
+        colPlan: "내일 계획",
         colDelete: "삭제",
         modalProfileTitle: "개인 정보 및 프로필",
         lblAvatarUrl: "프로필 이미지 URL:",
@@ -849,6 +819,9 @@
         lblWeekTaskList: "이번 주 과제 목록:",
         modalAvatarTitle: "프로필 사진",
         btnUploadNewPhoto: "다른 사진 업로드",
+        lblCurrentMonth: "현재 월",
+        lblScheduleFolder: "수업 일정",
+        viewWeekDetails: "주간 일정 상세보기 →",
         daysMap: { 1: '월', 2: '화', 3: '수', 4: '목', 5: '금', 6: '토', 7: '일' },
         daysFullMap: { 1: '월요일', 2: '화요일', 3: '수요일', 4: '목요일', 5: '금요일', 6: '토요일', 7: '일요일' }
       }
@@ -871,7 +844,7 @@
       },
       selectedMonthKey: '9/2026',
       months: {
-        "9/2026": { year: 2026, month: 9, deadlines: [{ text: "Nộp báo cáo Nanophotonics", done: false }], notes: ["Chuẩn bị slide thuyết trình seminar"] },
+        "9/2026": { year: 2026, month: 9, deadlines: [{ text: "Nộp báo cáo Nanophotonics https://canvas.skku.edu", done: false }], notes: ["Chuẩn bị slide thuyết trình seminar"] },
         "10/2026": { year: 2026, month: 10, deadlines: [], notes: [] },
         "11/2026": { year: 2026, month: 11, deadlines: [], notes: [] },
         "12/2026": { year: 2026, month: 12, deadlines: [], notes: [] },
@@ -888,11 +861,11 @@
           logs: [
             {
               id: "log_1",
-              dateText: "18/09/2026\n(5)",
-              tasks: "Đo phổ XRD mẫu A1-A5 và tổng hợp màng mỏng https://canvas.skku.edu/courses",
+              dateText: "18/09/2026\n(T6)",
+              tasks: "Đo phổ XRD mẫu A1-A5 https://canvas.skku.edu/courses",
               progressStep: 1,
-              notes: "Mẫu A3 có tinh thể đồng đều nhất, hiệu suất cao",
-              plan: "Thực hiện đo quang phổ UV-Vis cho mẫu A3 vào sáng mai"
+              notes: "Mẫu A3 có tinh thể đồng đều nhất",
+              plan: "Đo quang phổ UV-Vis cho mẫu A3 vào sáng mai"
             }
           ]
         }
@@ -908,8 +881,7 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
     }
 
-    // --- HELPER FUNCTION: LINKIFY TEXT ---
-    // Detect URLs in string and return clickable underlined links with target="_blank"
+    // --- HELPER FUNCTIONS: LINK DETECTION & RENDER ---
     function renderClickableLinks(text) {
       if (!text) return '';
       const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
@@ -919,11 +891,18 @@
       });
     }
 
-    // Extract raw links to display underneath textareas
     function getExtractedLinks(text) {
       if (!text) return [];
       const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
       return text.match(urlRegex) || [];
+    }
+
+    function renderExtractedLinksHtml(links) {
+      if (!links || links.length === 0) return '';
+      return links.map(url => {
+        let href = url.startsWith('http') ? url : 'http://' + url;
+        return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline font-bold text-xs"><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> ${url}</a>`;
+      }).join('<br>');
     }
 
     // --- 2. MULTI-LANGUAGE SYSTEM ---
@@ -936,6 +915,9 @@
       }
       if (!document.getElementById('month-detail-subview').classList.contains('hidden')) {
         renderMonthDetail();
+      }
+      if (!document.getElementById('month-selection-subview').classList.contains('hidden')) {
+        renderMonthsGrid();
       }
     }
 
@@ -953,22 +935,35 @@
 
       updateHeaderProfileUI();
       renderNotifications();
+      updateKSTClock();
     }
 
-    // --- 3. KST CLOCK & SUWON WEATHER ---
+    // --- 3. KST CLOCK (INCLUDES DAY OF WEEK) & WEATHER ---
     function updateKSTClock() {
       const now = new Date();
       const optionsTime = { timeZone: 'Asia/Seoul', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
-      const optionsDate = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
-      
       const timeStr = new Intl.DateTimeFormat('vi-VN', optionsTime).format(now);
-      const dateStr = new Intl.DateTimeFormat('vi-VN', optionsDate).format(now);
+
+      const lang = appData.lang || 'vi';
+      const nowKST = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+      let dow = nowKST.getDay();
+      if (dow === 0) dow = 7;
+      
+      const dayNames = {
+        vi: { 1: 'Thứ 2', 2: 'Thứ 3', 3: 'Thứ 4', 4: 'Thứ 5', 5: 'Thứ 6', 6: 'Thứ 7', 7: 'Chủ Nhật' },
+        en: { 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday', 7: 'Sunday' },
+        ko: { 1: '월요일', 2: '화요일', 3: '수요일', 4: '목요일', 5: '금요일', 6: '토요일', 7: '일요일' }
+      };
+
+      const dayName = (dayNames[lang] || dayNames['vi'])[dow];
+      const dd = String(nowKST.getDate()).padStart(2, '0');
+      const mm = String(nowKST.getMonth() + 1).padStart(2, '0');
+      const yyyy = nowKST.getFullYear();
 
       document.getElementById('kst-time').innerText = timeStr;
-      document.getElementById('kst-date').innerText = dateStr;
+      document.getElementById('kst-date').innerText = `${dayName}, ${dd}/${mm}/${yyyy}`;
     }
     setInterval(updateKSTClock, 1000);
-    updateKSTClock();
 
     async function fetchSuwonWeather() {
       try {
@@ -1224,6 +1219,8 @@
 
       const now = new Date();
       const currentMonthKey = `${now.getMonth() + 1}/${now.getFullYear()}`;
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
 
       Object.keys(appData.months).forEach(key => {
         const m = appData.months[key];
@@ -1242,8 +1239,8 @@
             <div class="flex justify-between items-start">
               ${
                 isCurrentMonth 
-                  ? '<span class="text-xs font-black uppercase tracking-wider text-slate-900 bg-skkuGreen px-3 py-1 rounded-full shadow">THÁNG HIỆN TẠI</span>' 
-                  : '<span class="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">Lịch Học</span>'
+                  ? `<span class="text-xs font-black uppercase tracking-wider text-slate-900 bg-skkuGreen px-3 py-1 rounded-full shadow">${dict.lblCurrentMonth}</span>` 
+                  : `<span class="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">${dict.lblScheduleFolder}</span>`
               }
               <i class="fa-solid fa-folder-open text-2xl ${isCurrentMonth ? 'text-skkuGreen' : 'text-slate-400'} group-hover:scale-110 transition"></i>
             </div>
@@ -1251,12 +1248,11 @@
             <p class="text-xs text-slate-500 font-semibold mt-1">Năm ${m.year}</p>
           </div>
           <div class="mt-4 flex justify-between items-center text-xs font-black text-skkuNavy dark:text-emerald-400">
-            <span>Xem chi tiết lịch tuần →</span>
+            <span>${dict.viewWeekDetails}</span>
           </div>
         `;
         container.appendChild(card);
       });
-      applyLanguageUI();
     }
 
     function addNewMonthPrompt() {
@@ -1458,7 +1454,7 @@
       const weekTaskBtn = document.createElement('button');
       weekTaskBtn.className = "w-full py-3 px-4 bg-skkuNavy hover:bg-slate-800 text-white font-extrabold rounded-2xl shadow-md flex items-center justify-center gap-2 transition text-sm mt-3 border border-emerald-500/30";
       weekTaskBtn.onclick = () => openWeekTaskModal(weekKey, weekNum);
-      weekTaskBtn.innerHTML = `<i class="fa-solid fa-list-check text-skkuGreen"></i> Kế Hoạch & Task Tuần ${weekNum} (Read Paper, Advisor Report...)`;
+      weekTaskBtn.innerHTML = `<i class="fa-solid fa-list-check text-skkuGreen"></i> Kế Hoạch & Task Tuần ${weekNum}`;
       weekWrapper.appendChild(weekTaskBtn);
 
       return weekWrapper;
@@ -1665,7 +1661,7 @@
       list.innerHTML = '';
 
       const tasks = appData.weekTasks[activeWeekKeyForModal] || [
-        { text: "Chuẩn bị Slide & Báo cáo với Giáo sư (Advisor Report)", done: false },
+        { text: "Chuẩn bị Slide & Báo cáo với Giáo sư", done: false },
         { text: "Đọc 2 bài báo ISI thuộc nhóm EES Lab", done: false }
       ];
 
@@ -1708,7 +1704,7 @@
       renderWeekTasks();
     }
 
-    // --- 13. RESEARCH TAB & TABLE LOGIC WITH AUTOMATIC LINK UNDERLINE DETECTION ---
+    // --- 13. RESEARCH TAB & TABLE LOGIC (FIXED CURSOR & AUTO-ADD ROW BUG) ---
     function renderResearchTab() {
       renderResearchTopics();
       renderResearchTable();
@@ -1779,34 +1775,161 @@
       }
     }
 
-    function formatResearchDateText(rawText) {
-      if (!rawText) return '';
-      const lang = appData.lang || 'vi';
-      const dict = i18nDict[lang] || i18nDict['vi'];
-
-      // Dynamically re-format day inside parentheses based on current active language
-      const dateMatch = rawText.match(/(\d{2}\/\d{2}\/\d{4})/);
-      if (dateMatch) {
-        const dateParts = dateMatch[1].split('/');
-        const dateObj = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
-        let dow = dateObj.getDay();
-        if (dow === 0) dow = 7;
-        const dayLabel = dict.daysMap[dow] || dow;
-        return `${dateMatch[1]}\n(${dayLabel})`;
-      }
-      return rawText;
-    }
-
     function autoResizeTextarea(el) {
       el.style.height = 'auto';
       el.style.height = (el.scrollHeight) + 'px';
     }
 
-    // DRAG AND DROP HANDLERS FOR TABLE ROWS
+    function updateResearchLogFieldNoRender(idx, field, value) {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (currentProj && currentProj.logs[idx]) {
+        currentProj.logs[idx][field] = value;
+        saveData();
+        
+        // Dynamically update link preview without destroying focus
+        const links = getExtractedLinks(value);
+        const container = document.getElementById(`links-${field}-${idx}`);
+        if (container) {
+          container.innerHTML = renderExtractedLinksHtml(links);
+        }
+      }
+    }
+
+    function renderResearchTable() {
+      const tbody = document.getElementById('research-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (!currentProj || !currentProj.logs || currentProj.logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-bold italic">Chưa có nhật ký nghiên cứu nào. Bấm "Thêm Dòng Mới" hoặc "Thêm Ngày Hôm Sau" để bắt đầu.</td></tr>`;
+        return;
+      }
+
+      currentProj.logs.forEach((log, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = "draggable-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-800";
+        tr.draggable = true;
+        tr.dataset.index = idx;
+
+        tr.ondragstart = (e) => handleDragStart(e, idx);
+        tr.ondragover = (e) => handleDragOver(e);
+        tr.ondrop = (e) => handleDrop(e, idx);
+
+        const extractedLinksTasks = getExtractedLinks(log.tasks);
+        const extractedLinksNotes = getExtractedLinks(log.notes);
+        const extractedLinksPlan = getExtractedLinks(log.plan);
+
+        tr.innerHTML = `
+          <td class="p-3 text-center align-top font-bold text-slate-700 dark:text-slate-200">
+            <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'dateText', this.value); autoResizeTextarea(this);" class="w-full text-center auto-expand bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-skkuGreen rounded p-1 font-bold text-xs" rows="2">${log.dateText || ''}</textarea>
+          </td>
+          <td class="p-3 align-top">
+            <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'tasks', this.value); autoResizeTextarea(this);" class="w-full auto-expand bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-skkuGreen rounded p-1 font-medium text-slate-800 dark:text-slate-100" rows="2">${log.tasks || ''}</textarea>
+            <div id="links-tasks-${idx}" class="text-xs mt-1 space-y-1">${renderExtractedLinksHtml(extractedLinksTasks)}</div>
+          </td>
+          <td class="p-3 text-center align-top">
+            <select onchange="updateResearchLogFieldNoRender(${idx}, 'progressStep', this.value)" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-bold text-xs cursor-pointer">
+              <option value="0" ${log.progressStep == 0 ? 'selected' : ''}>0% (Mới bắt đầu)</option>
+              <option value="1" ${log.progressStep == 1 ? 'selected' : ''}>25% (Đang làm)</option>
+              <option value="2" ${log.progressStep == 2 ? 'selected' : ''}>50% (Nửa chặng đường)</option>
+              <option value="3" ${log.progressStep == 3 ? 'selected' : ''}>75% (Gần hoàn thành)</option>
+              <option value="4" ${log.progressStep == 4 ? 'selected' : ''}>100% (Hoàn thành)</option>
+            </select>
+          </td>
+          <td class="p-3 align-top">
+            <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'notes', this.value); autoResizeTextarea(this);" class="w-full auto-expand bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-skkuGreen rounded p-1 font-medium text-slate-800 dark:text-slate-100" rows="2">${log.notes || ''}</textarea>
+            <div id="links-notes-${idx}" class="text-xs mt-1 space-y-1">${renderExtractedLinksHtml(extractedLinksNotes)}</div>
+          </td>
+          <td class="p-3 align-top">
+            <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'plan', this.value); autoResizeTextarea(this);" class="w-full auto-expand bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-skkuGreen rounded p-1 font-medium text-slate-800 dark:text-slate-100" rows="2">${log.plan || ''}</textarea>
+            <div id="links-plan-${idx}" class="text-xs mt-1 space-y-1">${renderExtractedLinksHtml(extractedLinksPlan)}</div>
+          </td>
+          <td class="p-3 text-center align-top">
+            <button onclick="deleteResearchRow(${idx})" class="text-slate-400 hover:text-red-500 font-bold p-1"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      setTimeout(() => {
+        document.querySelectorAll('textarea.auto-expand').forEach(autoResizeTextarea);
+      }, 50);
+    }
+
+    function addResearchRow() {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (!currentProj) return;
+
+      const now = new Date();
+      const dd = String(now.getDate()).padStart(2, '0');
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const yyyy = now.getFullYear();
+      let dow = now.getDay();
+      if (dow === 0) dow = 7;
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+      const dayLabel = dict.daysMap[dow] || dow;
+
+      currentProj.logs.push({
+        id: "log_" + Date.now(),
+        dateText: `${dd}/${mm}/${yyyy}\n(${dayLabel})`,
+        tasks: "",
+        progressStep: 0,
+        notes: "",
+        plan: ""
+      });
+      saveData();
+      renderResearchTable();
+    }
+
+    function addResearchRowNextDay() {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (!currentProj) return;
+
+      let baseDate = new Date();
+      if (currentProj.logs.length > 0) {
+        const lastLog = currentProj.logs[currentProj.logs.length - 1];
+        const match = (lastLog.dateText || '').match(/(\d{2})\/(\d{2})\/(\d{4})/);
+        if (match) {
+          baseDate = new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
+          baseDate.setDate(baseDate.getDate() + 1);
+        }
+      }
+
+      const dd = String(baseDate.getDate()).padStart(2, '0');
+      const mm = String(baseDate.getMonth() + 1).padStart(2, '0');
+      const yyyy = baseDate.getFullYear();
+      let dow = baseDate.getDay();
+      if (dow === 0) dow = 7;
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+      const dayLabel = dict.daysMap[dow] || dow;
+
+      currentProj.logs.push({
+        id: "log_" + Date.now(),
+        dateText: `${dd}/${mm}/${yyyy}\n(${dayLabel})`,
+        tasks: "",
+        progressStep: 0,
+        notes: "",
+        plan: ""
+      });
+      saveData();
+      renderResearchTable();
+    }
+
+    function deleteResearchRow(idx) {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (currentProj && currentProj.logs) {
+        currentProj.logs.splice(idx, 1);
+        saveData();
+        renderResearchTable();
+      }
+    }
+
     function handleDragStart(e, index) {
       draggedRowIndex = index;
       e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', index);
     }
 
     function handleDragOver(e) {
@@ -1816,190 +1939,22 @@
 
     function handleDrop(e, targetIndex) {
       e.preventDefault();
-      if (draggedRowIndex === null || draggedRowIndex === targetIndex) return;
-
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (!currentProj || !currentProj.logs) return;
-
-      const movedItem = currentProj.logs.splice(draggedRowIndex, 1)[0];
-      currentProj.logs.splice(targetIndex, 0, movedItem);
-
+      if (draggedRowIndex !== null && draggedRowIndex !== targetIndex) {
+        const currentProj = appData.researchProjects[appData.activeProjectIndex];
+        const movedItem = currentProj.logs.splice(draggedRowIndex, 1)[0];
+        currentProj.logs.splice(targetIndex, 0, movedItem);
+        saveData();
+        renderResearchTable();
+      }
       draggedRowIndex = null;
-      saveData();
-      renderResearchTable();
     }
 
-    function renderResearchTable() {
-      const tbody = document.getElementById('research-table-body');
-      tbody.innerHTML = '';
-
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (!currentProj || !currentProj.logs) return;
-
-      currentProj.logs.forEach((log, idx) => {
-        const tr = document.createElement('tr');
-        tr.className = "draggable-row hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-800";
-        tr.draggable = true;
-
-        tr.ondragstart = (e) => handleDragStart(e, idx);
-        tr.ondragover = (e) => handleDragOver(e);
-        tr.ondrop = (e) => handleDrop(e, idx);
-
-        const formattedDate = formatResearchDateText(log.dateText);
-
-        const tasksLinks = getExtractedLinks(log.tasks);
-        const notesLinks = getExtractedLinks(log.notes);
-        const planLinks = getExtractedLinks(log.plan);
-
-        tr.innerHTML = `
-          <!-- Cột 1: Ngày -->
-          <td class="p-3 border-r border-slate-200 dark:border-slate-800 w-36 min-w-[130px] text-center">
-            <div class="flex items-center gap-1 justify-center">
-              <i class="fa-solid fa-grip-vertical text-slate-300 hover:text-slate-500 cursor-grab text-xs mr-1" title="Kéo thả để di chuyển hàng"></i>
-              <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'dateText', this.value)" class="auto-expand w-full bg-transparent font-black text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1 rounded border border-transparent focus:border-slate-300 text-center leading-tight resize-none text-sm">${formattedDate || ''}</textarea>
-            </div>
-          </td>
-
-          <!-- Cột 2: Việc Cần Làm -->
-          <td class="p-3 border-r border-slate-200 dark:border-slate-800">
-            <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'tasks', this.value); renderResearchTable();" class="auto-expand w-full bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1.5 rounded border border-transparent focus:border-slate-300 text-sm leading-snug resize-none">${log.tasks || ''}</textarea>
-            ${tasksLinks.length > 0 ? `<div class="mt-1 pt-1 border-t border-slate-200 dark:border-slate-700 text-xs font-semibold">${renderClickableLinks(log.tasks)}</div>` : ''}
-          </td>
-
-          <!-- Cột 3: Tiến Độ (%) -->
-          <td class="p-3 border-r border-slate-200 dark:border-slate-800 text-center">
-            <div class="flex items-center justify-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
-              <button onclick="setResearchProgress(${idx}, 0)" class="flex-1 py-1 px-1.5 rounded-lg text-[11px] font-black transition ${log.progressStep === 0 ? 'bg-red-500 text-white shadow' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}">0%</button>
-              <button onclick="setResearchProgress(${idx}, 1)" class="flex-1 py-1 px-1.5 rounded-lg text-[11px] font-black transition ${log.progressStep === 1 ? 'bg-amber-500 text-slate-900 shadow' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}">50%</button>
-              <button onclick="setResearchProgress(${idx}, 2)" class="flex-1 py-1 px-1.5 rounded-lg text-[11px] font-black transition ${log.progressStep === 2 ? 'bg-emerald-500 text-white shadow' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}">100%</button>
-            </div>
-          </td>
-
-          <!-- Cột 4: Take Notes -->
-          <td class="p-3 border-r border-slate-200 dark:border-slate-800">
-            <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'notes', this.value); renderResearchTable();" class="auto-expand w-full bg-transparent font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1.5 rounded border border-transparent focus:border-slate-300 text-sm leading-snug resize-none">${log.notes || ''}</textarea>
-            ${notesLinks.length > 0 ? `<div class="mt-1 pt-1 border-t border-slate-200 dark:border-slate-700 text-xs font-semibold">${renderClickableLinks(log.notes)}</div>` : ''}
-          </td>
-
-          <!-- Cột 5: Plan Ngày Mai -->
-          <td class="p-3 border-r border-slate-200 dark:border-slate-800">
-            <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'plan', this.value); renderResearchTable();" class="auto-expand w-full bg-transparent font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1.5 rounded border border-transparent focus:border-slate-300 text-sm leading-snug resize-none">${log.plan || ''}</textarea>
-            ${planLinks.length > 0 ? `<div class="mt-1 pt-1 border-t border-slate-200 dark:border-slate-700 text-xs font-semibold">${renderClickableLinks(log.plan)}</div>` : ''}
-          </td>
-
-          <!-- Xóa dòng -->
-          <td class="p-3 text-center">
-            <button onclick="deleteResearchRow(${idx})" class="text-slate-400 hover:text-red-500 p-2 text-base transition">
-              <i class="fa-solid fa-trash-can"></i>
-            </button>
-          </td>
-        `;
-
-        tbody.appendChild(tr);
-      });
-
-      document.querySelectorAll('textarea.auto-expand').forEach(el => autoResizeTextarea(el));
-    }
-
-    function updateResearchRow(idx, field, value) {
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (currentProj && currentProj.logs[idx]) {
-        currentProj.logs[idx][field] = value;
-        saveData();
-      }
-    }
-
-    function setResearchProgress(idx, step) {
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (currentProj && currentProj.logs[idx]) {
-        currentProj.logs[idx].progressStep = step;
-        saveData();
-        renderResearchTable();
-      }
-    }
-
-    function deleteResearchRow(idx) {
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (currentProj && currentProj.logs[idx]) {
-        currentProj.logs.splice(idx, 1);
-        saveData();
-        renderResearchTable();
-      }
-    }
-
-    function addResearchRow() {
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (!currentProj) return;
-
-      const lang = appData.lang || 'vi';
-      const dict = i18nDict[lang] || i18nDict['vi'];
-
-      let dateString = "";
-      if (currentProj.logs.length > 0) {
-        dateString = currentProj.logs[0].dateText;
-      } else {
-        const now = new Date();
-        const nowStr = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
-        let dow = now.getDay();
-        if (dow === 0) dow = 7;
-        const dayLabel = dict.daysMap[dow] || dow;
-        dateString = `${nowStr}\n(${dayLabel})`;
-      }
-
-      currentProj.logs.unshift({
-        id: "log_" + Date.now(),
-        dateText: dateString,
-        tasks: "",
-        progressStep: 0,
-        notes: "",
-        plan: ""
-      });
-
-      saveData();
-      renderResearchTable();
-    }
-
-    function addResearchRowNextDay() {
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (!currentProj) return;
-
-      const lang = appData.lang || 'vi';
-      const dict = i18nDict[lang] || i18nDict['vi'];
-
-      let nextDate = new Date();
-
-      if (currentProj.logs.length > 0) {
-        const topLog = currentProj.logs[0];
-        const match = topLog.dateText ? topLog.dateText.match(/(\d{2})\/(\d{2})\/(\d{4})/) : null;
-        if (match) {
-          nextDate = new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]) + 1);
-        }
-      }
-
-      const dateStr = `${String(nextDate.getDate()).padStart(2, '0')}/${String(nextDate.getMonth() + 1).padStart(2, '0')}/${nextDate.getFullYear()}`;
-      let dow = nextDate.getDay();
-      if (dow === 0) dow = 7;
-      const dayLabel = dict.daysMap[dow] || dow;
-
-      currentProj.logs.unshift({
-        id: "log_" + Date.now(),
-        dateText: `${dateStr}\n(${dayLabel})`,
-        tasks: "",
-        progressStep: 0,
-        notes: "",
-        plan: ""
-      });
-
-      saveData();
-      renderResearchTable();
-    }
-
-    // --- 14. INITIALIZATION ---
+    // --- INITIALIZATION ---
     window.addEventListener('DOMContentLoaded', () => {
       applyTheme();
       applyLanguageUI();
       renderMonthsGrid();
-      renderNotifications();
+      updateKSTClock();
     });
   </script>
 </body>
