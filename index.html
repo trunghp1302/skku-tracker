@@ -34,6 +34,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
+    html, body {
+      overflow-x: hidden;
+      overflow-y: auto;
+      min-height: 100vh;
+    }
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
       transition: background-color 0.2s, color 0.2s;
@@ -66,6 +71,13 @@
       resize: none;
       min-height: 42px;
     }
+    tr.draggable-row {
+      cursor: grab;
+    }
+    tr.draggable-row:active {
+      cursor: grabbing;
+      opacity: 0.6;
+    }
   </style>
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen skku-watermark flex flex-col">
@@ -76,7 +88,6 @@
       
       <!-- Brand & Title & Square Avatar Box -->
       <div class="flex items-center space-x-3">
-        <!-- Ô vuông Ảnh Đại Diện Phía Trên -->
         <div class="relative group cursor-pointer w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border-2 border-skkuGreen shadow-md bg-slate-800 flex-shrink-0" onclick="openAvatarModal()" title="Xem phóng to / Thay đổi ảnh đại diện">
           <img id="main-avatar-img" src="https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab" alt="Avatar" class="w-full h-full object-cover group-hover:scale-105 transition duration-200">
           <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition text-white text-xs font-bold">
@@ -100,7 +111,6 @@
 
       <!-- KST Digital Clock & Suwon Weather -->
       <div class="flex items-center gap-3 bg-slate-800/90 dark:bg-slate-900/90 px-4 py-2 rounded-2xl border border-slate-700/80 shadow-inner">
-        <!-- Live Clock -->
         <div class="text-center pr-3 border-r border-slate-700">
           <div class="text-[10px] text-amber-400 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
             <span>🇰🇷</span> <span data-i18n="kstClock">Giờ Hàn Quốc (KST)</span>
@@ -108,7 +118,6 @@
           <div id="kst-time" class="text-lg md:text-xl font-black font-mono text-white">00:00:00</div>
           <div id="kst-date" class="text-[11px] text-slate-300 font-semibold">--/--/----</div>
         </div>
-        <!-- Weather -->
         <div class="text-center min-w-[95px]">
           <div class="text-[10px] text-cyan-300 font-bold flex items-center justify-center gap-1">
             <i class="fa-solid fa-location-dot"></i> Suwon
@@ -123,7 +132,7 @@
       <div onclick="openProfileModal()" class="flex items-center gap-3 bg-slate-800/80 hover:bg-slate-700/80 p-1.5 pr-4 rounded-2xl cursor-pointer transition border border-slate-700 shadow">
         <img id="header-avatar" src="https://placehold.co/100x100/002C5F/FFF?text=EESL" alt="Avatar" class="w-10 h-10 rounded-xl object-cover border-2 border-skkuGreen shadow-sm">
         <div class="text-left hidden lg:block">
-          <div id="header-user-name" class="text-sm font-extrabold text-white leading-tight" data-i18n="userRoleDefault">Nghiên cứu sinh</div>
+          <div id="header-user-name" class="text-sm font-extrabold text-white leading-tight">Nghiên cứu sinh</div>
           <div class="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
             <i class="fa-solid fa-user-gear"></i> <span data-i18n="editProfile">Hồ sơ cá nhân</span>
           </div>
@@ -132,14 +141,12 @@
 
       <!-- Controls: Language & Dark Mode -->
       <div class="flex items-center gap-2">
-        <!-- Language Switcher -->
         <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-slate-800 text-white font-bold text-xs px-3 py-2 rounded-xl border border-slate-700 focus:ring-2 focus:ring-skkuGreen cursor-pointer">
           <option value="vi">🇻🇳 VI</option>
           <option value="en">🇺🇸 EN</option>
           <option value="ko">🇰🇷 KO</option>
         </select>
 
-        <!-- Theme Toggle -->
         <button id="theme-toggle" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-xl border border-slate-700 transition shadow">
           <i id="theme-icon" class="fa-solid fa-moon text-base"></i>
         </button>
@@ -152,7 +159,6 @@
   <section class="max-w-[98%] mx-auto px-4 mt-6 w-full">
     <div class="bg-white dark:bg-slate-900 p-3 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
       
-      <!-- Tab Selector Buttons -->
       <div class="flex items-center gap-2">
         <button id="tab-btn-calendar" onclick="switchMainTab('calendar')" class="px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition shadow-md bg-skkuNavy text-white">
           <i class="fa-solid fa-calendar-days text-skkuGreen"></i>
@@ -165,15 +171,12 @@
         </button>
       </div>
 
-      <!-- Action Buttons -->
       <div class="flex items-center gap-2">
-        <!-- Add Schedule Button -->
         <button onclick="openAddCourseModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-2xl text-sm flex items-center gap-2 shadow transition">
           <i class="fa-solid fa-plus-circle"></i>
           <span data-i18n="btnAddSchedule">Thêm Lịch Học Nâng Cao</span>
         </button>
 
-        <!-- Edit Profile Button -->
         <button onclick="openProfileModal()" class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold px-4 py-2.5 rounded-2xl text-sm flex items-center gap-2 shadow transition">
           <i class="fa-solid fa-address-card text-skkuNavy dark:text-emerald-400"></i>
           <span data-i18n="btnProfileInfo">Thông Tin Cá Nhân</span>
@@ -193,8 +196,13 @@
       <div class="relative overflow-hidden bg-gradient-to-r from-skkuNavy via-slate-900 to-emerald-900 text-white rounded-3xl p-6 md:p-8 shadow-2xl border-2 border-skkuGreen/30">
         <div class="max-w-3xl space-y-2">
           <h2 class="text-2xl md:text-3xl font-black" data-i18n="bannerTitle">Chào Mừng Đến Với Bảng Quản Lý Academic EES Lab 🎓</h2>
-          <p class="text-slate-200 text-base leading-relaxed" data-i18n="bannerSubtitle">Theo dõi lịch học 16 tuần, báo cáo lab định kỳ, quản lý deadline và nhật ký nghiên cứu hàng ngày.</p>
+          <p class="text-slate-200 text-base leading-relaxed" data-i18n="bannerSubtitle">Theo dõi lịch học, báo cáo lab định kỳ, quản lý deadline và nhật ký nghiên cứu hàng ngày)</p>
         </div>
+      </div>
+
+      <!-- NOTIFICATIONS SECTION (NGAY DƯỚI BẢNER TIÊU ĐỀ) -->
+      <div id="notifications-box" class="transition-all duration-300">
+        <!-- Injected dynamically by JS -->
       </div>
 
       <!-- Month Folders Grid Header -->
@@ -260,7 +268,6 @@
               </button>
             </div>
             
-            <!-- PERMANENT ADVISOR REPORT NOTE -->
             <div class="bg-amber-100 dark:bg-amber-950/70 border-l-4 border-amber-500 p-3.5 rounded-r-2xl mb-3 text-amber-950 dark:text-amber-200 font-extrabold text-base flex items-start gap-2 shadow-sm">
               <span class="text-xl">📌</span>
               <span data-i18n="permanentAdvisorNote">Report với giáo sư hướng dẫn sáng thứ 2 hàng tuần lúc 9h</span>
@@ -286,7 +293,6 @@
           </span>
         </div>
 
-        <!-- Weeks Rows Container -->
         <div id="weeks-container" class="space-y-8">
           <!-- Injected dynamically by JS -->
         </div>
@@ -296,12 +302,11 @@
 
   </main>
 
-  <!-- TAB 2: RESEARCH LOGS VIEW (Đã mở rộng rộng ngang gần hết màn hình) -->
+  <!-- TAB 2: RESEARCH LOGS VIEW -->
   <main id="view-research-tab" class="max-w-[98%] mx-auto px-2 sm:px-4 py-6 w-full space-y-6 hidden flex-grow">
     
     <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-6">
       
-      <!-- Research Header & Topic Switcher -->
       <div class="flex flex-wrap items-center justify-between gap-4 border-b pb-4 border-slate-200 dark:border-slate-800">
         <div>
           <h2 class="text-2xl md:text-3xl font-black text-skkuNavy dark:text-emerald-400 flex items-center gap-2">
@@ -327,7 +332,6 @@
           <span class="text-2xl">🧪</span>
           <div class="flex items-center gap-2">
             <h3 id="current-project-title" class="text-xl font-extrabold text-slate-900 dark:text-white">Tên đề tài</h3>
-            <!-- Edit Project Title Button -->
             <button onclick="editCurrentProjectTitle()" class="p-1.5 text-slate-500 hover:text-skkuNavy dark:hover:text-emerald-400 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="Sửa tên đề tài">
               <i class="fa-solid fa-pen-to-square"></i>
             </button>
@@ -349,7 +353,7 @@
         </div>
       </div>
 
-      <!-- 5-COLUMN RESEARCH TABLE (Cột 1 hiển thị Ngày và Thứ xuống dòng) -->
+      <!-- 5-COLUMN RESEARCH TABLE WITH DRAG AND DROP -->
       <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
         <table class="w-full text-left border-collapse min-w-[950px]">
           <thead>
@@ -393,10 +397,7 @@
         </button>
       </div>
 
-      <!-- Form Inputs Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm font-bold">
-        
-        <!-- Avatar Preview & Link URL -->
         <div class="sm:col-span-2 bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl flex items-center gap-4">
           <img id="profile-avatar-preview" src="" class="w-16 h-16 rounded-2xl object-cover border-2 border-skkuGreen shadow">
           <div class="flex-grow space-y-1">
@@ -590,7 +591,6 @@
     // --- 1. LOCALSTORAGE KEY & APP STATE ---
     const STORAGE_KEY = 'EESL_ACADEMIC_TRACKER_V5';
 
-    // Default Fixed Schedule
     const DEFAULT_FIXED_SCHEDULE = {
       1: { name: "Academic Writing", time: "Online", room: "Video Course" },
       2: { name: "Energy Chemistry (Online)", time: "15:00 - 16:30", room: "Online Zoom/iCampus" },
@@ -598,21 +598,19 @@
       4: { name: "Electrochemical Catalysis", time: "15:00 - 16:15", room: "Phòng 83105" }
     };
 
-    // Dictionary for Multi-Language Translation
     const i18nDict = {
       vi: {
         headerSubtitle: "Quản Lý Học Tập & Nghiên Cứu",
         saintName: "SKKU Advanced Institute of Nano Technology",
         univName: "Sungkyunkwan University",
         kstClock: "Giờ Hàn Quốc (KST)",
-        userRoleDefault: "Nghiên cứu sinh",
         editProfile: "Hồ sơ cá nhân",
         tabCalendar: "Thư Mục Tháng & Lịch Học",
         tabResearch: "Nghiên Cứu (Research Logs)",
         btnAddSchedule: "Thêm Lịch Học Nâng Cao",
         btnProfileInfo: "Thông Tin Cá Nhân",
         bannerTitle: "Chào Mừng Đến Với Bảng Quản Lý Academic EES Lab 🎓",
-        bannerSubtitle: "Theo dõi lịch học 16 tuần, báo cáo lab định kỳ, quản lý deadline và nhật ký nghiên cứu hàng ngày.",
+        bannerSubtitle: "Theo dõi lịch học, báo cáo lab định kỳ, quản lý deadline và nhật ký nghiên cứu hàng ngày)",
         monthFoldersHeader: "Danh Sách Thư Mục Tháng",
         btnAddMonth: "Thêm Tháng Mới",
         btnBackToMonths: "Quay Lại Chọn Tháng",
@@ -671,14 +669,13 @@
         saintName: "SKKU Advanced Institute of Nano Technology",
         univName: "Sungkyunkwan University",
         kstClock: "Korean Standard Time (KST)",
-        userRoleDefault: "Graduate Researcher",
         editProfile: "Personal Profile",
         tabCalendar: "Month Folders & Schedule",
         tabResearch: "Research Logs",
         btnAddSchedule: "Add Advanced Course",
         btnProfileInfo: "Personal Profile",
         bannerTitle: "Welcome to EES Lab Academic Portal 🎓",
-        bannerSubtitle: "Track your 16-week course schedule, weekly advisor reports, deadlines, and lab research logs.",
+        bannerSubtitle: "Track course schedule, weekly advisor reports, deadlines, and lab research logs)",
         monthFoldersHeader: "Month Folders List",
         btnAddMonth: "Add New Month",
         btnBackToMonths: "Back to Month Folders",
@@ -737,14 +734,13 @@
         saintName: "성균관대학교 나노과학기술원 (SAINT)",
         univName: "성균관대학교",
         kstClock: "한국 표준시 (KST)",
-        userRoleDefault: "연구원",
         editProfile: "개인 프로필",
         tabCalendar: "월별 폴더 & 수업 일정",
         tabResearch: "연구 일지 (Research Logs)",
         btnAddSchedule: "고급 수업 일정 추가",
         btnProfileInfo: "개인 정보",
         bannerTitle: "EES Lab 학업 및 연구 관리 Portal 🎓",
-        bannerSubtitle: "16주 수업 일정, 주간 지도교수 보고, 마감일 및 연구 일지를 효율적으로 관리하세요.",
+        bannerSubtitle: "수업 일정, 주간 지도교수 보고, 마감일 및 연구 일지를 효율적으로 관리하세요)",
         monthFoldersHeader: "월별 폴더 목록",
         btnAddMonth: "새 월 추가",
         btnBackToMonths: "월 선택으로 돌아가기",
@@ -800,7 +796,6 @@
       }
     };
 
-    // Global App State Object
     let appData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
       lang: 'vi',
       theme: 'light',
@@ -827,6 +822,7 @@
       globalCourses: [], 
       dayData: {}, 
       weekTasks: {}, 
+      notificationsAck: {}, // { "2026-09-18": true }
       researchProjects: [
         {
           id: "proj_1",
@@ -836,7 +832,7 @@
               id: "log_1",
               dateText: "18/09/2026\n(Thứ 6)",
               tasks: "Đo phổ XRD mẫu A1-A5 và tổng hợp màng mỏng",
-              progressStep: 1, // 0 = 0%, 1 = 50%, 2 = 100%
+              progressStep: 1,
               notes: "Mẫu A3 có tinh thể đồng đều nhất, hiệu suất cao",
               plan: "Thực hiện đo quang phổ UV-Vis cho mẫu A3 vào sáng mai"
             }
@@ -848,6 +844,7 @@
 
     let activeWeekKeyForModal = null;
     let expandedDayKey = null;
+    let draggedRowIndex = null;
 
     function saveData() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
@@ -874,6 +871,9 @@
           el.innerText = dict[key];
         }
       });
+
+      updateHeaderProfileUI();
+      renderNotifications();
     }
 
     // --- 3. KST CLOCK & WEATHER WIDGET ---
@@ -925,7 +925,101 @@
       applyTheme();
     });
 
-    // --- 5. NAVIGATION TABS & PROFILE ---
+    // --- 5. NOTIFICATIONS SYSTEM FOR HOME PAGE ---
+    function renderNotifications() {
+      const container = document.getElementById('notifications-box');
+      if (!container) return;
+
+      const nowKSTDate = new Date();
+      const optionsKST = { timeZone: 'Asia/Seoul' };
+      const nowKST = new Date(nowKSTDate.toLocaleString('en-US', optionsKST));
+
+      const todayStr = `${nowKST.getFullYear()}-${String(nowKST.getMonth() + 1).padStart(2, '0')}-${String(nowKST.getDate()).padStart(2, '0')}`;
+      let dow = nowKST.getDay();
+      if (dow === 0) dow = 7;
+
+      let todayCourses = [];
+      if (DEFAULT_FIXED_SCHEDULE[dow]) {
+        const def = DEFAULT_FIXED_SCHEDULE[dow];
+        todayCourses.push({ name: def.name, time: def.time, room: def.room });
+      }
+
+      if (appData.globalCourses) {
+        appData.globalCourses.forEach(c => {
+          if (parseInt(c.dow) === dow) {
+            todayCourses.push({ name: c.name, time: `${c.start} - ${c.end}`, room: c.room });
+          }
+        });
+      }
+
+      if (appData.dayData[todayStr] && appData.dayData[todayStr].customClasses) {
+        appData.dayData[todayStr].customClasses.forEach(c => {
+          todayCourses.push({ name: c.name, time: c.time, room: c.room });
+        });
+      }
+
+      const isAck = !!(appData.notificationsAck && appData.notificationsAck[todayStr]);
+
+      const activeStyle = "bg-amber-500/20 border-2 border-amber-500 shadow-xl text-slate-900 dark:text-slate-100 ring-4 ring-amber-400/30";
+      const ackStyle = "bg-slate-200/60 dark:bg-slate-800/60 border border-slate-300 dark:border-slate-700 opacity-75 text-slate-700 dark:text-slate-300";
+
+      container.className = `p-5 rounded-3xl transition-all duration-300 ${isAck ? ackStyle : activeStyle}`;
+
+      container.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b pb-3 border-amber-500/30">
+          <div class="flex items-center gap-3">
+            <div class="p-2.5 rounded-2xl ${isAck ? 'bg-slate-400 text-white' : 'bg-amber-500 text-slate-900'} font-black text-xl">
+              <i class="fa-solid fa-bell ${isAck ? '' : 'animate-bounce'}"></i>
+            </div>
+            <div>
+              <h4 class="text-lg font-black tracking-tight flex items-center gap-2">
+                <span>NOTIFICATIONS - LỊCH HỌC HÔM NAY (${String(nowKST.getDate()).padStart(2, '0')}/${String(nowKST.getMonth() + 1).padStart(2, '0')}/${nowKST.getFullYear()})</span>
+                ${isAck ? '<span class="text-xs bg-slate-500 text-white font-bold px-2.5 py-0.5 rounded-full">Đã xác nhận</span>' : '<span class="text-xs bg-red-500 text-white font-bold px-2.5 py-0.5 rounded-full animate-pulse">Chú ý</span>'}
+              </h4>
+              <p class="text-xs font-semibold opacity-90">Tổng hợp toàn bộ lịch học và báo cáo cần thực hiện trong ngày hôm nay.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 space-y-2">
+          ${
+            todayCourses.length === 0
+              ? '<p class="text-sm font-bold italic opacity-75">Hôm nay không có lịch học cố định. Hãy tập trung thí nghiệm & viết báo cáo lab!</p>'
+              : todayCourses.map(c => `
+                  <div class="p-3 bg-white/80 dark:bg-slate-900/80 rounded-2xl border border-amber-500/20 shadow-sm flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <i class="fa-solid fa-graduation-cap text-skkuGreen text-lg"></i>
+                      <div>
+                        <div class="text-base font-extrabold">${c.name}</div>
+                        <div class="text-xs font-semibold opacity-80">⏰ ${c.time} • 📍 ${c.room}</div>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')
+          }
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-amber-500/20 flex justify-end">
+          <button onclick="acknowledgeTodayNotification('${todayStr}')" ${isAck ? 'disabled' : ''} class="px-5 py-2.5 rounded-2xl font-black text-xs sm:text-sm shadow-md transition flex items-center gap-2 ${
+            isAck 
+              ? 'bg-slate-400 text-slate-100 cursor-not-allowed' 
+              : 'bg-amber-500 hover:bg-amber-600 text-slate-950 transform hover:scale-105'
+          }">
+            <i class="fa-solid ${isAck ? 'fa-check-double' : 'fa-check'}"></i>
+            <span>${isAck ? 'Đã Nhận Thông Tin Hôm Nay' : 'Xác Nhận Đã Nắm Thông Tin'}</span>
+          </button>
+        </div>
+      `;
+    }
+
+    function acknowledgeTodayNotification(dateStr) {
+      if (!appData.notificationsAck) appData.notificationsAck = {};
+      appData.notificationsAck[dateStr] = true;
+      saveData();
+      renderNotifications();
+    }
+
+    // --- 6. NAVIGATION TABS & PROFILE ---
     function switchMainTab(tab) {
       const calBtn = document.getElementById('tab-btn-calendar');
       const resBtn = document.getElementById('tab-btn-research');
@@ -937,6 +1031,7 @@
         resBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800";
         calView.classList.remove('hidden');
         resView.classList.add('hidden');
+        renderNotifications();
       } else {
         resBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition shadow-md bg-skkuNavy text-white";
         calBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800";
@@ -946,7 +1041,6 @@
       }
     }
 
-    // Profile Modal Logic
     function openProfileModal() {
       const p = appData.profile;
       document.getElementById('prof-avatar').value = p.avatar || '';
@@ -1003,7 +1097,6 @@
       }
     }
 
-    // Avatar Modal Logic (Phóng to & Tải ảnh khác)
     function openAvatarModal() {
       const avatarSrc = appData.profile.avatar || 'https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab';
       document.getElementById('enlarged-avatar-img').src = avatarSrc;
@@ -1029,11 +1122,12 @@
       }
     }
 
-    // --- 6. MONTH FOLDERS & SUBVIEW ---
+    // --- 7. MONTH FOLDERS & SUBVIEW ---
     function showMonthSelectionView() {
       document.getElementById('month-selection-subview').classList.remove('hidden');
       document.getElementById('month-detail-subview').classList.add('hidden');
       renderMonthsGrid();
+      renderNotifications();
     }
 
     function selectMonthFolder(key) {
@@ -1105,13 +1199,12 @@
       }
     }
 
-    // --- 7. MONTH DETAILED VIEW (DEADLINES & NOTES) ---
+    // --- 8. MONTH DETAILED VIEW (DEADLINES & NOTES) ---
     function renderMonthDetail() {
       const mKey = appData.selectedMonthKey;
       const monthObj = appData.months[mKey];
       if (!monthObj) return;
 
-      // Deadlines
       const deadlineList = document.getElementById('deadline-list');
       deadlineList.innerHTML = '';
       if (!monthObj.deadlines || monthObj.deadlines.length === 0) {
@@ -1131,7 +1224,6 @@
         });
       }
 
-      // Notes
       const notesList = document.getElementById('notes-list');
       notesList.innerHTML = '';
       if (monthObj.notes) {
@@ -1146,7 +1238,6 @@
         });
       }
 
-      // Render 16-Week Schedule Grid
       renderWeeksGrid(monthObj.year, monthObj.month);
     }
 
@@ -1193,7 +1284,7 @@
       renderMonthDetail();
     }
 
-    // --- 8. WEEKS & DAYS GRID (16-WEEK SEMESTER SCHEDULE) ---
+    // --- 9. WEEKS & DAYS GRID ---
     function renderWeeksGrid(year, month) {
       const weeksContainer = document.getElementById('weeks-container');
       weeksContainer.innerHTML = '';
@@ -1291,7 +1382,7 @@
       return weekWrapper;
     }
 
-    // --- 9. INLINE DAY DETAILS EXPANSION ---
+    // --- 10. INLINE DAY DETAILS EXPANSION ---
     function createInlineDayDetailsElement(dayObj, weekNum) {
       const { dateStr, dayOfWeek, dayNumber } = dayObj;
       const dayData = appData.dayData[dateStr] || { tasks: [], customClasses: [], dailyReport: "" };
@@ -1435,7 +1526,7 @@
       saveData();
     }
 
-    // --- 10. GLOBAL COURSE MODAL LOGIC ---
+    // --- 11. GLOBAL COURSE MODAL LOGIC ---
     function openAddCourseModal() {
       document.getElementById('add-course-modal').classList.remove('hidden');
     }
@@ -1470,7 +1561,7 @@
       }
     }
 
-    // --- 11. WEEK TASK MODAL LOGIC ---
+    // --- 12. WEEK TASK MODAL LOGIC ---
     function openWeekTaskModal(weekKey, weekNum) {
       activeWeekKeyForModal = weekKey;
       document.getElementById('modal-week-title').innerText = `Kế Hoạch Task Tuần ${weekNum}`;
@@ -1530,7 +1621,7 @@
       renderWeekTasks();
     }
 
-    // --- 12. RESEARCH TAB & TABLE LOGIC ---
+    // --- 13. RESEARCH TAB & TABLE LOGIC (FIXED NEW ROW ON TOP & DRAG-N-DROP) ---
     function renderResearchTab() {
       renderResearchTopics();
       renderResearchTable();
@@ -1563,6 +1654,44 @@
       }
     }
 
+    function addNewResearchTopicPrompt() {
+      const title = prompt("Nhập tên đề tài nghiên cứu mới:");
+      if (title && title.trim()) {
+        appData.researchProjects.push({
+          id: "proj_" + Date.now(),
+          title: title.trim(),
+          logs: []
+        });
+        appData.activeProjectIndex = appData.researchProjects.length - 1;
+        saveData();
+        renderResearchTab();
+      }
+    }
+
+    function editCurrentProjectTitle() {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (!currentProj) return;
+      const newTitle = prompt("Nhập lại tên đề tài:", currentProj.title);
+      if (newTitle && newTitle.trim()) {
+        currentProj.title = newTitle.trim();
+        saveData();
+        renderResearchTab();
+      }
+    }
+
+    function deleteCurrentProject() {
+      if (appData.researchProjects.length <= 1) {
+        alert("Bạn phải giữ ít nhất 1 đề tài nghiên cứu!");
+        return;
+      }
+      if (confirm("Bạn có chắc chắn muốn xóa đề tài này?")) {
+        appData.researchProjects.splice(appData.activeProjectIndex, 1);
+        appData.activeProjectIndex = 0;
+        saveData();
+        renderResearchTab();
+      }
+    }
+
     function formatResearchDateText(rawText) {
       if (!rawText) return '';
       if (rawText.includes(' (') && !rawText.includes('\n')) {
@@ -1576,6 +1705,33 @@
       el.style.height = (el.scrollHeight) + 'px';
     }
 
+    // DRAG AND DROP HANDLERS FOR TABLE ROWS
+    function handleDragStart(e, index) {
+      draggedRowIndex = index;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', index);
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    }
+
+    function handleDrop(e, targetIndex) {
+      e.preventDefault();
+      if (draggedRowIndex === null || draggedRowIndex === targetIndex) return;
+
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (!currentProj || !currentProj.logs) return;
+
+      const movedItem = currentProj.logs.splice(draggedRowIndex, 1)[0];
+      currentProj.logs.splice(targetIndex, 0, movedItem);
+
+      draggedRowIndex = null;
+      saveData();
+      renderResearchTable();
+    }
+
     function renderResearchTable() {
       const tbody = document.getElementById('research-table-body');
       tbody.innerHTML = '';
@@ -1585,14 +1741,22 @@
 
       currentProj.logs.forEach((log, idx) => {
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-800";
+        tr.className = "draggable-row hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-800";
+        tr.draggable = true;
+
+        tr.ondragstart = (e) => handleDragStart(e, idx);
+        tr.ondragover = (e) => handleDragOver(e);
+        tr.ondrop = (e) => handleDrop(e, idx);
 
         const formattedDate = formatResearchDateText(log.dateText);
 
         tr.innerHTML = `
-          <!-- Cột 1: Ngày (Tự động xuống dòng ngày và thứ) -->
+          <!-- Cột 1: Ngày -->
           <td class="p-3 border-r border-slate-200 dark:border-slate-800 w-36 min-w-[130px] text-center">
-            <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'dateText', this.value)" class="auto-expand w-full bg-transparent font-black text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1 rounded border border-transparent focus:border-slate-300 text-center leading-tight resize-none text-sm">${formattedDate || ''}</textarea>
+            <div class="flex items-center gap-1 justify-center">
+              <i class="fa-solid fa-grip-vertical text-slate-300 hover:text-slate-500 cursor-grab text-xs mr-1" title="Kéo thả để di chuyển hàng"></i>
+              <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'dateText', this.value)" class="auto-expand w-full bg-transparent font-black text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1 rounded border border-transparent focus:border-slate-300 text-center leading-tight resize-none text-sm">${formattedDate || ''}</textarea>
+            </div>
           </td>
 
           <!-- Cột 2: Việc Cần Làm -->
@@ -1600,7 +1764,7 @@
             <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'tasks', this.value)" class="auto-expand w-full bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1.5 rounded border border-transparent focus:border-slate-300 text-sm leading-snug resize-none">${log.tasks || ''}</textarea>
           </td>
 
-          <!-- Cột 3: Tiến Độ (%) 3 Nút Chọn 0%, 50%, 100% -->
+          <!-- Cột 3: Tiến Độ (%) -->
           <td class="p-3 border-r border-slate-200 dark:border-slate-800 text-center">
             <div class="flex items-center justify-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
               <button onclick="setResearchProgress(${idx}, 0)" class="flex-1 py-1 px-1.5 rounded-lg text-[11px] font-black transition ${log.progressStep === 0 ? 'bg-red-500 text-white shadow' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}">0%</button>
@@ -1650,119 +1814,80 @@
       }
     }
 
-    function addResearchRow() {
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (!currentProj) return;
-
-      const now = new Date();
-      const nowStr = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
-      const dayVi = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][now.getDay()];
-
-      currentProj.logs.push({
-        id: "log_" + Date.now(),
-        dateText: `${nowStr}\n(${dayVi})`,
-        tasks: "",
-        progressStep: 0,
-        notes: "",
-        plan: ""
-      });
-
-      saveData();
-      renderResearchTable();
-    }
-
-    function addResearchRowNextDay() {
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (!currentProj) return;
-
-      let baseDate = new Date();
-
-      if (currentProj.logs.length > 0) {
-        const lastLog = currentProj.logs[currentProj.logs.length - 1];
-        const match = lastLog.dateText ? lastLog.dateText.match(/(\d{2})\/(\d{2})\/(\d{4})/) : null;
-        if (match) {
-          baseDate = new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
-          baseDate.setDate(baseDate.getDate() + 1);
-        }
-      }
-
-      const nextStr = `${String(baseDate.getDate()).padStart(2, '0')}/${String(baseDate.getMonth() + 1).padStart(2, '0')}/${baseDate.getFullYear()}`;
-      const dayVi = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][baseDate.getDay()];
-
-      currentProj.logs.push({
-        id: "log_" + Date.now(),
-        dateText: `${nextStr}\n(${dayVi})`,
-        tasks: "",
-        progressStep: 0,
-        notes: "",
-        plan: ""
-      });
-
-      saveData();
-      renderResearchTable();
-    }
-
     function deleteResearchRow(idx) {
       const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (currentProj && currentProj.logs) {
+      if (currentProj && currentProj.logs[idx]) {
         currentProj.logs.splice(idx, 1);
         saveData();
         renderResearchTable();
       }
     }
 
-    function addNewResearchTopicPrompt() {
-      const title = prompt("Nhập tên đề tài nghiên cứu mới:");
-      if (title && title.trim()) {
-        appData.researchProjects.push({
-          id: "proj_" + Date.now(),
-          title: title.trim(),
-          logs: []
-        });
-        appData.activeProjectIndex = appData.researchProjects.length - 1;
-        saveData();
-        renderResearchTab();
-      }
-    }
-
-    function editCurrentProjectTitle() {
+    // LUÔN THÊM DÒNG MỚI LÊN TRÊN CÙNG (INDEX 0) VÀ GIỮ NGUYÊN NGÀY BÊN TRÊN
+    function addResearchRow() {
       const currentProj = appData.researchProjects[appData.activeProjectIndex];
       if (!currentProj) return;
-      const newTitle = prompt("Sửa tên đề tài nghiên cứu:", currentProj.title);
-      if (newTitle && newTitle.trim()) {
-        currentProj.title = newTitle.trim();
-        saveData();
-        renderResearchTab();
+
+      let dateString = "";
+      if (currentProj.logs.length > 0) {
+        dateString = currentProj.logs[0].dateText;
+      } else {
+        const now = new Date();
+        const nowStr = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+        const dayVi = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][now.getDay()];
+        dateString = `${nowStr}\n(${dayVi})`;
       }
+
+      currentProj.logs.unshift({
+        id: "log_" + Date.now(),
+        dateText: dateString,
+        tasks: "",
+        progressStep: 0,
+        notes: "",
+        plan: ""
+      });
+
+      saveData();
+      renderResearchTable();
     }
 
-    function deleteCurrentProject() {
-      if (appData.researchProjects.length <= 1) {
-        alert("Bạn cần giữ ít nhất 1 đề tài nghiên cứu.");
-        return;
+    // TÍNH NGÀY HÔM SAU DỰA TRÊN TRÊN HÀNG TRÊN CÙNG VÀ CHÈN LÊN TRÊN CÙNG (INDEX 0)
+    function addResearchRowNextDay() {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (!currentProj) return;
+
+      let nextDate = new Date();
+
+      if (currentProj.logs.length > 0) {
+        const topLog = currentProj.logs[0];
+        const match = topLog.dateText ? topLog.dateText.match(/(\d{2})\/(\d{2})\/(\d{4})/) : null;
+        if (match) {
+          nextDate = new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]) + 1);
+        }
       }
-      if (confirm("Bạn có chắc chắn muốn xóa đề tài nghiên cứu này không?")) {
-        appData.researchProjects.splice(appData.activeProjectIndex, 1);
-        appData.activeProjectIndex = 0;
-        saveData();
-        renderResearchTab();
-      }
+
+      const dateStr = `${String(nextDate.getDate()).padStart(2, '0')}/${String(nextDate.getMonth() + 1).padStart(2, '0')}/${nextDate.getFullYear()}`;
+      const dayVi = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][nextDate.getDay()];
+
+      currentProj.logs.unshift({
+        id: "log_" + Date.now(),
+        dateText: `${dateStr}\n(${dayVi})`,
+        tasks: "",
+        progressStep: 0,
+        notes: "",
+        plan: ""
+      });
+
+      saveData();
+      renderResearchTable();
     }
 
-    // --- 13. INITIALIZATION ON PAGE LOAD ---
+    // --- 14. INITIALIZATION ---
     window.addEventListener('DOMContentLoaded', () => {
       applyTheme();
       applyLanguageUI();
-      updateHeaderProfileUI();
       renderMonthsGrid();
-      
-      const now = new Date();
-      const currentMonthKey = `${now.getMonth() + 1}/${now.getFullYear()}`;
-      if (appData.months[currentMonthKey]) {
-        selectMonthFolder(currentMonthKey);
-      } else {
-        selectMonthFolder('9/2026');
-      }
+      renderNotifications();
     });
   </script>
 </body>
