@@ -33,11 +33,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Thư viện xử lý DOCX & FileSaver -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.4/pizzip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.11/docxtemplater.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-
   <style>
     html, body {
       overflow-x: hidden;
@@ -74,6 +69,13 @@
       overflow: hidden;
       resize: none;
       min-height: 42px;
+    }
+    tr.draggable-row {
+      cursor: grab;
+    }
+    tr.draggable-row:active {
+      cursor: grabbing;
+      opacity: 0.6;
     }
   </style>
 </head>
@@ -384,9 +386,9 @@
         </div>
         
         <div class="flex items-center gap-2">
-          <!-- NÚT TẢI BÁO CÁO DAILY MỚI -->
-          <button onclick="openReportModal()" class="bg-amber-600 hover:bg-amber-700 text-white font-extrabold px-4 py-2 rounded-xl text-sm flex items-center gap-1.5 shadow transition">
-            <i class="fa-solid fa-file-word"></i> <span data-i18n="btnDownloadReport">Tải Báo Cáo Daily (.DOCX)</span>
+          <!-- NÚT TẢI BÁO CÁO DAILY -->
+          <button onclick="downloadDailyReport()" class="bg-amber-600 hover:bg-amber-700 text-white font-extrabold px-4 py-2 rounded-xl text-sm flex items-center gap-1.5 shadow transition">
+            <i class="fa-solid fa-file-arrow-down"></i> <span data-i18n="btnDownloadReport">Tải Báo Cáo Daily</span>
           </button>
           <button onclick="addResearchRowNextDay()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-4 py-2 rounded-xl text-sm flex items-center gap-1.5 shadow transition">
             <i class="fa-solid fa-calendar-plus"></i> <span data-i18n="btnAddNextDay">Thêm Ngày Hôm Sau</span>
@@ -431,91 +433,10 @@
     </div>
   </footer>
 
-  <!-- MODAL BÁO CÁO DAILY & FORM DOCX -->
-  <div id="report-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 md:p-8 shadow-2xl border-2 border-amber-500 space-y-5 max-h-[90vh] overflow-y-auto">
-      
-      <div class="flex justify-between items-center border-b pb-3 border-slate-200 dark:border-slate-800">
-        <h3 class="text-xl font-black text-skkuNavy dark:text-emerald-400 flex items-center gap-2">
-          <i class="fa-solid fa-file-word text-amber-500"></i> Xuất Báo Cáo Daily (.DOCX)
-        </h3>
-        <button onclick="closeReportModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <!-- Khối Upload Mẫu DOCX -->
-      <div class="bg-amber-50 dark:bg-amber-950/40 p-4 rounded-2xl border border-amber-300 dark:border-amber-800 space-y-2">
-        <div class="flex justify-between items-center">
-          <label class="text-xs font-black uppercase text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
-            <i class="fa-solid fa-upload"></i> Form Báo Cáo Mẫu (.docx):
-          </label>
-          <span id="template-status-badge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-            Chưa có mẫu riêng (Sử dụng form chuẩn)
-          </span>
-        </div>
-        <p class="text-xs text-slate-600 dark:text-slate-400">Tải lên file Word mẫu (.docx) của bạn có chứa các thẻ: <code class="bg-amber-200 dark:bg-amber-900 px-1 rounded text-amber-900 dark:text-amber-200">{ngay_thang}</code>, <code class="bg-amber-200 dark:bg-amber-900 px-1 rounded text-amber-900 dark:text-amber-200">{thoi_tiet}</code>, <code class="bg-amber-200 dark:bg-amber-900 px-1 rounded text-amber-900 dark:text-amber-200">{cong_viec}</code>, <code class="bg-amber-200 dark:bg-amber-900 px-1 rounded text-amber-900 dark:text-amber-200">{tien_do}</code>, <code class="bg-amber-200 dark:bg-amber-900 px-1 rounded text-amber-900 dark:text-amber-200">{ghi_chu}</code>, <code class="bg-amber-200 dark:bg-amber-900 px-1 rounded text-amber-900 dark:text-amber-200">{ke_hoach}</code>.</p>
-        
-        <input type="file" id="docx-template-input" accept=".docx" onchange="handleTemplateUpload(event)" class="text-xs font-semibold file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-600 file:text-white hover:file:bg-amber-700 cursor-pointer w-full">
-      </div>
-
-      <!-- Chọn ngày xuất báo cáo -->
-      <div class="space-y-4">
-        <div>
-          <label class="text-xs font-bold text-slate-500 uppercase">1. Chọn ngày báo cáo từ bảng nghiên cứu:</label>
-          <select id="report-date-select" onchange="previewReportData()" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-extrabold text-sm text-skkuNavy dark:text-emerald-400">
-            <!-- Dynamic options -->
-          </select>
-        </div>
-
-        <!-- Xem trước dữ liệu tóm tắt sẽ điền vào Form -->
-        <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
-          <div class="flex justify-between items-center border-b pb-2 border-slate-200 dark:border-slate-700">
-            <span class="text-xs font-black text-slate-500 uppercase">2. Xem trước nội dung AI đã tóm tắt sẽ điền vào Form:</span>
-            <span class="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-full">Đã tự động tóm tắt ý chính</span>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3 text-xs">
-            <div>
-              <span class="text-slate-400 font-bold block">Thứ/Ngày/Tháng/Năm:</span>
-              <span id="prev-date" class="font-extrabold text-slate-800 dark:text-slate-100">--</span>
-            </div>
-            <div>
-              <span class="text-slate-400 font-bold block">Thời tiết Suwon:</span>
-              <span id="prev-weather" class="font-extrabold text-cyan-600 dark:text-cyan-400">--</span>
-            </div>
-          </div>
-
-          <div class="space-y-2 text-xs">
-            <div>
-              <span class="text-slate-400 font-bold block">Việc Cần Làm (Tóm tắt):</span>
-              <div id="prev-tasks" class="p-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 font-medium">--</div>
-            </div>
-            <div>
-              <span class="text-slate-400 font-bold block">Ghi Chú & Bài Học (Tóm tắt ý chính):</span>
-              <div id="prev-notes" class="p-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 font-medium">--</div>
-            </div>
-            <div>
-              <span class="text-slate-400 font-bold block">Kế Hoạch Ngày Mai (Tóm tắt ý chính):</span>
-              <div id="prev-plan" class="p-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 font-medium">--</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-2">
-        <button onclick="closeReportModal()" class="px-4 py-2 rounded-xl font-bold bg-slate-200 dark:bg-slate-800" data-i18n="btnCancel">Hủy</button>
-        <button onclick="generateDocxReport()" class="px-5 py-2 rounded-xl font-black bg-amber-600 text-white hover:bg-amber-700 shadow-lg flex items-center gap-2">
-          <i class="fa-solid fa-file-arrow-down"></i> <span>Tải Báo Cáo .DOCX Này</span>
-        </button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- MODAL 0: AUTHENTICATION -->
+  <!-- MODAL 0: AUTHENTICATION (ĐĂNG NHẬP / ĐĂNG KÝ) -->
   <div id="auth-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl border-2 border-skkuGreen space-y-5">
+      
       <div class="flex justify-between items-center border-b pb-3 border-slate-200 dark:border-slate-800">
         <div class="flex items-center gap-2">
           <button id="auth-tab-login" onclick="switchAuthTab('login')" class="text-lg font-black px-3 py-1 rounded-xl text-skkuNavy dark:text-emerald-400 bg-slate-100 dark:bg-slate-800" data-i18n="tabLogin">Đăng Nhập</button>
@@ -526,6 +447,7 @@
         </button>
       </div>
 
+      <!-- FORM ĐĂNG NHẬP -->
       <div id="auth-form-login" class="space-y-4 text-sm font-bold">
         <div>
           <label class="text-xs text-slate-500 uppercase" data-i18n="lblLoginAccount">Email / Tên tài khoản:</label>
@@ -536,13 +458,19 @@
           <input type="password" id="login-password" placeholder="••••••••" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
         </div>
         <div id="login-error-msg" class="text-xs text-red-500 font-bold hidden"></div>
-        <button onclick="handleLoginSubmit()" class="w-full py-3 bg-skkuNavy hover:bg-slate-800 text-white font-extrabold rounded-xl shadow-md transition" data-i18n="btnLoginSubmit">Đăng Nhập</button>
+        <button onclick="handleLoginSubmit()" class="w-full py-3 bg-skkuNavy hover:bg-slate-800 text-white font-extrabold rounded-xl shadow-md transition" data-i18n="btnLoginSubmit">
+          Đăng Nhập
+        </button>
+        <div class="text-center text-xs text-slate-500 pt-2">
+          <span data-i18n="noAccountText">Chưa có tài khoản?</span> <button onclick="switchAuthTab('register')" class="text-skkuGreen font-black underline" data-i18n="registerNowLink">Đăng ký ngay</button>
+        </div>
       </div>
 
+      <!-- FORM ĐĂNG KÝ -->
       <div id="auth-form-register" class="space-y-4 text-sm font-bold hidden">
         <div>
           <label class="text-xs text-slate-500 uppercase" data-i18n="lblFullName">Họ và Tên:</label>
-          <input type="text" id="reg-name" placeholder="Lê Thành Trung" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+          <input type="text" id="reg-name" placeholder="Ví dụ: Lê Thành Trung" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
         </div>
         <div>
           <label class="text-xs text-slate-500 uppercase" data-i18n="lblRegEmail">Email Trường (@skku.edu) / Cá Nhân:</label>
@@ -557,14 +485,21 @@
           <input type="password" id="reg-confirm-password" placeholder="Nhập lại mật khẩu" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
         </div>
         <div id="reg-error-msg" class="text-xs text-red-500 font-bold hidden"></div>
-        <button onclick="handleRegisterSubmit()" class="w-full py-3 bg-skkuGreen hover:bg-emerald-600 text-slate-900 font-extrabold rounded-xl shadow-md transition" data-i18n="btnRegisterSubmit">Tạo Tài Khoản & Đăng Ký</button>
+        <button onclick="handleRegisterSubmit()" class="w-full py-3 bg-skkuGreen hover:bg-emerald-600 text-slate-900 font-extrabold rounded-xl shadow-md transition" data-i18n="btnRegisterSubmit">
+          Tạo Tài Khoản & Đăng Ký
+        </button>
+        <div class="text-center text-xs text-slate-500 pt-2">
+          <span data-i18n="hasAccountText">Đã có tài khoản?</span> <button onclick="switchAuthTab('login')" class="text-skkuNavy dark:text-emerald-400 font-black underline" data-i18n="loginNowLink">Đăng nhập</button>
+        </div>
       </div>
+
     </div>
   </div>
 
   <!-- MODAL 1: USER PROFILE -->
   <div id="profile-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 md:p-8 shadow-2xl border-2 border-skkuGreen space-y-6 max-h-[90vh] overflow-y-auto">
+      
       <div class="flex justify-between items-center border-b pb-4 border-slate-200 dark:border-slate-800">
         <h3 class="text-2xl font-black text-skkuNavy dark:text-emerald-400 flex items-center gap-2">
           <i class="fa-solid fa-user-gear"></i> <span data-i18n="modalProfileTitle">Thông Tin Cá Nhân & Hồ Sơ</span>
@@ -587,30 +522,61 @@
           <label class="text-xs text-slate-500 uppercase" data-i18n="lblFullName">Họ và Tên:</label>
           <input type="text" id="prof-name" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
         </div>
+
         <div>
           <label class="text-xs text-slate-500 uppercase" data-i18n="lblPhone">Số Điện Thoại:</label>
           <input type="text" id="prof-phone" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
         </div>
+
         <div>
           <label class="text-xs text-slate-500 uppercase" data-i18n="lblPersonalEmail">Email Cá Nhân:</label>
           <input type="email" id="prof-pemail" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
         </div>
+
         <div>
           <label class="text-xs text-slate-500 uppercase" data-i18n="lblSchoolEmail">Email Trường (@skku.edu):</label>
           <input type="email" id="prof-semail" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
         </div>
+
+        <div>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblDob">Ngày Tháng Năm Sinh:</label>
+          <input type="date" id="prof-dob" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblPassport">Số Hộ Chiếu:</label>
+          <input type="text" id="prof-passport" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblArc">Số Thẻ Cư Trú (ARC):</label>
+          <input type="text" id="prof-arc" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblBankName">Tên Ngân Hàng:</label>
+          <input type="text" id="prof-bankname" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblBankAccount">Số Tài Khoản Ngân Hàng:</label>
+          <input type="text" id="prof-bankaccount" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+        </div>
+
       </div>
 
       <div class="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3">
-        <button onclick="closeProfileModal()" class="px-5 py-2.5 rounded-xl font-bold bg-slate-200 dark:bg-slate-800" data-i18n="btnCancel">Hủy</button>
+        <button onclick="closeProfileModal()" class="px-5 py-2.5 rounded-xl font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300" data-i18n="btnCancel">Hủy</button>
         <button onclick="saveProfileInfo()" class="px-6 py-2.5 rounded-xl font-black bg-skkuGreen text-slate-900 hover:bg-emerald-500 shadow-lg" data-i18n="btnSaveProfile">Lưu Thông Tin</button>
       </div>
+
     </div>
   </div>
 
   <!-- MODAL 2: ADD COURSE SCHEDULE -->
   <div id="add-course-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 md:p-8 shadow-2xl border-2 border-emerald-500 space-y-5">
+      
       <div class="flex justify-between items-center border-b pb-3 border-slate-200 dark:border-slate-800">
         <h3 class="text-xl font-black text-skkuNavy dark:text-emerald-400 flex items-center gap-2">
           <i class="fa-solid fa-calendar-plus"></i> <span data-i18n="modalAddCourseTitle">Thêm Lịch Học Nâng Cao</span>
@@ -625,9 +591,50 @@
           <label class="text-xs text-slate-500 uppercase" data-i18n="lblCourseName">Tên Môn Học:</label>
           <input type="text" id="course-name" placeholder="VD: Nanophotonics" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
         </div>
+
         <div>
           <label class="text-xs text-slate-500 uppercase" data-i18n="lblCourseRoom">Phòng Học / Hình Thức:</label>
-          <input type="text" id="course-room" placeholder="VD: Phòng 83102" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+          <input type="text" id="course-room" placeholder="VD: Phòng 83102 hoặc Online" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-slate-500 uppercase" data-i18n="lblDayOfWeek">Thứ Trong Tuần:</label>
+            <select id="course-dow" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+              <option value="1">Thứ 2</option>
+              <option value="2">Thứ 3</option>
+              <option value="3">Thứ 4</option>
+              <option value="4">Thứ 5</option>
+              <option value="5">Thứ 6</option>
+              <option value="6">Thứ 7</option>
+              <option value="7">Chủ Nhật</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-xs text-slate-500 uppercase" data-i18n="lblTime">Thời Gian (Bắt đầu - Kết thúc):</label>
+            <div class="flex gap-1 mt-1">
+              <input type="text" id="course-start" placeholder="09:00" class="w-1/2 p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs">
+              <input type="text" id="course-end" placeholder="11:45" class="w-1/2 p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs">
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-slate-500 uppercase" data-i18n="lblStartDate">Ngày Bắt Đầu Tuần 1:</label>
+            <input type="date" id="course-start-date" onchange="calculateCourseEndDate()" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+          </div>
+
+          <div>
+            <label class="text-xs text-slate-500 uppercase" data-i18n="lblDurationWeeks">Số Tuần Học:</label>
+            <input type="number" id="course-duration-weeks" value="16" min="1" max="52" oninput="calculateCourseEndDate()" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-500 uppercase" data-i18n="lblEndDateAuto">Ngày Kết Thúc (Tự Động Tính):</label>
+          <input type="text" id="course-end-date" readonly placeholder="Tự động tính..." class="w-full p-3 mt-1 rounded-xl border border-emerald-500/50 bg-emerald-50 dark:bg-slate-800 text-emerald-800 dark:text-emerald-300 font-extrabold cursor-not-allowed">
         </div>
       </div>
 
@@ -635,12 +642,14 @@
         <button onclick="closeAddCourseModal()" class="px-4 py-2 rounded-xl font-bold bg-slate-200 dark:bg-slate-800" data-i18n="btnCancel">Hủy</button>
         <button onclick="saveGlobalCourse()" class="px-5 py-2 rounded-xl font-black bg-skkuGreen text-slate-900 hover:bg-emerald-500" data-i18n="btnApplyCourse">Áp Dụng Lịch Học</button>
       </div>
+
     </div>
   </div>
 
   <!-- MODAL 3: WEEK TASK MODAL -->
   <div id="week-task-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-6 md:p-8 shadow-2xl border-2 border-skkuGreen space-y-6">
+      
       <div class="flex justify-between items-center border-b pb-4 border-slate-200 dark:border-slate-800">
         <div>
           <h3 id="modal-week-title" class="text-2xl font-black text-skkuNavy dark:text-emerald-400">Nhiệm Vụ Tuần</h3>
@@ -650,14 +659,30 @@
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
-      <ul id="week-task-list" class="space-y-3 max-h-80 overflow-y-auto pr-2"></ul>
-      <div class="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end">
-        <button onclick="closeWeekTaskModal()" class="bg-skkuNavy hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow" data-i18n="btnClose">Đóng</button>
+
+      <div class="space-y-4">
+        <div class="flex justify-between items-center">
+          <h4 class="font-extrabold text-base" data-i18n="lblWeekTaskList">Danh Sách Công Việc Tuần Này:</h4>
+          <button onclick="addCustomWeekTaskPrompt()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1 shadow">
+            <i class="fa-solid fa-plus"></i> <span data-i18n="btnAdd">Thêm Task</span>
+          </button>
+        </div>
+
+        <ul id="week-task-list" class="space-y-3 max-h-80 overflow-y-auto pr-2">
+          <!-- Injected by JS -->
+        </ul>
       </div>
+
+      <div class="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+        <button onclick="closeWeekTaskModal()" class="bg-skkuNavy hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow" data-i18n="btnClose">
+          Đóng
+        </button>
+      </div>
+
     </div>
   </div>
 
-  <!-- MODAL 4: AVATAR MODAL -->
+  <!-- MODAL 4: AVATAR ENLARGE & UPLOAD MODAL -->
   <div id="avatar-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center p-4">
     <div class="relative bg-white dark:bg-slate-900 border-2 border-skkuGreen rounded-3xl p-6 max-w-md w-full flex flex-col items-center space-y-5 shadow-2xl">
       <button onclick="closeAvatarModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white text-2xl font-bold">
@@ -668,6 +693,13 @@
       </h4>
       <div class="w-64 h-64 sm:w-72 sm:h-72 rounded-2xl overflow-hidden border-2 border-slate-300 dark:border-slate-700 bg-black shadow-inner flex items-center justify-center">
         <img id="enlarged-avatar-img" src="" class="w-full h-full object-cover">
+      </div>
+      <div class="flex flex-wrap gap-3 justify-center w-full">
+        <label class="cursor-pointer bg-skkuGreen hover:bg-emerald-500 text-slate-900 font-extrabold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow transition">
+          <i class="fa-solid fa-upload"></i> <span data-i18n="btnUploadNewPhoto">Tải Ảnh Khác Để Thay Thế</span>
+          <input type="file" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)">
+        </label>
+        <button onclick="closeAvatarModal()" class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition" data-i18n="btnClose">Đóng</button>
       </div>
     </div>
   </div>
@@ -714,15 +746,281 @@
         btnAddTopic: "Thêm Đề Tài Mới",
         btnAddRow: "Thêm Dòng Mới",
         btnAddNextDay: "Thêm Ngày Hôm Sau",
-        btnDownloadReport: "Tải Báo Cáo Daily (.DOCX)",
+        btnDownloadReport: "Tải Báo Cáo Daily",
         colDate: "Ngày",
         colTasks: "Việc Cần Làm",
         colProgress: "Tiến Độ (%)",
         colNotes: "Ghi Chú & Bài Học",
         colPlan: "Kế Hoạch Ngày Mai",
         colDelete: "Xóa",
+        tabLogin: "Đăng Nhập",
+        tabRegister: "Đăng Ký",
+        lblLoginAccount: "Email / Tên tài khoản:",
+        lblPassword: "Mật Khẩu:",
+        btnLoginSubmit: "Đăng Nhập",
+        noAccountText: "Chưa có tài khoản?",
+        registerNowLink: "Đăng ký ngay",
+        lblRegEmail: "Email Trường (@skku.edu) / Cá Nhân:",
+        lblConfirmPassword: "Xác Nhận Mật Khẩu:",
+        btnRegisterSubmit: "Tạo Tài Khoản & Đăng Ký",
+        hasAccountText: "Đã có tài khoản?",
+        loginNowLink: "Đăng nhập",
+        modalProfileTitle: "Thông Tin Cá Nhân & Hồ Sơ",
+        lblAvatarUrl: "Link Ảnh Đại Diện (Avatar URL):",
+        lblFullName: "Họ và Tên:",
+        lblPhone: "Số Điện Thoại:",
+        lblPersonalEmail: "Email Cá Nhân:",
+        lblSchoolEmail: "Email Trường (@skku.edu):",
+        lblDob: "Ngày Tháng Năm Sinh:",
+        lblPassport: "Số Hộ Chiếu:",
+        lblArc: "Số Thẻ Cư Trú (ARC):",
+        lblBankName: "Tên Ngân Hàng:",
+        lblBankAccount: "Số Tài Khoản Ngân Hàng:",
+        btnSaveProfile: "Lưu Thông Tin",
+        btnCancel: "Hủy",
+        btnClose: "Đóng",
+        modalAddCourseTitle: "Thêm Lịch Học Nâng Cao",
+        lblCourseName: "Tên Môn Học:",
+        lblCourseRoom: "Phòng Học / Hình Thức:",
+        lblDayOfWeek: "Thứ Trong Tuần:",
+        lblTime: "Thời Gian (Bắt đầu - Kết thúc):",
+        lblStartDate: "Ngày Bắt Đầu Tuần 1:",
+        lblDurationWeeks: "Số Tuần Học:",
+        lblEndDateAuto: "Ngày Kết Thúc (Tự Động Tính):",
+        btnApplyCourse: "Áp Dụng Lịch Học",
+        weekTaskDesc: "Kế hoạch báo cáo giáo sư và nhiệm vụ tuần",
+        lblWeekTaskList: "Danh Sách Công Việc Tuần Này:",
+        modalAvatarTitle: "Ảnh Đại Diện Cá Nhân",
+        btnUploadNewPhoto: "Tải Ảnh Khác Để Thay Thế",
+        lblCurrentMonth: "THÁNG HIỆN TẠI",
+        lblScheduleFolder: "Thư Mục Lịch Học",
+        viewWeekDetails: "Xem chi tiết lịch tuần →",
+        todaySchedule: "LỊCH HỌC HÔM NAY",
+        confirmed: "Đã xác nhận",
+        attention: "Chú ý",
+        todayScheduleDesc: "Tổng hợp toàn bộ lịch học và báo cáo cần thực hiện trong ngày hôm nay.",
+        noFixedSchedule: "Hôm nay không có lịch học cố định. Hãy tập trung thí nghiệm & viết báo cáo lab!",
+        confirmInfo: "Xác Nhận Đã Nắm Thông Tin",
+        infoConfirmed: "Đã Nhận Thông Tin Hôm Nay",
+        yearPrefix: "Năm ",
+        yearSuffix: "",
+        monthPrefix: "Tháng ",
+        monthSuffix: "",
+        weekPrefix: "Tuần ",
+        weekSemesterSuffix: " (Học kỳ 16 tuần)",
+        todayBadge: "HÔM NAY",
+        collapse: "▲ Thu gọn",
+        expand: "▼ Chi tiết",
+        weekTasksBtn: "Kế Hoạch & Task Tuần ",
+        registerSuccessMsg: "Bạn đã đăng ký thành công! Vui lòng bấm Đăng Nhập để truy cập hệ thống.",
+        loginSuccessMsg: "Đăng nhập thành công!",
+        logoutSuccessMsg: "Đã đăng xuất thành công!",
         daysMap: { 1: 'T2', 2: 'T3', 3: 'T4', 4: 'T5', 5: 'T6', 6: 'T7', 7: 'CN' },
         daysFullMap: { 1: 'Thứ 2', 2: 'Thứ 3', 3: 'Thứ 4', 4: 'Thứ 5', 5: 'Thứ 6', 6: 'Thứ 7', 7: 'Chủ Nhật' }
+      },
+      en: {
+        kstClock: "Korean Standard Time (KST)",
+        loginRegisterBtn: "Login / Register",
+        btnLogout: "Logout",
+        editProfile: "Personal Profile",
+        tabCalendar: "Month Folders & Schedule",
+        tabResearch: "Research Logs",
+        btnAddSchedule: "Add Advanced Course",
+        btnProfileInfo: "Personal Profile",
+        bannerTitle: "Welcome to EES Lab Academic Portal 🎓",
+        bannerSubtitle: "Track course schedule, weekly advisor reports, deadlines, and lab research logs",
+        utilitiesTitle: "Quick Utilities & Links",
+        utilitiesSubtitle: "Quick access to SKKU Kingo Portal & Canvas",
+        kingoDesc: "SKKU Student Kingo ID Portal",
+        canvasDesc: "View course schedules, materials & lectures",
+        monthFoldersHeader: "Month Folders List",
+        btnAddMonth: "Add New Month",
+        btnBackToMonths: "Back to Month Folders",
+        semesterSubtitle: "Fall Semester 2026 • EES Lab Research",
+        cardDeadlines: "Monthly Deadlines",
+        cardNotes: "Important Notes",
+        btnAdd: "Add",
+        permanentAdvisorNote: "Weekly advisor report every Monday morning at 09:00",
+        scheduleTitle: "Weekly Courses & Tasks",
+        todayAutoExpandedNote: "Today is auto-highlighted and expanded",
+        researchHeader: "Lab Research Journal & Logs",
+        researchSubtitle: "Manage experimental progress, key takeaways & next day plans.",
+        btnAddTopic: "Add New Topic",
+        btnAddRow: "Add New Row",
+        btnAddNextDay: "Add Next Day",
+        btnDownloadReport: "Download Daily Report",
+        colDate: "Date",
+        colTasks: "Tasks To Do",
+        colProgress: "Progress (%)",
+        colNotes: "Take Notes / Learnings",
+        colPlan: "Plan for Tomorrow",
+        colDelete: "Delete",
+        tabLogin: "Login",
+        tabRegister: "Register",
+        lblLoginAccount: "Email / Username:",
+        lblPassword: "Password:",
+        btnLoginSubmit: "Login",
+        noAccountText: "Don't have an account?",
+        registerNowLink: "Register now",
+        lblRegEmail: "School Email (@skku.edu) / Personal:",
+        lblConfirmPassword: "Confirm Password:",
+        btnRegisterSubmit: "Create Account & Register",
+        hasAccountText: "Already have an account?",
+        loginNowLink: "Login",
+        modalProfileTitle: "Personal Information & Profile",
+        lblAvatarUrl: "Avatar Image URL:",
+        lblFullName: "Full Name:",
+        lblPhone: "Phone Number:",
+        lblPersonalEmail: "Personal Email:",
+        lblSchoolEmail: "School Email (@skku.edu):",
+        lblDob: "Date of Birth:",
+        lblPassport: "Passport No.:",
+        lblArc: "ARC No.:",
+        lblBankName: "Bank Name:",
+        lblBankAccount: "Bank Account Number:",
+        btnSaveProfile: "Save Profile",
+        btnCancel: "Cancel",
+        btnClose: "Close",
+        modalAddCourseTitle: "Add Advanced Course Schedule",
+        lblCourseName: "Course Name:",
+        lblCourseRoom: "Room / Location:",
+        lblDayOfWeek: "Day of Week:",
+        lblTime: "Time Range:",
+        lblStartDate: "Week 1 Start Date:",
+        lblDurationWeeks: "Duration (Weeks):",
+        lblEndDateAuto: "End Date (Auto Calculated):",
+        btnApplyCourse: "Apply Course Schedule",
+        weekTaskDesc: "Advisor report plan & weekly tasks",
+        lblWeekTaskList: "This Week's Task List:",
+        modalAvatarTitle: "Personal Profile Picture",
+        btnUploadNewPhoto: "Upload Alternative Photo",
+        lblCurrentMonth: "CURRENT MONTH",
+        lblScheduleFolder: "Schedule Folder",
+        viewWeekDetails: "View weekly details →",
+        todaySchedule: "TODAY'S SCHEDULE",
+        confirmed: "Confirmed",
+        attention: "Attention",
+        todayScheduleDesc: "Summary of all courses and reports to be completed today.",
+        noFixedSchedule: "No fixed courses today. Focus on lab experiments & research reports!",
+        confirmInfo: "Acknowledge Information",
+        infoConfirmed: "Information Acknowledged Today",
+        yearPrefix: "Year ",
+        yearSuffix: "",
+        monthPrefix: "Month ",
+        monthSuffix: "",
+        weekPrefix: "Week ",
+        weekSemesterSuffix: " (16-week Semester)",
+        todayBadge: "TODAY",
+        collapse: "▲ Collapse",
+        expand: "▼ Details",
+        weekTasksBtn: "Weekly Plan & Tasks Week ",
+        registerSuccessMsg: "Registration successful! Please click Login to access your account.",
+        loginSuccessMsg: "Login successful!",
+        logoutSuccessMsg: "Logged out successfully!",
+        daysMap: { 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat', 7: 'Sun' },
+        daysFullMap: { 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday', 7: 'Sunday' }
+      },
+      ko: {
+        kstClock: "한국 표준시 (KST)",
+        loginRegisterBtn: "로그인 / 회원가입",
+        btnLogout: "로그아웃",
+        editProfile: "개인 프로필",
+        tabCalendar: "월별 폴더 & 수업 일정",
+        tabResearch: "연구 일지",
+        btnAddSchedule: "고급 수업 일정 추가",
+        btnProfileInfo: "개인 정보",
+        bannerTitle: "EES Lab 학업 및 연구 관리 Portal 🎓",
+        bannerSubtitle: "수업 일정, 주간 지도교수 보고, 마감일 및 연구 일지를 효율적으로 관리하세요",
+        utilitiesTitle: "유틸리티 및 빠른 링크",
+        utilitiesSubtitle: "성균관대 킹고 포털 및 Canvas 빠른 접속",
+        kingoDesc: "성균관대학교 킹고 포털 시스템",
+        canvasDesc: "강의 시간표 및 수업 자료 조회",
+        monthFoldersHeader: "월별 폴더 목록",
+        btnAddMonth: "새 월 추가",
+        btnBackToMonths: "월 선택으로 돌아가기",
+        semesterSubtitle: "2026 가을학기 • EES Lab 연구실",
+        cardDeadlines: "이달의 마감일",
+        cardNotes: "중요 메모",
+        btnAdd: "추가",
+        permanentAdvisorNote: "매주 월요일 오전 9시 지도교수님 주간 보고",
+        scheduleTitle: "주간 수업 및 할 일",
+        todayAutoExpandedNote: "오늘 일정이 자동으로 강조 및 확장됩니다",
+        researchHeader: "연구실 연구 일지",
+        researchSubtitle: "실험 진행 상황, 학습 내용 및 다음 날 계획을 기록하세요.",
+        btnAddTopic: "새 연구 주제 추가",
+        btnAddRow: "새 행 추가",
+        btnAddNextDay: "다음 날 추가",
+        btnDownloadReport: "일일 보고서 다운로드",
+        colDate: "날짜",
+        colTasks: "할 일",
+        colProgress: "진행률 (%)",
+        colNotes: "노트 / 학습 내용",
+        colPlan: "내일 계획",
+        colDelete: "삭제",
+        tabLogin: "로그인",
+        tabRegister: "회원가입",
+        lblLoginAccount: "이메일 / 아이디:",
+        lblPassword: "비밀번호:",
+        btnLoginSubmit: "로그인",
+        noAccountText: "계정이 없으신가요?",
+        registerNowLink: "지금 가입하기",
+        lblRegEmail: "학교 이메일 (@skku.edu) / 개인 이메일:",
+        lblConfirmPassword: "비밀번호 확인:",
+        btnRegisterSubmit: "계정 생성 및 회원가입",
+        hasAccountText: "이미 계정이 있으신가요?",
+        loginNowLink: "로그인",
+        modalProfileTitle: "개인 정보 및 프로필",
+        lblAvatarUrl: "프로필 이미지 URL:",
+        lblFullName: "성명:",
+        lblPhone: "전화번호:",
+        lblPersonalEmail: "개인 이메일:",
+        lblSchoolEmail: "학교 이메일 (@skku.edu):",
+        lblDob: "생년월일:",
+        lblPassport: "여권 번호:",
+        lblArc: "외국인등록번호 (ARC):",
+        lblBankName: "은행명:",
+        lblBankAccount: "계좌번호:",
+        btnSaveProfile: "정보 저장",
+        btnCancel: "취소",
+        btnClose: "닫기",
+        modalAddCourseTitle: "고급 수업 일정 추가",
+        lblCourseName: "교과목명:",
+        lblCourseRoom: "강의실 / 형태:",
+        lblDayOfWeek: "요일:",
+        lblTime: "시간대:",
+        lblStartDate: "1주차 시작일:",
+        lblDurationWeeks: "수업 주수:",
+        lblEndDateAuto: "종료일 (자동 계산):",
+        btnApplyCourse: "수업 일정 적용",
+        weekTaskDesc: "지도교수 보고 계획 및 주간 과제",
+        lblWeekTaskList: "이번 주 과제 목록:",
+        modalAvatarTitle: "프로필 사진",
+        btnUploadNewPhoto: "다른 사진 업로드",
+        lblCurrentMonth: "현재 월",
+        lblScheduleFolder: "수업 일정",
+        viewWeekDetails: "주간 일정 상세보기 →",
+        todaySchedule: "오늘의 수업 일정",
+        confirmed: "확인됨",
+        attention: "주의",
+        todayScheduleDesc: "오늘 진행해야 할 모든 수업 및 보고서 요약.",
+        noFixedSchedule: "오늘 고정 수업이 없습니다. 실험 및 연구 보고서에 집중하세요!",
+        confirmInfo: "오늘 정보 확인 완료",
+        infoConfirmed: "오늘 정보 확인됨",
+        yearPrefix: "",
+        yearSuffix: "년",
+        monthPrefix: "",
+        monthSuffix: "월",
+        weekPrefix: "",
+        weekSemesterSuffix: "주차 (16주 학기)",
+        todayBadge: "오늘",
+        collapse: "▲ 접기",
+        expand: "▼ 상세보기",
+        weekTasksBtn: "주간 계획 및 과제 ",
+        registerSuccessMsg: "회원가입이 완료되었습니다! 로그인 버튼을 눌러 로그인해주세요.",
+        loginSuccessMsg: "로그인되었습니다!",
+        logoutSuccessMsg: "로그아웃되었습니다!",
+        daysMap: { 1: '월', 2: '화', 3: '수', 4: '목', 5: '금', 6: '토', 7: '일' },
+        daysFullMap: { 1: '월요일', 2: '화요일', 3: '수요일', 4: '목요일', 5: '금요일', 6: '토요일', 7: '일요일' }
       }
     };
 
@@ -731,18 +1029,30 @@
       theme: 'light',
       users: {},
       currentUser: null,
-      customDocxTemplateBase64: null, // Lưu trữ mẫu file Word custom
       profile: {
         avatar: 'https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab',
-        name: 'Lê Thành Trung',
+        name: '',
         phone: '010-1234-5678',
         pemail: 'researcher@gmail.com',
-        semail: 'student@skku.edu'
+        semail: 'student@skku.edu',
+        dob: '1998-05-15',
+        passport: 'C12345678',
+        arc: '980515-5123456',
+        bankName: 'NH Nonghyup Bank',
+        bankAccount: '302-1234-5678-91'
       },
       selectedMonthKey: '9/2026',
       months: {
-        "9/2026": { year: 2026, month: 9, deadlines: [], notes: [] }
+        "9/2026": { year: 2026, month: 9, deadlines: [{ text: "Nộp báo cáo Nanophotonics https://canvas.skku.edu", done: false }], notes: ["Chuẩn bị slide thuyết trình seminar"] },
+        "10/2026": { year: 2026, month: 10, deadlines: [], notes: [] },
+        "11/2026": { year: 2026, month: 11, deadlines: [], notes: [] },
+        "12/2026": { year: 2026, month: 12, deadlines: [], notes: [] },
+        "1/2027": { year: 2027, month: 1, deadlines: [], notes: [] }
       },
+      globalCourses: [], 
+      dayData: {}, 
+      weekTasks: {}, 
+      notificationsAck: {},
       researchProjects: [
         {
           id: "proj_1",
@@ -753,8 +1063,8 @@
               dateText: "18/09/2026\n(T6)",
               tasks: "Đo phổ XRD mẫu A1-A5 https://canvas.skku.edu/courses",
               progressStep: 1,
-              notes: "Mẫu A3 có tinh thể đồng đều nhất, đạt hiệu suất tối ưu trong phản ứng catalyst.",
-              plan: "Đo quang phổ UV-Vis cho mẫu A3 vào sáng mai và làm sạch buồng phản ứng."
+              notes: "Mẫu A3 có tinh thể đồng đều nhất",
+              plan: "Đo quang phổ UV-Vis cho mẫu A3 vào sáng mai"
             }
           ]
         }
@@ -762,332 +1072,235 @@
       activeProjectIndex: 0
     };
 
+    let activeWeekKeyForModal = null;
+    let expandedDayKey = null;
+
     function saveData() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
     }
 
-    // --- AI / HELPER: TÓM TẮT Ý CHÍNH CÔ ĐỌNG ---
-    function summarizeText(text) {
-      if (!text) return "• Không có ghi chú";
-      // Cắt bỏ link URL
-      let clean = text.replace(/(https?:\/\/[^\s]+|www\.[^\s]+)/g, '').trim();
-      if (!clean) return "• Đã thực hiện công việc theo kế hoạch";
-
-      // Tách thành từng dòng hoặc câu
-      let lines = clean.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-      let bullets = [];
-
-      lines.forEach(line => {
-        // Tách câu ngắn
-        let sentences = line.split('. ').map(s => s.trim()).filter(s => s.length > 0);
-        sentences.forEach(s => {
-          let cleanedSentence = s.replace(/^[•\-\*]/, '').trim();
-          if (cleanedSentence) {
-            bullets.push(`• ${cleanedSentence}`);
-          }
-        });
+    // --- HELPER FUNCTIONS ---
+    function renderClickableLinks(text) {
+      if (!text) return '';
+      const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
+      return text.replace(urlRegex, function(url) {
+        let href = url.startsWith('http') ? url : 'http://' + url;
+        return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="underline text-blue-600 dark:text-blue-400 font-bold hover:text-blue-800 break-all inline-flex items-center gap-1" onclick="event.stopPropagation()"><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>${url}</a>`;
       });
-
-      return bullets.slice(0, 3).join('\n'); // Lấy tối đa 3 ý chính sắc nét
     }
 
-    // --- MODAL XUẤT BÁO CÁO DAILY DOCX ---
-    function openReportModal() {
-      const proj = appData.researchProjects[appData.activeProjectIndex];
-      const select = document.getElementById('report-date-select');
-      select.innerHTML = '';
+    function formatLogDateText(dateText) {
+      if (!dateText) return '';
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+      const allDayMaps = [i18nDict.vi.daysMap, i18nDict.en.daysMap, i18nDict.ko.daysMap];
 
-      if (!proj || !proj.logs || proj.logs.length === 0) {
-        alert("Chưa có nhật ký nghiên cứu nào để xuất báo cáo!");
+      return dateText.replace(/\(([A-Za-z0-9T월화수목금토일]+)\)/g, (match, p1) => {
+        let foundDow = null;
+        for (const map of allDayMaps) {
+          for (const [dow, label] of Object.entries(map)) {
+            if (label === p1) {
+              foundDow = dow;
+              break;
+            }
+          }
+          if (foundDow) break;
+        }
+        if (foundDow && dict.daysMap[foundDow]) {
+          return `(${dict.daysMap[foundDow]})`;
+        }
+        return match;
+      });
+    }
+
+    // --- LUỒNG ĐĂNG NHẬP & ĐĂNG KÝ MỚI ---
+    function openAuthModal(tab = 'login') {
+      switchAuthTab(tab);
+      document.getElementById('auth-modal').classList.remove('hidden');
+    }
+
+    function closeAuthModal() {
+      document.getElementById('auth-modal').classList.add('hidden');
+    }
+
+    function switchAuthTab(tab) {
+      const loginBtn = document.getElementById('auth-tab-login');
+      const regBtn = document.getElementById('auth-tab-register');
+      const loginForm = document.getElementById('auth-form-login');
+      const regForm = document.getElementById('auth-form-register');
+
+      if (tab === 'login') {
+        loginBtn.className = "text-lg font-black px-3 py-1 rounded-xl text-skkuNavy dark:text-emerald-400 bg-slate-100 dark:bg-slate-800";
+        regBtn.className = "text-lg font-black px-3 py-1 rounded-xl text-slate-400 hover:text-slate-600";
+        loginForm.classList.remove('hidden');
+        regForm.classList.add('hidden');
+      } else {
+        regBtn.className = "text-lg font-black px-3 py-1 rounded-xl text-skkuNavy dark:text-emerald-400 bg-slate-100 dark:bg-slate-800";
+        loginBtn.className = "text-lg font-black px-3 py-1 rounded-xl text-slate-400 hover:text-slate-600";
+        regForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+      }
+    }
+
+    function handleRegisterSubmit() {
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const pass = document.getElementById('reg-password').value;
+      const confirmPass = document.getElementById('reg-confirm-password').value;
+      const errorEl = document.getElementById('reg-error-msg');
+
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+
+      if (!name || !email || !pass) {
+        errorEl.innerText = (lang === 'ko' ? "모든 정보를 입력해주세요!" : (lang === 'en' ? "Please fill in all fields!" : "Vui lòng điền đầy đủ thông tin đăng ký!"));
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      if (pass !== confirmPass) {
+        errorEl.innerText = (lang === 'ko' ? "비밀번호가 일치하지 않습니다!" : (lang === 'en' ? "Passwords do not match!" : "Mật khẩu xác nhận không trùng khớp!"));
+        errorEl.classList.remove('hidden');
         return;
       }
 
-      // Nạp danh sách ngày từ bảng
-      proj.logs.forEach((log, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        const cleanDateStr = log.dateText.replace('\n', ' ');
-        option.innerText = `Ngày: ${cleanDateStr} - [Tiến độ: ${log.progressStep * 20}%]`;
-        select.appendChild(option);
-      });
+      if (!appData.users) appData.users = {};
+      appData.users[email] = { name, email, pass };
+      saveData();
 
-      // Cập nhật badge mẫu DOCX
-      const badge = document.getElementById('template-status-badge');
-      if (appData.customDocxTemplateBase64) {
-        badge.innerText = "✓ Đã tải mẫu riêng của Lab";
-        badge.className = "text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300";
-      } else {
-        badge.innerText = "Chưa có mẫu riêng (Dùng mẫu mặc định)";
-        badge.className = "text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300";
+      closeAuthModal();
+      alert(dict.registerSuccessMsg);
+    }
+
+    function handleLoginSubmit() {
+      const email = document.getElementById('login-email').value.trim();
+      const pass = document.getElementById('login-password').value;
+      const errorEl = document.getElementById('login-error-msg');
+
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+
+      if (!email || !pass) {
+        errorEl.innerText = (lang === 'ko' ? "이메일과 비밀번호를 입력해주세요!" : (lang === 'en' ? "Please enter email and password!" : "Vui lòng nhập Email và Mật khẩu!"));
+        errorEl.classList.remove('hidden');
+        return;
       }
 
-      document.getElementById('report-modal').classList.remove('hidden');
-      previewReportData();
-    }
-
-    function closeReportModal() {
-      document.getElementById('report-modal').classList.add('hidden');
-    }
-
-    // Xử lý Upload mẫu Word .DOCX
-    function handleTemplateUpload(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          appData.customDocxTemplateBase64 = e.target.result;
-          saveData();
-          alert("Đã lưu Form báo cáo mẫu (.docx) thành công!");
-          openReportModal();
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-
-    // Xem trước thông tin tóm tắt trên Modal
-    function previewReportData() {
-      const proj = appData.researchProjects[appData.activeProjectIndex];
-      const selectedIndex = document.getElementById('report-date-select').value;
-      const log = proj.logs[selectedIndex];
-      if (!log) return;
-
-      const weatherText = document.getElementById('weather-info').innerText || "Suwon 22°C";
-      
-      // Định dạng ngày tháng
-      const now = new Date();
-      const dateFormatted = `Thứ ${now.getDay() + 1}, ngày ${now.getDate()} tháng ${now.getMonth() + 1} năm ${now.getFullYear()}`;
-
-      document.getElementById('prev-date').innerText = dateFormatted;
-      document.getElementById('prev-weather').innerText = `☀️ ${weatherText.trim()}`;
-      document.getElementById('prev-tasks').innerText = summarizeText(log.tasks);
-      document.getElementById('prev-notes').innerText = summarizeText(log.notes);
-      document.getElementById('prev-plan').innerText = summarizeText(log.plan);
-    }
-
-    // --- TẠO VÀ TẢI FILE DOCX ĐƯỢC ĐIỀN TỰ ĐỘNG ---
-    function generateDocxReport() {
-      const proj = appData.researchProjects[appData.activeProjectIndex];
-      const selectedIndex = document.getElementById('report-date-select').value;
-      const log = proj.logs[selectedIndex];
-      if (!log) return;
-
-      const weatherText = (document.getElementById('weather-info').innerText || "Suwon 22°C").trim();
-      const now = new Date();
-      const dateFormatted = `Thứ ${now.getDay() === 0 ? 'Chủ Nhật' : now.getDay() + 1}, ngày ${String(now.getDate()).padStart(2, '0')} tháng ${String(now.getMonth() + 1).padStart(2, '0')} năm ${now.getFullYear()}`;
-
-      const templateData = {
-        ngay_thang: dateFormatted,
-        thoi_tiet: `Suwon ${weatherText}`,
-        de_tai: proj.title || "Nghiên cứu EES Lab",
-        cong_viec: summarizeText(log.tasks),
-        tien_do: `${(log.progressStep || 0) * 20}%`,
-        ghi_chu: summarizeText(log.notes),
-        ke_hoach: summarizeText(log.plan),
-        nguoi_bao_cao: appData.profile.name || "Nghiên cứu sinh"
-      };
-
-      try {
-        let zip;
-        if (appData.customDocxTemplateBase64) {
-          // Sử dụng mẫu custom do người dùng upload
-          const base64Data = appData.customDocxTemplateBase64.split(',')[1];
-          zip = new PizZip(base64Data, { base64: true });
+      let userName = email.split('@')[0] || "Nghiên cứu sinh";
+      if (appData.users && appData.users[email]) {
+        if (appData.users[email].pass === pass) {
+          userName = appData.users[email].name;
         } else {
-          // Tạo file DOCX chuẩn từ mẫu động nếu chưa upload form riêng
-          alert("Bạn chưa tải lên form mẫu riêng, hệ thống sẽ xuất báo cáo dạng chuẩn. Bạn có thể tải form mẫu .docx của lab lên ở mục trên!");
-          generateDefaultDocx(templateData);
+          errorEl.innerText = (lang === 'ko' ? "비밀번호가 올바르지 않습니다!" : (lang === 'en' ? "Incorrect password!" : "Mật khẩu không chính xác!"));
+          errorEl.classList.remove('hidden');
           return;
         }
+      }
 
-        const doc = new window.docxtemplater(zip, {
-          paragraphLoop: true,
-          linebreaks: true,
-        });
+      appData.currentUser = email;
+      appData.profile.name = userName;
+      appData.profile.semail = email;
+      saveData();
 
-        doc.render(templateData);
+      updateHeaderProfileUI();
+      closeAuthModal();
+      alert(dict.loginSuccessMsg);
+    }
 
-        const blob = doc.getZip().generate({
-          type: "blob",
-          mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        });
+    function handleLogout() {
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
 
-        const fileName = `Daily_Report_${log.dateText.replace(/[^a-zA-Z0-9]/g, '_')}.docx`;
-        saveAs(blob, fileName);
-        closeReportModal();
+      appData.currentUser = null;
+      saveData();
+      updateHeaderProfileUI();
+      alert(dict.logoutSuccessMsg);
+    }
 
-      } catch (error) {
-        console.error("Lỗi điền file docx:", error);
-        alert("Lỗi khi tự động điền mẫu Word! Hãy đảm bảo mẫu .docx có thẻ hợp lệ.");
+    function updateHeaderProfileUI() {
+      const loggedOutBox = document.getElementById('header-logged-out');
+      const loggedInBox = document.getElementById('header-logged-in');
+      const p = appData.profile;
+      const avatarSrc = p.avatar || 'https://placehold.co/100x100/002C5F/FFF?text=EESL';
+      
+      if (appData.currentUser) {
+        if (loggedOutBox) loggedOutBox.classList.add('hidden');
+        if (loggedInBox) loggedInBox.classList.remove('hidden');
+        if (document.getElementById('header-avatar')) {
+          document.getElementById('header-avatar').src = avatarSrc;
+        }
+        if (document.getElementById('header-user-name')) {
+          document.getElementById('header-user-name').innerText = p.name || 'Lê Thành Trung';
+        }
+        if (document.getElementById('header-user-email')) {
+          document.getElementById('header-user-email').innerText = appData.currentUser || p.semail;
+        }
+      } else {
+        if (loggedOutBox) loggedOutBox.classList.remove('hidden');
+        if (loggedInBox) loggedInBox.classList.add('hidden');
+      }
+
+      if (document.getElementById('main-avatar-img')) {
+        document.getElementById('main-avatar-img').src = avatarSrc;
       }
     }
 
-    // Dự phòng khi chưa upload form custom
-    function generateDefaultDocx(data) {
-      const content = `================================================
-BÁO CÁO NGHIÊN CỨU HÀNG NGÀY (DAILY LAB REPORT)
-Energy & Environmental Sustainability Lab - SKKU
-================================================
-
-• Ngày báo cáo: ${data.ngay_thang}
-• Thời tiết Suwon: ${data.thoi_tiet}
-• Người thực hiện: ${data.nguoi_bao_cao}
-• Đề tài: ${data.de_tai}
-
-------------------------------------------------
-1. CÔNG VIỆC THỰC HIỆN (TÓM TẮT Ý CHÍNH):
-${data.cong_viec}
-
-2. TIẾN ĐỘ HOÀN THÀNH: ${data.tien_do}
-
-3. GHI CHÚ & BÀI HỌC KẾT LUẬN:
-${data.ghi_chu}
-
-4. KẾ HOẠCH CHO NGÀY TIẾP THEO:
-${data.ke_hoach}
-================================================`;
-
-      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-      saveAs(blob, `Daily_Report_${data.ngay_thang.replace(/[^a-zA-Z0-9]/g, '_')}.txt`);
-      closeReportModal();
-    }
-
-    // --- CÁC HÀM XỬ LÝ GIAO DIỆN KHÁC (GIỮ NGUYÊN BẢN V8) ---
-    function switchMainTab(tab) {
-      const calBtn = document.getElementById('tab-btn-calendar');
-      const resBtn = document.getElementById('tab-btn-research');
-      const calView = document.getElementById('view-calendar-tab');
-      const resView = document.getElementById('view-research-tab');
-
-      if (tab === 'calendar') {
-        calBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition shadow-md bg-skkuNavy text-white";
-        resBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800";
-        calView.classList.remove('hidden');
-        resView.classList.add('hidden');
-      } else {
-        resBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition shadow-md bg-skkuNavy text-white";
-        calBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800";
-        resView.classList.remove('hidden');
-        calView.classList.add('hidden');
+    // --- 2. MULTI-LANGUAGE SYSTEM ---
+    function changeLanguage(lang) {
+      appData.lang = lang;
+      saveData();
+      applyLanguageUI();
+      if (!document.getElementById('view-research-tab').classList.contains('hidden')) {
         renderResearchTab();
       }
-    }
-
-    function renderResearchTab() {
-      renderTopicsPills();
-      renderResearchTable();
-    }
-
-    function renderTopicsPills() {
-      const list = document.getElementById('research-topics-list');
-      list.innerHTML = '';
-      appData.researchProjects.forEach((proj, idx) => {
-        const btn = document.createElement('button');
-        const isActive = idx === appData.activeProjectIndex;
-        btn.className = `px-4 py-2 rounded-2xl font-bold text-xs whitespace-nowrap transition ${
-          isActive 
-            ? 'bg-skkuNavy text-white shadow-md' 
-            : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300'
-        }`;
-        btn.innerText = proj.title;
-        btn.onclick = () => {
-          appData.activeProjectIndex = idx;
-          saveData();
-          renderResearchTab();
-        };
-        list.appendChild(btn);
-      });
-    }
-
-    function renderResearchTable() {
-      const proj = appData.researchProjects[appData.activeProjectIndex];
-      document.getElementById('current-project-title').innerText = proj ? proj.title : "Chưa chọn đề tài";
-      const tbody = document.getElementById('research-table-body');
-      tbody.innerHTML = '';
-
-      if (!proj || !proj.logs) return;
-
-      proj.logs.forEach((log, lIdx) => {
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition";
-        
-        tr.innerHTML = `
-          <td class="p-3 border-r border-slate-200 dark:border-slate-800 text-center font-bold text-skkuNavy dark:text-emerald-400 whitespace-pre-line">${log.dateText}</td>
-          <td class="p-3 border-r border-slate-200 dark:border-slate-800">
-            <textarea onchange="updateResearchLog(${lIdx}, 'tasks', this.value)" class="w-full bg-transparent border border-transparent focus:border-emerald-500 rounded p-1 text-xs font-semibold focus:bg-white dark:focus:bg-slate-800 leading-relaxed">${log.tasks}</textarea>
-          </td>
-          <td class="p-3 border-r border-slate-200 dark:border-slate-800 text-center">
-            <select onchange="updateResearchLog(${lIdx}, 'progressStep', this.value)" class="p-1 rounded bg-slate-100 dark:bg-slate-800 text-xs font-black">
-              <option value="0" ${log.progressStep == 0 ? 'selected' : ''}>0%</option>
-              <option value="1" ${log.progressStep == 1 ? 'selected' : ''}>20%</option>
-              <option value="2" ${log.progressStep == 2 ? 'selected' : ''}>40%</option>
-              <option value="3" ${log.progressStep == 3 ? 'selected' : ''}>60%</option>
-              <option value="4" ${log.progressStep == 4 ? 'selected' : ''}>80%</option>
-              <option value="5" ${log.progressStep == 5 ? 'selected' : ''}>100%</option>
-            </select>
-          </td>
-          <td class="p-3 border-r border-slate-200 dark:border-slate-800">
-            <textarea onchange="updateResearchLog(${lIdx}, 'notes', this.value)" class="w-full bg-transparent border border-transparent focus:border-emerald-500 rounded p-1 text-xs font-semibold focus:bg-white dark:focus:bg-slate-800 leading-relaxed">${log.notes}</textarea>
-          </td>
-          <td class="p-3 border-r border-slate-200 dark:border-slate-800">
-            <textarea onchange="updateResearchLog(${lIdx}, 'plan', this.value)" class="w-full bg-transparent border border-transparent focus:border-emerald-500 rounded p-1 text-xs font-semibold focus:bg-white dark:focus:bg-slate-800 leading-relaxed">${log.plan}</textarea>
-          </td>
-          <td class="p-3 text-center">
-            <button onclick="deleteResearchRow(${lIdx})" class="text-red-400 hover:text-red-600">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function updateResearchLog(idx, field, val) {
-      const proj = appData.researchProjects[appData.activeProjectIndex];
-      if (proj && proj.logs[idx]) {
-        proj.logs[idx][field] = val;
-        saveData();
+      if (!document.getElementById('month-detail-subview').classList.contains('hidden')) {
+        renderMonthDetail();
+      }
+      if (!document.getElementById('month-selection-subview').classList.contains('hidden')) {
+        renderMonthsGrid();
       }
     }
 
-    function addResearchRow() {
-      const proj = appData.researchProjects[appData.activeProjectIndex];
-      if (!proj) return;
-      const now = new Date();
-      const dd = String(now.getDate()).padStart(2, '0');
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const yyyy = now.getFullYear();
+    function applyLanguageUI() {
+      const lang = appData.lang || 'vi';
+      document.getElementById('lang-select').value = lang;
 
-      proj.logs.unshift({
-        id: "log_" + Date.now(),
-        dateText: `${dd}/${mm}/${yyyy}`,
-        tasks: "",
-        progressStep: 0,
-        notes: "",
-        plan: ""
+      const dict = i18nDict[lang] || i18nDict['vi'];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+          el.innerText = dict[key];
+        }
       });
-      saveData();
-      renderResearchTable();
+
+      updateHeaderProfileUI();
+      renderNotifications();
+      updateKSTClock();
     }
 
-    function addResearchRowNextDay() {
-      addResearchRow();
-    }
-
-    function deleteResearchRow(idx) {
-      const proj = appData.researchProjects[appData.activeProjectIndex];
-      if (proj && confirm("Bạn có chắc chắn muốn xóa dòng nhật ký này không?")) {
-        proj.logs.splice(idx, 1);
-        saveData();
-        renderResearchTable();
-      }
-    }
-
-    // KST Clock & Weather API
+    // --- 3. KST CLOCK & WEATHER ---
     function updateKSTClock() {
       const now = new Date();
       const optionsTime = { timeZone: 'Asia/Seoul', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
       const timeStr = new Intl.DateTimeFormat('vi-VN', optionsTime).format(now);
+
+      const lang = appData.lang || 'vi';
+      const nowKST = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+      let dow = nowKST.getDay();
+      if (dow === 0) dow = 7;
+      
+      const dayNames = {
+        vi: { 1: 'Thứ 2', 2: 'Thứ 3', 3: 'Thứ 4', 4: 'Thứ 5', 5: 'Thứ 6', 6: 'Thứ 7', 7: 'Chủ Nhật' },
+        en: { 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday', 7: 'Sunday' },
+        ko: { 1: '월요일', 2: '화요일', 3: '수요일', 4: '목요일', 5: '금요일', 6: '토요일', 7: '일요일' }
+      };
+
+      const dayName = (dayNames[lang] || dayNames['vi'])[dow];
+      const dd = String(nowKST.getDate()).padStart(2, '0');
+      const mm = String(nowKST.getMonth() + 1).padStart(2, '0');
+      const yyyy = nowKST.getFullYear();
+
       document.getElementById('kst-time').innerText = timeStr;
+      document.getElementById('kst-date').innerText = `${dayName}, ${dd}/${mm}/${yyyy}`;
     }
     setInterval(updateKSTClock, 1000);
 
@@ -1105,9 +1318,616 @@ ${data.ke_hoach}
     }
     fetchSuwonWeather();
 
-    // Khởi chạy hệ thống
-    updateKSTClock();
-    renderResearchTab();
+    // --- 4. DARK / LIGHT THEME ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+
+    function applyTheme() {
+      if (appData.theme === 'dark') {
+        document.documentElement.classList.add('dark');
+        themeIcon.className = 'fa-solid fa-sun text-amber-300 text-sm';
+      } else {
+        document.documentElement.classList.remove('dark');
+        themeIcon.className = 'fa-solid fa-moon text-amber-400 text-sm';
+      }
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+      appData.theme = (appData.theme === 'dark') ? 'light' : 'dark';
+      saveData();
+      applyTheme();
+    });
+
+    // --- 5. NOTIFICATIONS SYSTEM ---
+    function renderNotifications() {
+      const container = document.getElementById('notifications-box');
+      if (!container) return;
+
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+
+      const nowKSTDate = new Date();
+      const optionsKST = { timeZone: 'Asia/Seoul' };
+      const nowKST = new Date(nowKSTDate.toLocaleString('en-US', optionsKST));
+
+      const todayStr = `${nowKST.getFullYear()}-${String(nowKST.getMonth() + 1).padStart(2, '0')}-${String(nowKST.getDate()).padStart(2, '0')}`;
+      let dow = nowKST.getDay();
+      if (dow === 0) dow = 7;
+
+      let todayCourses = [];
+      if (DEFAULT_FIXED_SCHEDULE[dow]) {
+        const def = DEFAULT_FIXED_SCHEDULE[dow];
+        todayCourses.push({ name: def.name, time: def.time, room: def.room });
+      }
+
+      if (appData.globalCourses) {
+        appData.globalCourses.forEach(c => {
+          const matchDow = parseInt(c.dow) === dow;
+          let inRange = true;
+          if (c.startDate && c.endDate) {
+            inRange = (todayStr >= c.startDate && todayStr <= c.endDate);
+          }
+          if (matchDow && inRange) {
+            todayCourses.push({ name: c.name, time: `${c.start} - ${c.end}`, room: c.room });
+          }
+        });
+      }
+
+      if (appData.dayData[todayStr] && appData.dayData[todayStr].customClasses) {
+        appData.dayData[todayStr].customClasses.forEach(c => {
+          todayCourses.push({ name: c.name, time: c.time, room: c.room });
+        });
+      }
+
+      const isAck = !!(appData.notificationsAck && appData.notificationsAck[todayStr]);
+
+      const activeStyle = "bg-amber-500/20 border-2 border-amber-500 shadow-xl text-slate-900 dark:text-slate-100 ring-4 ring-amber-400/30";
+      const ackStyle = "bg-slate-200/60 dark:bg-slate-800/60 border border-slate-300 dark:border-slate-700 opacity-75 text-slate-700 dark:text-slate-300";
+
+      container.className = `p-5 rounded-3xl transition-all duration-300 ${isAck ? ackStyle : activeStyle}`;
+
+      const dateDisplay = (lang === 'ko')
+        ? `${nowKST.getFullYear()}년 ${String(nowKST.getMonth() + 1).padStart(2, '0')}월 ${String(nowKST.getDate()).padStart(2, '0')}일`
+        : `${String(nowKST.getDate()).padStart(2, '0')}/${String(nowKST.getMonth() + 1).padStart(2, '0')}/${nowKST.getFullYear()}`;
+
+      container.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b pb-3 border-amber-500/30">
+          <div class="flex items-center gap-3">
+            <div class="p-2.5 rounded-2xl ${isAck ? 'bg-slate-400 text-white' : 'bg-amber-500 text-slate-900'} font-black text-xl">
+              <i class="fa-solid fa-bell ${isAck ? '' : 'animate-bounce'}"></i>
+            </div>
+            <div>
+              <h4 class="text-lg font-black tracking-tight flex items-center gap-2">
+                <span>${dict.todaySchedule} (${dateDisplay})</span>
+                ${isAck ? `<span class="text-xs bg-slate-500 text-white font-bold px-2.5 py-0.5 rounded-full">${dict.confirmed}</span>` : `<span class="text-xs bg-red-500 text-white font-bold px-2.5 py-0.5 rounded-full animate-pulse">${dict.attention}</span>`}
+              </h4>
+              <p class="text-xs font-semibold opacity-90">${dict.todayScheduleDesc}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 space-y-2">
+          ${
+            todayCourses.length === 0
+              ? `<p class="text-sm font-bold italic opacity-75">${dict.noFixedSchedule}</p>`
+              : todayCourses.map(c => `
+                  <div class="p-3 bg-white/80 dark:bg-slate-900/80 rounded-2xl border border-amber-500/20 shadow-sm flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <i class="fa-solid fa-graduation-cap text-skkuGreen text-lg"></i>
+                      <div>
+                        <div class="text-base font-extrabold">${c.name}</div>
+                        <div class="text-xs font-semibold opacity-80">⏰ ${c.time} • 📍 ${c.room}</div>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')
+          }
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-amber-500/20 flex justify-end">
+          <button onclick="acknowledgeTodayNotification('${todayStr}')" ${isAck ? 'disabled' : ''} class="px-5 py-2.5 rounded-2xl font-black text-xs sm:text-sm shadow-md transition flex items-center gap-2 ${
+            isAck 
+              ? 'bg-slate-400 text-slate-100 cursor-not-allowed' 
+              : 'bg-amber-500 hover:bg-amber-600 text-slate-950 transform hover:scale-105'
+          }">
+            <i class="fa-solid ${isAck ? 'fa-check-double' : 'fa-check'}"></i>
+            <span>${isAck ? dict.infoConfirmed : dict.confirmInfo}</span>
+          </button>
+        </div>
+      `;
+    }
+
+    function acknowledgeTodayNotification(dateStr) {
+      if (!appData.notificationsAck) appData.notificationsAck = {};
+      appData.notificationsAck[dateStr] = true;
+      saveData();
+      renderNotifications();
+    }
+
+    // --- 6. NAVIGATION TABS & PROFILE ---
+    function switchMainTab(tab) {
+      const calBtn = document.getElementById('tab-btn-calendar');
+      const resBtn = document.getElementById('tab-btn-research');
+      const calView = document.getElementById('view-calendar-tab');
+      const resView = document.getElementById('view-research-tab');
+
+      if (tab === 'calendar') {
+        calBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition shadow-md bg-skkuNavy text-white";
+        resBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800";
+        calView.classList.remove('hidden');
+        resView.classList.add('hidden');
+        renderNotifications();
+      } else {
+        resBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition shadow-md bg-skkuNavy text-white";
+        calBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800";
+        resView.classList.remove('hidden');
+        calView.classList.add('hidden');
+        renderResearchTab();
+      }
+    }
+
+    function openProfileModal() {
+      const p = appData.profile;
+      document.getElementById('prof-avatar').value = p.avatar || '';
+      document.getElementById('prof-name').value = p.name || '';
+      document.getElementById('prof-phone').value = p.phone || '';
+      document.getElementById('prof-pemail').value = p.pemail || '';
+      document.getElementById('prof-semail').value = p.semail || '';
+      document.getElementById('prof-dob').value = p.dob || '';
+      document.getElementById('prof-passport').value = p.passport || '';
+      document.getElementById('prof-arc').value = p.arc || '';
+      document.getElementById('prof-bankname').value = p.bankName || '';
+      document.getElementById('prof-bankaccount').value = p.bankAccount || '';
+      updateAvatarPreview(p.avatar);
+      document.getElementById('profile-modal').classList.remove('hidden');
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profile-modal').classList.add('hidden');
+    }
+
+    function updateAvatarPreview(url) {
+      document.getElementById('profile-avatar-preview').src = url || 'https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab';
+    }
+
+    function saveProfileInfo() {
+      appData.profile = {
+        avatar: document.getElementById('prof-avatar').value,
+        name: document.getElementById('prof-name').value,
+        phone: document.getElementById('prof-phone').value,
+        pemail: document.getElementById('prof-pemail').value,
+        semail: document.getElementById('prof-semail').value,
+        dob: document.getElementById('prof-dob').value,
+        passport: document.getElementById('prof-passport').value,
+        arc: document.getElementById('prof-arc').value,
+        bankName: document.getElementById('prof-bankname').value,
+        bankAccount: document.getElementById('prof-bankaccount').value
+      };
+      saveData();
+      updateHeaderProfileUI();
+      closeProfileModal();
+    }
+
+    function openAvatarModal() {
+      const avatarSrc = appData.profile.avatar || 'https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab';
+      document.getElementById('enlarged-avatar-img').src = avatarSrc;
+      document.getElementById('avatar-modal').classList.remove('hidden');
+    }
+
+    function closeAvatarModal() {
+      document.getElementById('avatar-modal').classList.add('hidden');
+    }
+
+    function handleAvatarUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const base64Img = e.target.result;
+          appData.profile.avatar = base64Img;
+          saveData();
+          updateHeaderProfileUI();
+          document.getElementById('enlarged-avatar-img').src = base64Img;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // --- 7. MONTH FOLDERS & SUBVIEW ---
+    function showMonthSelectionView() {
+      document.getElementById('month-selection-subview').classList.remove('hidden');
+      document.getElementById('month-detail-subview').classList.add('hidden');
+      renderMonthsGrid();
+      renderNotifications();
+    }
+
+    function selectMonthFolder(key) {
+      appData.selectedMonthKey = key;
+      saveData();
+      document.getElementById('month-selection-subview').classList.add('hidden');
+      document.getElementById('month-detail-subview').classList.remove('hidden');
+      renderMonthDetail();
+    }
+
+    function renderMonthsGrid() {
+      const container = document.getElementById('months-grid');
+      container.innerHTML = '';
+
+      const now = new Date();
+      const currentMonthKey = `${now.getMonth() + 1}/${now.getFullYear()}`;
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+
+      Object.keys(appData.months).forEach(key => {
+        const m = appData.months[key];
+        const isCurrentMonth = (key === currentMonthKey);
+
+        const card = document.createElement('div');
+        card.className = `relative overflow-hidden bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-xl border-2 transition-all cursor-pointer group hover:-translate-y-1 flex flex-col justify-between min-h-[160px] ${
+          isCurrentMonth 
+            ? 'border-skkuGreen ring-4 ring-skkuGreen/30 bg-emerald-50/50 dark:bg-emerald-950/30' 
+            : 'border-slate-200 dark:border-slate-800 hover:border-skkuGreen'
+        }`;
+        card.onclick = () => selectMonthFolder(key);
+
+        card.innerHTML = `
+          <div>
+            <div class="flex justify-between items-start">
+              ${
+                isCurrentMonth 
+                  ? `<span class="text-xs font-black uppercase tracking-wider text-slate-900 bg-skkuGreen px-3 py-1 rounded-full shadow">${dict.lblCurrentMonth}</span>` 
+                  : `<span class="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">${dict.lblScheduleFolder}</span>`
+              }
+              <i class="fa-solid fa-folder-open text-2xl ${isCurrentMonth ? 'text-skkuGreen' : 'text-slate-400'} group-hover:scale-110 transition"></i>
+            </div>
+            <h4 class="text-3xl font-black mt-3 text-slate-900 dark:text-slate-100">${key}</h4>
+            <p class="text-xs text-slate-500 font-semibold mt-1">${dict.yearPrefix}${m.year}${dict.yearSuffix}</p>
+          </div>
+          <div class="mt-4 flex justify-between items-center text-xs font-black text-skkuNavy dark:text-emerald-400">
+            <span>${dict.viewWeekDetails}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function addNewMonthPrompt() {
+      const input = prompt("Nhập tháng và năm mới (Ví dụ: 2/2027):");
+      if (input && input.trim()) {
+        const parts = input.trim().split('/');
+        if (parts.length === 2) {
+          const m = parseInt(parts[0]);
+          const y = parseInt(parts[1]);
+          if (!isNaN(m) && !isNaN(y)) {
+            const key = `${m}/${y}`;
+            if (!appData.months[key]) {
+              appData.months[key] = { year: y, month: m, deadlines: [], notes: [] };
+              saveData();
+              renderMonthsGrid();
+            }
+          }
+        }
+      }
+    }
+
+    // --- 8. MONTH DETAILED VIEW (DEADLINES & NOTES) ---
+    function renderMonthDetail() {
+      const mKey = appData.selectedMonthKey;
+      const monthObj = appData.months[mKey];
+      if (!monthObj) return;
+
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+
+      const parts = mKey.split('/');
+      let formattedTitle = `${dict.monthPrefix}${parts[0]}${dict.monthSuffix}/${parts[1]}`;
+      if (lang === 'ko') {
+        formattedTitle = `${parts[1]}년 ${parts[0]}월`;
+      } else if (lang === 'en') {
+        formattedTitle = `Month ${parts[0]}/${parts[1]}`;
+      } else {
+        formattedTitle = `Tháng ${parts[0]}/${parts[1]}`;
+      }
+      document.getElementById('selected-month-title').innerText = formattedTitle;
+
+      const deadlineList = document.getElementById('deadline-list');
+      deadlineList.innerHTML = '';
+      if (!monthObj.deadlines || monthObj.deadlines.length === 0) {
+        deadlineList.innerHTML = `<li class="text-xs text-slate-400 italic">Chưa có deadline nào trong tháng.</li>`;
+      } else {
+        monthObj.deadlines.forEach((item, idx) => {
+          const li = document.createElement('li');
+          li.className = "flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700";
+          li.innerHTML = `
+            <div class="flex items-center gap-2">
+              <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleDeadline(${idx})" class="w-5 h-5 accent-red-500 rounded cursor-pointer">
+              <span class="${item.done ? 'line-through text-slate-400' : 'font-bold text-slate-800 dark:text-slate-200'} text-sm">${renderClickableLinks(item.text)}</span>
+            </div>
+            <button onclick="deleteDeadline(${idx})" class="text-red-500 hover:text-red-700 text-xs p-1">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          `;
+          deadlineList.appendChild(li);
+        });
+      }
+
+      const notesList = document.getElementById('notes-list');
+      notesList.innerHTML = '';
+      if (!monthObj.notes || monthObj.notes.length === 0) {
+        notesList.innerHTML = `<li class="text-xs text-slate-400 italic">Chưa có ghi chú nào.</li>`;
+      } else {
+        monthObj.notes.forEach((noteText, idx) => {
+          const li = document.createElement('li');
+          li.className = "flex items-center justify-between p-2.5 bg-amber-50 dark:bg-slate-800 rounded-2xl border border-amber-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200";
+          li.innerHTML = `
+            <span>${renderClickableLinks(noteText)}</span>
+            <button onclick="deleteNote(${idx})" class="text-red-500 hover:text-red-700 text-xs p-1">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          `;
+          notesList.appendChild(li);
+        });
+      }
+    }
+
+    function toggleDeadline(idx) {
+      const mKey = appData.selectedMonthKey;
+      if (appData.months[mKey] && appData.months[mKey].deadlines[idx]) {
+        appData.months[mKey].deadlines[idx].done = !appData.months[mKey].deadlines[idx].done;
+        saveData();
+        renderMonthDetail();
+      }
+    }
+
+    function deleteDeadline(idx) {
+      const mKey = appData.selectedMonthKey;
+      if (appData.months[mKey] && appData.months[mKey].deadlines[idx]) {
+        appData.months[mKey].deadlines.splice(idx, 1);
+        saveData();
+        renderMonthDetail();
+      }
+    }
+
+    function addDeadlinePrompt() {
+      const mKey = appData.selectedMonthKey;
+      const text = prompt("Nhập nội dung deadline mới:");
+      if (text && text.trim() && appData.months[mKey]) {
+        appData.months[mKey].deadlines.push({ text: text.trim(), done: false });
+        saveData();
+        renderMonthDetail();
+      }
+    }
+
+    function deleteNote(idx) {
+      const mKey = appData.selectedMonthKey;
+      if (appData.months[mKey] && appData.months[mKey].notes[idx]) {
+        appData.months[mKey].notes.splice(idx, 1);
+        saveData();
+        renderMonthDetail();
+      }
+    }
+
+    function addNotePrompt() {
+      const mKey = appData.selectedMonthKey;
+      const text = prompt("Nhập ghi chú mới:");
+      if (text && text.trim() && appData.months[mKey]) {
+        appData.months[mKey].notes.push(text.trim());
+        saveData();
+        renderMonthDetail();
+      }
+    }
+
+    // --- 9. RESEARCH TAB & DAILY REPORT DOWNLOAD ---
+    function renderResearchTab() {
+      const topicsList = document.getElementById('research-topics-list');
+      topicsList.innerHTML = '';
+
+      if (!appData.researchProjects || appData.researchProjects.length === 0) {
+        appData.researchProjects = [{ id: "proj_1", title: "Mặc định", logs: [] }];
+        appData.activeProjectIndex = 0;
+      }
+
+      appData.researchProjects.forEach((proj, idx) => {
+        const btn = document.createElement('button');
+        const isActive = idx === appData.activeProjectIndex;
+        btn.className = `px-4 py-2 rounded-2xl font-bold text-xs sm:text-sm whitespace-nowrap transition shadow-sm ${
+          isActive 
+            ? 'bg-skkuNavy text-white border-2 border-skkuGreen' 
+            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
+        }`;
+        btn.innerText = proj.title || `Đề tài ${idx + 1}`;
+        btn.onclick = () => {
+          appData.activeProjectIndex = idx;
+          saveData();
+          renderResearchTab();
+        };
+        topicsList.appendChild(btn);
+      });
+
+      const currentProj = appData.researchProjects[appData.activeProjectIndex] || appData.researchProjects[0];
+      document.getElementById('current-project-title').innerText = currentProj.title || "Tên đề tài";
+
+      const tbody = document.getElementById('research-table-body');
+      tbody.innerHTML = '';
+
+      if (!currentProj.logs || currentProj.logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Chưa có dữ liệu nhật ký nghiên cứu.</td></tr>`;
+        return;
+      }
+
+      currentProj.logs.forEach((log, lIdx) => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition";
+        tr.innerHTML = `
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800 text-center font-bold text-xs whitespace-pre-line">
+            <input type="text" value="${log.dateText || ''}" onchange="updateResearchLog(${lIdx}, 'dateText', this.value)" class="w-full text-center bg-transparent border-b border-transparent hover:border-slate-300 focus:border-skkuGreen font-bold">
+          </td>
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800">
+            <textarea onchange="updateResearchLog(${lIdx}, 'tasks', this.value)" class="w-full bg-transparent resize-y min-h-[60px] p-1 rounded border border-transparent hover:border-slate-300 focus:border-skkuGreen">${log.tasks || ''}</textarea>
+          </td>
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800 text-center">
+            <select onchange="updateResearchLog(${lIdx}, 'progressStep', parseInt(this.value))" class="bg-slate-100 dark:bg-slate-800 p-1.5 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-700">
+              <option value="0" ${log.progressStep === 0 ? 'selected' : ''}>0%</option>
+              <option value="1" ${log.progressStep === 1 ? 'selected' : ''}>25%</option>
+              <option value="2" ${log.progressStep === 2 ? 'selected' : ''}>50%</option>
+              <option value="3" ${log.progressStep === 3 ? 'selected' : ''}>75%</option>
+              <option value="4" ${log.progressStep === 4 ? 'selected' : ''}>100%</option>
+            </select>
+          </td>
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800">
+            <textarea onchange="updateResearchLog(${lIdx}, 'notes', this.value)" class="w-full bg-transparent resize-y min-h-[60px] p-1 rounded border border-transparent hover:border-slate-300 focus:border-skkuGreen">${log.notes || ''}</textarea>
+          </td>
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800">
+            <textarea onchange="updateResearchLog(${lIdx}, 'plan', this.value)" class="w-full bg-transparent resize-y min-h-[60px] p-1 rounded border border-transparent hover:border-slate-300 focus:border-skkuGreen">${log.plan || ''}</textarea>
+          </td>
+          <td class="p-3 text-center">
+            <button onclick="deleteResearchRow(${lIdx})" class="text-red-500 hover:text-red-700 p-1">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateResearchLog(idx, field, val) {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (currentProj && currentProj.logs[idx]) {
+        currentProj.logs[idx][field] = val;
+        saveData();
+      }
+    }
+
+    function addResearchRow() {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (currentProj) {
+        if (!currentProj.logs) currentProj.logs = [];
+        const today = new Date();
+        const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+        currentProj.logs.push({
+          id: 'log_' + Date.now(),
+          dateText: dateStr,
+          tasks: '',
+          progressStep: 0,
+          notes: '',
+          plan: ''
+        });
+        saveData();
+        renderResearchTab();
+      }
+    }
+
+    function addResearchRowNextDay() {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (currentProj) {
+        if (!currentProj.logs) currentProj.logs = [];
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const dateStr = `${String(tomorrow.getDate()).padStart(2, '0')}/${String(tomorrow.getMonth() + 1).padStart(2, '0')}/${tomorrow.getFullYear()}`;
+        currentProj.logs.push({
+          id: 'log_' + Date.now(),
+          dateText: dateStr,
+          tasks: '',
+          progressStep: 0,
+          notes: '',
+          plan: ''
+        });
+        saveData();
+        renderResearchTab();
+      }
+    }
+
+    function deleteResearchRow(idx) {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (currentProj && currentProj.logs[idx]) {
+        currentProj.logs.splice(idx, 1);
+        saveData();
+        renderResearchTab();
+      }
+    }
+
+    function addNewResearchTopicPrompt() {
+      const title = prompt("Nhập tên đề tài mới:");
+      if (title && title.trim()) {
+        appData.researchProjects.push({
+          id: 'proj_' + Date.now(),
+          title: title.trim(),
+          logs: []
+        });
+        appData.activeProjectIndex = appData.researchProjects.length - 1;
+        saveData();
+        renderResearchTab();
+      }
+    }
+
+    function editCurrentProjectTitle() {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (currentProj) {
+        const newTitle = prompt("Sửa tên đề tài:", currentProj.title);
+        if (newTitle && newTitle.trim()) {
+          currentProj.title = newTitle.trim();
+          saveData();
+          renderResearchTab();
+        }
+      }
+    }
+
+    function deleteCurrentProject() {
+      if (confirm("Bạn có chắc chắn muốn xóa đề tài này không?")) {
+        appData.researchProjects.splice(appData.activeProjectIndex, 1);
+        if (appData.activeProjectIndex >= appData.researchProjects.length) {
+          appData.activeProjectIndex = Math.max(0, appData.researchProjects.length - 1);
+        }
+        saveData();
+        renderResearchTab();
+      }
+    }
+
+    // HÀM XUẤT VÀ TẢI FILE BÁO CÁO DAILY REPORT
+    function downloadDailyReport() {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (!currentProj) {
+        alert("Không tìm thấy dữ liệu báo cáo!");
+        return;
+      }
+
+      let content = `========================================\n`;
+      content += `EES LAB - DAILY RESEARCH REPORT\n`;
+      content += `Đề tài: ${currentProj.title}\n`;
+      content += `Ngày xuất báo cáo: ${new Date().toLocaleDateString('vi-VN')}\n`;
+      content += `========================================\n\n`;
+
+      if (!currentProj.logs || currentProj.logs.length === 0) {
+        content += `Chưa có dữ liệu nhật ký nghiên cứu.\n`;
+      } else {
+        currentProj.logs.forEach((log, index) => {
+          content += `[Nhật ký ngày ${index + 1}]\n`;
+          content += `- Ngày: ${log.dateText || 'N/A'}\n`;
+          content += `- Việc Cần Làm: ${log.tasks || 'N/A'}\n`;
+          content += `- Tiến Độ: ${log.progressStep ? log.progressStep * 25 : 0}%\n`;
+          content += `- Ghi Chú & Bài Học: ${log.notes || 'N/A'}\n`;
+          content += `- Kế Hoạch Ngày Mai: ${log.plan || 'N/A'}\n`;
+          content += `----------------------------------------\n`;
+        });
+      }
+
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Daily_Report_${(currentProj.title || 'EES_Lab').replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().slice(0,10)}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // --- INITIALIZATION ---
+    document.addEventListener('DOMContentLoaded', () => {
+      applyTheme();
+      applyLanguageUI();
+      renderMonthsGrid();
+    });
   </script>
 </body>
 </html>
