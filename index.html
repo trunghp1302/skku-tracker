@@ -2099,5 +2099,25 @@
       updateHeaderProfileUI();
     });
   </script>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA4lRq30I7H3k5qFTwRb3HWVhRFNSROXWY",
+    authDomain: "trunghp1302.firebaseapp.com",
+    projectId: "trunghp1302",
+    storageBucket: "trunghp1302.firebasestorage.app",
+    messagingSenderId: "434901953464",
+    appId: "1:434901953464:web:dc0f96ea2846693d0bfd4d"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // Thêm đoạn xử lý Đăng ký/Đăng nhập và onSnapshot đồng bộ dữ liệu vào đây
+</script>
 </body>
 </html>
