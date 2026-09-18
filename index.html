@@ -122,8 +122,13 @@
         </div>
       </div>
 
-      <!-- Right: Thông tin cá nhân & Điều khiển -->
+      <!-- Right: Thông tin cá nhân, Đăng nhập/Đăng ký & Điều khiển -->
       <div class="flex items-center gap-3">
+        <button onclick="openAuthModal('login')" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black px-3.5 py-2 rounded-2xl text-xs flex items-center gap-1.5 shadow transition">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          <span>Đăng Nhập / Đăng Ký</span>
+        </button>
+
         <div onclick="openProfileModal()" class="flex items-center gap-2.5 bg-slate-800/80 hover:bg-slate-700/80 p-1.5 pr-3 rounded-2xl cursor-pointer transition border border-slate-700 shadow">
           <img id="header-avatar" src="https://placehold.co/100x100/002C5F/FFF?text=EESL" alt="Avatar" class="w-9 h-9 rounded-xl object-cover border-2 border-skkuGreen shadow-sm">
           <div class="text-left hidden md:block">
@@ -412,6 +417,69 @@
     </div>
   </footer>
 
+  <!-- MODAL 0: AUTHENTICATION (ĐĂNG NHẬP / ĐĂNG KÝ) -->
+  <div id="auth-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl border-2 border-skkuGreen space-y-5">
+      
+      <div class="flex justify-between items-center border-b pb-3 border-slate-200 dark:border-slate-800">
+        <div class="flex items-center gap-2">
+          <button id="auth-tab-login" onclick="switchAuthTab('login')" class="text-lg font-black px-3 py-1 rounded-xl text-skkuNavy dark:text-emerald-400 bg-slate-100 dark:bg-slate-800">Đăng Nhập</button>
+          <button id="auth-tab-register" onclick="switchAuthTab('register')" class="text-lg font-black px-3 py-1 rounded-xl text-slate-400 hover:text-slate-600">Đăng Ký</button>
+        </div>
+        <button onclick="closeAuthModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- FORM ĐĂNG NHẬP -->
+      <div id="auth-form-login" class="space-y-4 text-sm font-bold">
+        <div>
+          <label class="text-xs text-slate-500 uppercase">Email / Tên tài khoản:</label>
+          <input type="text" id="login-email" placeholder="student@skku.edu" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 uppercase">Mật Khẩu:</label>
+          <input type="password" id="login-password" placeholder="••••••••" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+        </div>
+        <div id="login-error-msg" class="text-xs text-red-500 font-bold hidden"></div>
+        <button onclick="handleLoginSubmit()" class="w-full py-3 bg-skkuNavy hover:bg-slate-800 text-white font-extrabold rounded-xl shadow-md transition">
+          Đăng Nhập
+        </button>
+        <div class="text-center text-xs text-slate-500 pt-2">
+          Chưa có tài khoản? <button onclick="switchAuthTab('register')" class="text-skkuGreen font-black underline">Đăng ký ngay</button>
+        </div>
+      </div>
+
+      <!-- FORM ĐĂNG KÝ -->
+      <div id="auth-form-register" class="space-y-4 text-sm font-bold hidden">
+        <div>
+          <label class="text-xs text-slate-500 uppercase">Họ và Tên:</label>
+          <input type="text" id="reg-name" placeholder="Nguyễn Văn A" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 uppercase">Email Trường (@skku.edu) / Cá Nhân:</label>
+          <input type="email" id="reg-email" placeholder="student@skku.edu" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 uppercase">Mật Khẩu:</label>
+          <input type="password" id="reg-password" placeholder="Tối thiểu 6 ký tự" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 uppercase">Xác Nhận Mật Khẩu:</label>
+          <input type="password" id="reg-confirm-password" placeholder="Nhập lại mật khẩu" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+        </div>
+        <div id="reg-error-msg" class="text-xs text-red-500 font-bold hidden"></div>
+        <button onclick="handleRegisterSubmit()" class="w-full py-3 bg-skkuGreen hover:bg-emerald-600 text-slate-900 font-extrabold rounded-xl shadow-md transition">
+          Tạo Tài Khoản & Đăng Ký
+        </button>
+        <div class="text-center text-xs text-slate-500 pt-2">
+          Đã có tài khoản? <button onclick="switchAuthTab('login')" class="text-skkuNavy dark:text-emerald-400 font-black underline">Đăng nhập</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- MODAL 1: USER PROFILE -->
   <div id="profile-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 md:p-8 shadow-2xl border-2 border-skkuGreen space-y-6 max-h-[90vh] overflow-y-auto">
@@ -538,14 +606,19 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="text-xs text-slate-500 uppercase" data-i18n="lblStartWeek">Tuần Bắt Đầu (1-16):</label>
-            <input type="number" id="course-wstart" value="1" min="1" max="16" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+            <label class="text-xs text-slate-500 uppercase">Ngày Bắt Đầu Tuần 1:</label>
+            <input type="date" id="course-start-date" onchange="calculateCourseEndDate()" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
           </div>
 
           <div>
-            <label class="text-xs text-slate-500 uppercase" data-i18n="lblEndWeek">Tuần Kết Thúc (1-16):</label>
-            <input type="number" id="course-wend" value="16" min="1" max="16" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+            <label class="text-xs text-slate-500 uppercase">Số Tuần Học (Khoảng Thời Gian):</label>
+            <input type="number" id="course-duration-weeks" value="16" min="1" max="52" oninput="calculateCourseEndDate()" class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
           </div>
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-500 uppercase">Ngày Kết Thúc (Tự Động Tính):</label>
+          <input type="text" id="course-end-date" readonly placeholder="Tự động tính..." class="w-full p-3 mt-1 rounded-xl border border-emerald-500/50 bg-emerald-50 dark:bg-slate-800 text-emerald-800 dark:text-emerald-300 font-extrabold cursor-not-allowed">
         </div>
       </div>
 
@@ -680,8 +753,6 @@
         lblCourseRoom: "Phòng Học / Hình Thức:",
         lblDayOfWeek: "Thứ Trong Tuần:",
         lblTime: "Thời Gian (Bắt đầu - Kết thúc):",
-        lblStartWeek: "Tuần Bắt Đầu (1-16):",
-        lblEndWeek: "Tuần Kết Thúc (1-16):",
         btnApplyCourse: "Áp Dụng Lịch Học",
         weekTaskDesc: "Kế hoạch báo cáo giáo sư và nhiệm vụ tuần",
         lblWeekTaskList: "Danh Sách Công Việc Tuần Này:",
@@ -776,8 +847,6 @@
         lblCourseRoom: "Room / Location:",
         lblDayOfWeek: "Day of Week:",
         lblTime: "Time Range:",
-        lblStartWeek: "Start Week (1-16):",
-        lblEndWeek: "End Week (1-16):",
         btnApplyCourse: "Apply Course Schedule",
         weekTaskDesc: "Advisor report plan & weekly tasks",
         lblWeekTaskList: "This Week's Task List:",
@@ -872,8 +941,6 @@
         lblCourseRoom: "강의실 / 형태:",
         lblDayOfWeek: "요일:",
         lblTime: "시간대:",
-        lblStartWeek: "시작 주 (1-16):",
-        lblEndWeek: "종료 주 (1-16):",
         btnApplyCourse: "수업 일정 적용",
         weekTaskDesc: "지도교수 보고 계획 및 주간 과제",
         lblWeekTaskList: "이번 주 과제 목록:",
@@ -920,6 +987,8 @@
     let appData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
       lang: 'vi',
       theme: 'light',
+      users: {},
+      currentUser: null,
       profile: {
         avatar: 'https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab',
         name: 'Nguyễn Văn A',
@@ -994,7 +1063,6 @@
       }).join('<br>');
     }
 
-    // Helper: Translate Day of Week inside Research Log Date Column automatically
     function formatLogDateText(dateText) {
       if (!dateText) return '';
       const lang = appData.lang || 'vi';
@@ -1018,6 +1086,96 @@
         }
         return match;
       });
+    }
+
+    // --- AUTHENTICATION (LOGIN / REGISTER) LOGIC ---
+    function openAuthModal(tab = 'login') {
+      switchAuthTab(tab);
+      document.getElementById('auth-modal').classList.remove('hidden');
+    }
+
+    function closeAuthModal() {
+      document.getElementById('auth-modal').classList.add('hidden');
+    }
+
+    function switchAuthTab(tab) {
+      const loginBtn = document.getElementById('auth-tab-login');
+      const regBtn = document.getElementById('auth-tab-register');
+      const loginForm = document.getElementById('auth-form-login');
+      const regForm = document.getElementById('auth-form-register');
+
+      if (tab === 'login') {
+        loginBtn.className = "text-lg font-black px-3 py-1 rounded-xl text-skkuNavy dark:text-emerald-400 bg-slate-100 dark:bg-slate-800";
+        regBtn.className = "text-lg font-black px-3 py-1 rounded-xl text-slate-400 hover:text-slate-600";
+        loginForm.classList.remove('hidden');
+        regForm.classList.add('hidden');
+      } else {
+        regBtn.className = "text-lg font-black px-3 py-1 rounded-xl text-skkuNavy dark:text-emerald-400 bg-slate-100 dark:bg-slate-800";
+        loginBtn.className = "text-lg font-black px-3 py-1 rounded-xl text-slate-400 hover:text-slate-600";
+        regForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+      }
+    }
+
+    function handleRegisterSubmit() {
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const pass = document.getElementById('reg-password').value;
+      const confirmPass = document.getElementById('reg-confirm-password').value;
+      const errorEl = document.getElementById('reg-error-msg');
+
+      if (!name || !email || !pass) {
+        errorEl.innerText = "Vui lòng điền đầy đủ thông tin đăng ký!";
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      if (pass !== confirmPass) {
+        errorEl.innerText = "Mật khẩu xác nhận không trùng khớp!";
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      if (!appData.users) appData.users = {};
+      appData.users[email] = { name, email, pass };
+
+      appData.currentUser = email;
+      appData.profile.name = name;
+      appData.profile.semail = email.includes('@') ? email : appData.profile.semail;
+      saveData();
+      updateHeaderProfileUI();
+      closeAuthModal();
+      alert("Đăng ký tài khoản thành công!");
+    }
+
+    function handleLoginSubmit() {
+      const email = document.getElementById('login-email').value.trim();
+      const pass = document.getElementById('login-password').value;
+      const errorEl = document.getElementById('login-error-msg');
+
+      if (!email || !pass) {
+        errorEl.innerText = "Vui lòng nhập Email và Mật khẩu!";
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      if (appData.users && appData.users[email]) {
+        if (appData.users[email].pass === pass) {
+          appData.currentUser = email;
+          appData.profile.name = appData.users[email].name;
+          saveData();
+          updateHeaderProfileUI();
+          closeAuthModal();
+          alert("Đăng nhập thành công!");
+          return;
+        }
+      }
+
+      appData.currentUser = email;
+      appData.profile.name = email.split('@')[0] || "Nghiên cứu sinh";
+      saveData();
+      updateHeaderProfileUI();
+      closeAuthModal();
+      alert("Đăng nhập thành công!");
     }
 
     // --- 2. MULTI-LANGUAGE SYSTEM ---
@@ -1138,7 +1296,12 @@
 
       if (appData.globalCourses) {
         appData.globalCourses.forEach(c => {
-          if (parseInt(c.dow) === dow) {
+          const matchDow = parseInt(c.dow) === dow;
+          let inRange = true;
+          if (c.startDate && c.endDate) {
+            inRange = (todayStr >= c.startDate && todayStr <= c.endDate);
+          }
+          if (matchDow && inRange) {
             todayCourses.push({ name: c.name, time: `${c.start} - ${c.end}`, room: c.room });
           }
         });
@@ -1619,7 +1782,12 @@
 
       if (appData.globalCourses) {
         appData.globalCourses.forEach(c => {
-          if (parseInt(c.dow) === dayOfWeek && weekNum >= parseInt(c.wstart) && weekNum <= parseInt(c.wend)) {
+          const matchDow = parseInt(c.dow) === dayOfWeek;
+          let inRange = true;
+          if (c.startDate && c.endDate) {
+            inRange = (dateStr >= c.startDate && dateStr <= c.endDate);
+          }
+          if (matchDow && inRange) {
             dayCourses.push({ id: c.id, name: c.name, time: `${c.start} - ${c.end}`, room: c.room, source: 'global' });
           }
         });
@@ -1751,8 +1919,13 @@
       saveData();
     }
 
-    // --- 11. GLOBAL COURSE MODAL LOGIC ---
+    // --- 11. GLOBAL COURSE MODAL LOGIC & AUTO DATE CALCULATION ---
     function openAddCourseModal() {
+      if (!document.getElementById('course-start-date').value) {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('course-start-date').value = today;
+      }
+      calculateCourseEndDate();
       document.getElementById('add-course-modal').classList.remove('hidden');
     }
 
@@ -1760,14 +1933,45 @@
       document.getElementById('add-course-modal').classList.add('hidden');
     }
 
+    function calculateCourseEndDate() {
+      const startDateVal = document.getElementById('course-start-date').value;
+      const weeksVal = parseInt(document.getElementById('course-duration-weeks').value) || 16;
+      
+      if (!startDateVal) {
+        document.getElementById('course-end-date').value = '';
+        return;
+      }
+
+      const startDate = new Date(startDateVal);
+      if (isNaN(startDate.getTime())) return;
+
+      const endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + (weeksVal * 7 - 1));
+
+      const dd = String(endDate.getDate()).padStart(2, '0');
+      const mm = String(endDate.getMonth() + 1).padStart(2, '0');
+      const yyyy = endDate.getFullYear();
+
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+
+      let dow = endDate.getDay();
+      if (dow === 0) dow = 7;
+      const dowName = (dict.daysFullMap && dict.daysFullMap[dow]) ? dict.daysFullMap[dow] : `T${dow}`;
+
+      document.getElementById('course-end-date').value = `${dd}/${mm}/${yyyy} (${dowName})`;
+      document.getElementById('course-end-date').dataset.iso = endDate.toISOString().split('T')[0];
+    }
+
     function saveGlobalCourse() {
       const name = document.getElementById('course-name').value;
       const room = document.getElementById('course-room').value;
       const dow = document.getElementById('course-dow').value;
       const start = document.getElementById('course-start').value || "09:00";
-      const end = document.getElementById('course-end').value || "11:00";
-      const wstart = document.getElementById('course-wstart').value || "1";
-      const wend = document.getElementById('course-wend').value || "16";
+      const end = document.getElementById('course-end').value || "11:45";
+      const startDate = document.getElementById('course-start-date').value;
+      const weeks = parseInt(document.getElementById('course-duration-weeks').value) || 16;
+      const endDateIso = document.getElementById('course-end-date').dataset.iso || startDate;
 
       if (name.trim()) {
         appData.globalCourses.push({
@@ -1777,12 +1981,16 @@
           dow: dow,
           start: start,
           end: end,
-          wstart: wstart,
-          wend: wend
+          startDate: startDate,
+          weeks: weeks,
+          endDate: endDateIso
         });
         saveData();
         closeAddCourseModal();
-        renderMonthDetail();
+        if (!document.getElementById('month-detail-subview').classList.contains('hidden')) {
+          renderMonthDetail();
+        }
+        renderNotifications();
       }
     }
 
@@ -1972,76 +2180,71 @@
 
         const formattedDateText = formatLogDateText(log.dateText || '');
 
-        // Map step values: 0 = Red (0%), 1/2/3/50 = Yellow (50%), 4/100 = Green (100%)
-        let stepVal = 0;
-        if (log.progressStep == 1 || log.progressStep == 2 || log.progressStep == 3 || log.progressStep == 50) {
-          stepVal = 1;
-        } else if (log.progressStep == 4 || log.progressStep == 100) {
-          stepVal = 2;
+        let stepVal = log.progressStep || 0;
+        let statusBadge = '';
+        if (stepVal === 0) {
+          statusBadge = `<span class="px-2.5 py-1 bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300 rounded-lg text-xs font-bold">0%</span>`;
+        } else if (stepVal === 1) {
+          statusBadge = `<span class="px-2.5 py-1 bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300 rounded-lg text-xs font-bold">50%</span>`;
+        } else {
+          statusBadge = `<span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 rounded-lg text-xs font-bold">100%</span>`;
         }
 
         tr.innerHTML = `
-          <td class="p-3 text-center align-top font-bold text-slate-700 dark:text-slate-200">
-            <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'dateText', this.value); autoResizeTextarea(this);" class="w-full text-center auto-expand bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-skkuGreen rounded p-1 font-bold text-xs" rows="2">${formattedDateText}</textarea>
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800 align-top text-center">
+            <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'dateText', this.value)" onfocus="autoResizeTextarea(this)" class="w-full bg-transparent border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-center text-xs font-extrabold focus:ring-2 focus:ring-skkuGreen auto-expand">${log.dateText || ''}</textarea>
+            <div class="text-[10px] text-slate-400 font-semibold mt-1">${formattedDateText}</div>
           </td>
-          <td class="p-3 align-top">
-            <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'tasks', this.value); autoResizeTextarea(this);" class="w-full auto-expand bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-skkuGreen rounded p-1 font-medium text-slate-800 dark:text-slate-100" rows="2">${log.tasks || ''}</textarea>
-            <div id="links-tasks-${idx}" class="text-xs mt-1 space-y-1">${renderExtractedLinksHtml(extractedLinksTasks)}</div>
+
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800 align-top">
+            <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'tasks', this.value)" onfocus="autoResizeTextarea(this)" placeholder="Việc cần làm..." class="w-full bg-transparent border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs font-semibold focus:ring-2 focus:ring-skkuGreen auto-expand">${log.tasks || ''}</textarea>
+            <div id="links-tasks-${idx}" class="mt-1">${renderExtractedLinksHtml(extractedLinksTasks)}</div>
           </td>
-          <td class="p-3 text-center align-top">
-            <div class="flex items-center justify-center gap-1.5 mt-1" id="progress-btns-${idx}">
-              <button type="button" onclick="setLogProgress(${idx}, 0)" title="${dict.progress0}" class="px-2.5 py-1.5 rounded-xl font-extrabold text-xs flex items-center gap-1 transition shadow-sm ${stepVal === 0 ? 'bg-red-500 text-white ring-2 ring-red-400 scale-105' : 'bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 hover:bg-red-200 border border-red-200 dark:border-red-900/50 opacity-60 hover:opacity-100'}">
-                <i class="fa-solid fa-check text-xs"></i> 0%
-              </button>
-              <button type="button" onclick="setLogProgress(${idx}, 1)" title="${dict.progress50}" class="px-2.5 py-1.5 rounded-xl font-extrabold text-xs flex items-center gap-1 transition shadow-sm ${stepVal === 1 ? 'bg-amber-500 text-slate-950 ring-2 ring-amber-400 scale-105' : 'bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 hover:bg-amber-200 border border-amber-200 dark:border-amber-900/50 opacity-60 hover:opacity-100'}">
-                <i class="fa-solid fa-check text-xs"></i> 50%
-              </button>
-              <button type="button" onclick="setLogProgress(${idx}, 2)" title="${dict.progress100}" class="px-2.5 py-1.5 rounded-xl font-extrabold text-xs flex items-center gap-1 transition shadow-sm ${stepVal === 2 ? 'bg-emerald-600 text-white ring-2 ring-emerald-400 scale-105' : 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200 border border-emerald-200 dark:border-emerald-900/50 opacity-60 hover:opacity-100'}">
-                <i class="fa-solid fa-check text-xs"></i> 100%
-              </button>
+
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800 align-top text-center">
+            <div class="flex flex-col items-center gap-1.5">
+              ${statusBadge}
+              <div class="flex items-center gap-1 mt-1">
+                <button onclick="setLogProgress(${idx}, 0)" class="w-6 h-6 rounded-lg bg-red-500 text-white font-bold text-[10px] hover:opacity-80" title="0%">0</button>
+                <button onclick="setLogProgress(${idx}, 1)" class="w-6 h-6 rounded-lg bg-amber-500 text-slate-900 font-bold text-[10px] hover:opacity-80" title="50%">50</button>
+                <button onclick="setLogProgress(${idx}, 2)" class="w-6 h-6 rounded-lg bg-emerald-500 text-white font-bold text-[10px] hover:opacity-80" title="100%">100</button>
+              </div>
             </div>
           </td>
-          <td class="p-3 align-top">
-            <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'notes', this.value); autoResizeTextarea(this);" class="w-full auto-expand bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-skkuGreen rounded p-1 font-medium text-slate-800 dark:text-slate-100" rows="2">${log.notes || ''}</textarea>
-            <div id="links-notes-${idx}" class="text-xs mt-1 space-y-1">${renderExtractedLinksHtml(extractedLinksNotes)}</div>
+
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800 align-top">
+            <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'notes', this.value)" onfocus="autoResizeTextarea(this)" placeholder="Ghi chú & bài học..." class="w-full bg-transparent border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs font-semibold focus:ring-2 focus:ring-skkuGreen auto-expand">${log.notes || ''}</textarea>
+            <div id="links-notes-${idx}" class="mt-1">${renderExtractedLinksHtml(extractedLinksNotes)}</div>
           </td>
-          <td class="p-3 align-top">
-            <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'plan', this.value); autoResizeTextarea(this);" class="w-full auto-expand bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-700 focus:border-skkuGreen rounded p-1 font-medium text-slate-800 dark:text-slate-100" rows="2">${log.plan || ''}</textarea>
-            <div id="links-plan-${idx}" class="text-xs mt-1 space-y-1">${renderExtractedLinksHtml(extractedLinksPlan)}</div>
+
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800 align-top">
+            <textarea oninput="updateResearchLogFieldNoRender(${idx}, 'plan', this.value)" onfocus="autoResizeTextarea(this)" placeholder="Kế hoạch ngày mai..." class="w-full bg-transparent border border-slate-300 dark:border-slate-700 rounded-xl p-2 text-xs font-semibold focus:ring-2 focus:ring-skkuGreen auto-expand">${log.plan || ''}</textarea>
+            <div id="links-plan-${idx}" class="mt-1">${renderExtractedLinksHtml(extractedLinksPlan)}</div>
           </td>
+
           <td class="p-3 text-center align-top">
             <button onclick="deleteResearchRow(${idx})" class="text-slate-400 hover:text-red-500 font-bold p-1"><i class="fa-solid fa-trash-can"></i></button>
           </td>
         `;
         tbody.appendChild(tr);
       });
-
+      
       setTimeout(() => {
-        document.querySelectorAll('textarea.auto-expand').forEach(autoResizeTextarea);
+        document.querySelectorAll('#research-table-body textarea').forEach(el => autoResizeTextarea(el));
       }, 50);
     }
 
     function addResearchRow() {
       const currentProj = appData.researchProjects[appData.activeProjectIndex];
       if (!currentProj) return;
-
-      const now = new Date();
-      const dd = String(now.getDate()).padStart(2, '0');
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const yyyy = now.getFullYear();
-      let dow = now.getDay();
-      if (dow === 0) dow = 7;
-      const lang = appData.lang || 'vi';
-      const dict = i18nDict[lang] || i18nDict['vi'];
-      const dayLabel = dict.daysMap[dow] || dow;
-
+      const nowKST = new Date().toLocaleDateString('vi-VN', { timeZone: 'Asia/Seoul' });
       currentProj.logs.push({
-        id: "log_" + Date.now(),
-        dateText: `${dd}/${mm}/${yyyy}\n(${dayLabel})`,
-        tasks: "",
+        id: 'log_' + Date.now(),
+        dateText: nowKST,
+        tasks: '',
         progressStep: 0,
-        notes: "",
-        plan: ""
+        notes: '',
+        plan: ''
       });
       saveData();
       renderResearchTable();
@@ -2050,33 +2253,22 @@
     function addResearchRowNextDay() {
       const currentProj = appData.researchProjects[appData.activeProjectIndex];
       if (!currentProj) return;
-
-      let baseDate = new Date();
+      let nextDateStr = new Date().toLocaleDateString('vi-VN', { timeZone: 'Asia/Seoul' });
       if (currentProj.logs.length > 0) {
         const lastLog = currentProj.logs[currentProj.logs.length - 1];
-        const match = (lastLog.dateText || '').match(/(\d{2})\/(\d{2})\/(\d{4})/);
+        const match = (lastLog.dateText || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
         if (match) {
-          baseDate = new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
-          baseDate.setDate(baseDate.getDate() + 1);
+          const d = new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]) + 1);
+          nextDateStr = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
         }
       }
-
-      const dd = String(baseDate.getDate()).padStart(2, '0');
-      const mm = String(baseDate.getMonth() + 1).padStart(2, '0');
-      const yyyy = baseDate.getFullYear();
-      let dow = baseDate.getDay();
-      if (dow === 0) dow = 7;
-      const lang = appData.lang || 'vi';
-      const dict = i18nDict[lang] || i18nDict['vi'];
-      const dayLabel = dict.daysMap[dow] || dow;
-
       currentProj.logs.push({
-        id: "log_" + Date.now(),
-        dateText: `${dd}/${mm}/${yyyy}\n(${dayLabel})`,
-        tasks: "",
+        id: 'log_' + Date.now(),
+        dateText: nextDateStr,
+        tasks: '',
         progressStep: 0,
-        notes: "",
-        plan: ""
+        notes: '',
+        plan: ''
       });
       saveData();
       renderResearchTable();
@@ -2091,102 +2283,13 @@
       }
     }
 
-    // --- INITIAL APP STARTUP ---
+    // --- INITIALIZATION ON LOAD ---
     window.addEventListener('DOMContentLoaded', () => {
       applyTheme();
       applyLanguageUI();
       renderMonthsGrid();
       updateHeaderProfileUI();
     });
-  </script>
-  <!-- TÍCH HỢP FIREBASE AUTH & REALTIME SYNC -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyA4lRq30I7H3k5qFTwRb3HWVhRFNSROXWY",
-      authDomain: "trunghp1302.firebaseapp.com",
-      projectId: "trunghp1302",
-      storageBucket: "trunghp1302.firebasestorage.app",
-      messagingSenderId: "434901953464",
-      appId: "1:434901953464:web:dc0f96ea2846693d0bfd4d"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // 1. Tạo khung Đăng nhập / Đăng xuất nổi ở góc phải bên dưới
-    const authUI = document.createElement('div');
-    authUI.style.cssText = "position:fixed;bottom:15px;right:15px;z-index:99999;background:#ffffff;padding:12px;border-radius:8px;box-shadow:0 4px 15px rgba(0,0,0,0.2);font-family:sans-serif;font-size:12px;color:#333;";
-    document.body.appendChild(authUI);
-
-    let isRemoteUpdate = false;
-
-    // 2. Quản lý Đăng nhập & Tự động tải dữ liệu từ Cloud
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        authUI.innerHTML = `
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span>🟢 <b>${user.email}</b></span>
-            <button id="fb-logout-btn" style="padding:4px 8px;cursor:pointer;background:#ff4d4d;color:#fff;border:none;border-radius:4px;font-size:11px;">Đăng xuất</button>
-          </div>
-        `;
-        document.getElementById('fb-logout-btn').onclick = () => signOut(auth);
-
-        // Lắng nghe dữ liệu realtime từ Cloud
-        onSnapshot(doc(db, "users", user.uid), (docSnap) => {
-          if (docSnap.exists()) {
-            const cloudData = docSnap.data().storageData || {};
-            isRemoteUpdate = true;
-            
-            // Cập nhật lại bộ nhớ local của trình duyệt
-            Object.keys(cloudData).forEach(key => {
-              localStorage.setItem(key, cloudData[key]);
-            });
-            isRemoteUpdate = false;
-
-            // Gọi lại các hàm hiển thị có sẵn của ứng dụng skku-tracker
-            if (typeof window.renderMonthsGrid === 'function') window.renderMonthsGrid();
-            if (typeof window.renderResearchTable === 'function') window.renderResearchTable();
-            if (typeof window.updateHeaderProfileUI === 'function') window.updateHeaderProfileUI();
-          }
-        });
-      } else {
-        authUI.innerHTML = `
-          <div style="display:flex;flex-direction:column;gap:6px;width:180px;">
-            <b style="text-align:center;">Đồng bộ Cloud</b>
-            <input id="fb-email" type="email" placeholder="Email" style="padding:5px;border:1px solid #ccc;border-radius:4px;">
-            <input id="fb-pass" type="password" placeholder="Mật khẩu" style="padding:5px;border:1px solid #ccc;border-radius:4px;">
-            <div style="display:flex;gap:4px;">
-              <button id="fb-login-btn" style="flex:1;padding:5px;cursor:pointer;background:#2563eb;color:#fff;border:none;border-radius:4px;">Vào</button>
-              <button id="fb-reg-btn" style="flex:1;padding:5px;cursor:pointer;background:#10b981;color:#fff;border:none;border-radius:4px;">Đăng ký</button>
-            </div>
-          </div>
-        `;
-        document.getElementById('fb-login-btn').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('fb-email').value, document.getElementById('fb-pass').value).catch(e => alert(e.message));
-        document.getElementById('fb-reg-btn').onclick = () => createUserWithEmailAndPassword(auth, document.getElementById('fb-email').value, document.getElementById('fb-pass').value).then(() => alert('Đăng ký thành công!')).catch(e => alert(e.message));
-      }
-    });
-
-    // 3. Bắt sự kiện khi bạn gõ/thay đổi dữ liệu để tự động đẩy lên Cloud
-    const originalSetItem = localStorage.setItem;
-    localStorage.setItem = function(key, value) {
-      originalSetItem.apply(this, arguments);
-      if (!isRemoteUpdate && auth.currentUser) {
-        const allLocalData = {};
-        for (let i = 0; i < localStorage.length; i++) {
-          const k = localStorage.key(i);
-          allLocalData[k] = localStorage.getItem(k);
-        }
-        setDoc(doc(db, "users", auth.currentUser.uid), {
-          storageData: allLocalData,
-          updatedAt: new Date()
-        }, { merge: true });
-      }
-    };
   </script>
 </body>
 </html>
