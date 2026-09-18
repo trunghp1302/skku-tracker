@@ -72,20 +72,29 @@
 
   <!-- HEADER & NAVBAR -->
   <header class="bg-skkuNavy dark:bg-skkuNavyDark text-white shadow-xl border-b-4 border-skkuGreen sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+    <div class="max-w-[98%] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
       
-      <!-- Brand & Title -->
+      <!-- Brand & Title & Square Avatar Box -->
       <div class="flex items-center space-x-3">
-        <div class="bg-white p-2.5 rounded-2xl shadow-md border border-slate-200 flex items-center justify-center">
+        <!-- Ô vuông Ảnh Đại Diện Phía Trên -->
+        <div class="relative group cursor-pointer w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border-2 border-skkuGreen shadow-md bg-slate-800 flex-shrink-0" onclick="openAvatarModal()" title="Xem phóng to / Thay đổi ảnh đại diện">
+          <img id="main-avatar-img" src="https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab" alt="Avatar" class="w-full h-full object-cover group-hover:scale-105 transition duration-200">
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition text-white text-xs font-bold">
+            <i class="fa-solid fa-expand"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-2.5 rounded-2xl shadow-md border border-slate-200 items-center justify-center hidden lg:flex">
           <i class="fa-solid fa-leaf text-skkuGreen text-2xl mr-1.5"></i>
           <span class="text-skkuNavy font-black text-lg md:text-xl tracking-tight">Energy & Environmental Sustainability Lab</span>
         </div>
         <div>
-          <h1 class="text-base md:text-lg font-extrabold tracking-tight flex items-center gap-2" data-i18n="headerSubtitle">
-            Quản Lý Học Tập & Nghiên Cứu
+          <h1 class="text-base md:text-lg font-extrabold tracking-tight flex items-center gap-2">
+            <span data-i18n="headerSubtitle">Quản Lý Học Tập & Nghiên Cứu</span>
             <span class="text-xs bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-400/30">EES Lab</span>
           </h1>
-          <p class="text-xs text-slate-300 font-medium hidden sm:block" data-i18n="univName">Sungkyunkwan University</p>
+          <p class="text-xs text-slate-200 font-bold leading-tight hidden sm:block" data-i18n="saintName">SKKU Advanced Institute of Nano Technology</p>
+          <p class="text-[11px] text-slate-300 font-medium leading-tight hidden sm:block" data-i18n="univName">Sungkyunkwan University</p>
         </div>
       </div>
 
@@ -140,7 +149,7 @@
   </header>
 
   <!-- MAIN ACTION BAR / NAVIGATION TABS -->
-  <section class="max-w-7xl mx-auto px-4 mt-6 w-full">
+  <section class="max-w-[98%] mx-auto px-4 mt-6 w-full">
     <div class="bg-white dark:bg-slate-900 p-3 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
       
       <!-- Tab Selector Buttons -->
@@ -175,7 +184,7 @@
   </section>
 
   <!-- TAB 1: CALENDAR & MONTH FOLDERS VIEW -->
-  <main id="view-calendar-tab" class="max-w-7xl mx-auto px-4 py-6 w-full space-y-6 flex-grow">
+  <main id="view-calendar-tab" class="max-w-[98%] mx-auto px-4 py-6 w-full space-y-6 flex-grow">
     
     <!-- MONTH SELECTION SUB-VIEW -->
     <div id="month-selection-subview" class="space-y-6">
@@ -287,8 +296,8 @@
 
   </main>
 
-  <!-- TAB 2: RESEARCH LOGS VIEW -->
-  <main id="view-research-tab" class="max-w-7xl mx-auto px-4 py-6 w-full space-y-6 hidden flex-grow">
+  <!-- TAB 2: RESEARCH LOGS VIEW (Đã mở rộng rộng ngang gần hết màn hình) -->
+  <main id="view-research-tab" class="max-w-[98%] mx-auto px-2 sm:px-4 py-6 w-full space-y-6 hidden flex-grow">
     
     <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-6">
       
@@ -340,14 +349,14 @@
         </div>
       </div>
 
-      <!-- 5-COLUMN RESEARCH TABLE -->
+      <!-- 5-COLUMN RESEARCH TABLE (Cột 1 hiển thị Ngày và Thứ xuống dòng) -->
       <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
         <table class="w-full text-left border-collapse min-w-[950px]">
           <thead>
             <tr class="bg-skkuNavy text-white font-black text-sm uppercase tracking-wider">
-              <th class="p-4 w-44 border-r border-slate-700" data-i18n="colDate">1. Thứ Ngày Tháng</th>
+              <th class="p-4 w-36 border-r border-slate-700 text-center" data-i18n="colDate">1. Ngày</th>
               <th class="p-4 w-1/4 border-r border-slate-700" data-i18n="colTasks">2. Việc Cần Làm</th>
-              <th class="p-4 w-60 border-r border-slate-700 text-center" data-i18n="colProgress">3. Tiến Độ (%)</th>
+              <th class="p-4 w-56 border-r border-slate-700 text-center" data-i18n="colProgress">3. Tiến Độ (%)</th>
               <th class="p-4 w-1/4 border-r border-slate-700" data-i18n="colNotes">4. Take Notes (Đã học)</th>
               <th class="p-4 w-1/4 border-r border-slate-700" data-i18n="colPlan">5. Plan Ngày Mai</th>
               <th class="p-4 w-12 text-center" data-i18n="colDelete">Xóa</th>
@@ -365,7 +374,7 @@
 
   <!-- FOOTER -->
   <footer class="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 mt-auto">
-    <div class="max-w-7xl mx-auto px-4 text-center text-xs space-y-2">
+    <div class="max-w-[98%] mx-auto px-4 text-center text-xs space-y-2">
       <div class="font-extrabold text-sm text-slate-200">Energy & Environmental Sustainability Lab • SKKU</div>
       <p>© 2026 Academic & Research Tracker. Designed for Researchers & Graduate Students.</p>
     </div>
@@ -387,7 +396,7 @@
       <!-- Form Inputs Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm font-bold">
         
-        <!-- Avatar Preview & URL -->
+        <!-- Avatar Preview & Link URL -->
         <div class="sm:col-span-2 bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl flex items-center gap-4">
           <img id="profile-avatar-preview" src="" class="w-16 h-16 rounded-2xl object-cover border-2 border-skkuGreen shadow">
           <div class="flex-grow space-y-1">
@@ -555,9 +564,31 @@
     </div>
   </div>
 
+  <!-- MODAL 4: AVATAR ENLARGE & UPLOAD MODAL -->
+  <div id="avatar-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center p-4">
+    <div class="relative bg-white dark:bg-slate-900 border-2 border-skkuGreen rounded-3xl p-6 max-w-md w-full flex flex-col items-center space-y-5 shadow-2xl">
+      <button onclick="closeAvatarModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white text-2xl font-bold">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <h4 class="text-xl font-black text-skkuNavy dark:text-emerald-400 flex items-center gap-2">
+        <i class="fa-solid fa-user-circle text-skkuGreen"></i> <span data-i18n="modalAvatarTitle">Ảnh Đại Diện Cá Nhân</span>
+      </h4>
+      <div class="w-64 h-64 sm:w-72 sm:h-72 rounded-2xl overflow-hidden border-2 border-slate-300 dark:border-slate-700 bg-black shadow-inner flex items-center justify-center">
+        <img id="enlarged-avatar-img" src="" class="w-full h-full object-cover">
+      </div>
+      <div class="flex flex-wrap gap-3 justify-center w-full">
+        <label class="cursor-pointer bg-skkuGreen hover:bg-emerald-500 text-slate-900 font-extrabold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow transition">
+          <i class="fa-solid fa-upload"></i> <span data-i18n="btnUploadNewPhoto">Tải Ảnh Khác Để Thay Thế</span>
+          <input type="file" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)">
+        </label>
+        <button onclick="closeAvatarModal()" class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition" data-i18n="btnClose">Đóng</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // --- 1. LOCALSTORAGE KEY & APP STATE ---
-    const STORAGE_KEY = 'EESL_ACADEMIC_TRACKER_V4';
+    const STORAGE_KEY = 'EESL_ACADEMIC_TRACKER_V5';
 
     // Default Fixed Schedule
     const DEFAULT_FIXED_SCHEDULE = {
@@ -571,6 +602,7 @@
     const i18nDict = {
       vi: {
         headerSubtitle: "Quản Lý Học Tập & Nghiên Cứu",
+        saintName: "SKKU Advanced Institute of Nano Technology",
         univName: "Sungkyunkwan University",
         kstClock: "Giờ Hàn Quốc (KST)",
         userRoleDefault: "Nghiên cứu sinh",
@@ -596,7 +628,7 @@
         btnAddTopic: "Thêm Đề Tài Mới",
         btnAddRow: "Thêm Dòng Mới",
         btnAddNextDay: "Thêm Ngày Hôm Sau",
-        colDate: "1. Thứ Ngày Tháng",
+        colDate: "1. Ngày",
         colTasks: "2. Việc Cần Làm",
         colProgress: "3. Tiến Độ (%)",
         colNotes: "4. Take Notes (Đã học)",
@@ -626,6 +658,8 @@
         btnApplyCourse: "Áp Dụng Lịch Học",
         weekTaskDesc: "Kế hoạch báo cáo giáo sư & nhiệm vụ tuần",
         lblWeekTaskList: "Danh Sách Task Tuần Này:",
+        modalAvatarTitle: "Ảnh Đại Diện Cá Nhân",
+        btnUploadNewPhoto: "Tải Ảnh Khác Để Thay Thế",
         statusUnfinished: "Chưa hoàn thành",
         statusInProgress: "Đang thực hiện",
         statusCompleted: "Đã hoàn thành",
@@ -634,6 +668,7 @@
       },
       en: {
         headerSubtitle: "Academic & Research Management",
+        saintName: "SKKU Advanced Institute of Nano Technology",
         univName: "Sungkyunkwan University",
         kstClock: "Korean Standard Time (KST)",
         userRoleDefault: "Graduate Researcher",
@@ -659,7 +694,7 @@
         btnAddTopic: "Add New Topic",
         btnAddRow: "Add New Row",
         btnAddNextDay: "Add Next Day",
-        colDate: "1. Date & Day",
+        colDate: "1. Date",
         colTasks: "2. Tasks To Do",
         colProgress: "3. Progress (%)",
         colNotes: "4. Take Notes / Learnings",
@@ -689,6 +724,8 @@
         btnApplyCourse: "Apply Course Schedule",
         weekTaskDesc: "Advisor report plan & weekly tasks",
         lblWeekTaskList: "This Week's Task List:",
+        modalAvatarTitle: "Personal Profile Picture",
+        btnUploadNewPhoto: "Upload Alternative Photo",
         statusUnfinished: "Not Completed",
         statusInProgress: "In Progress",
         statusCompleted: "Completed",
@@ -697,6 +734,7 @@
       },
       ko: {
         headerSubtitle: "학업 및 연구 관리 Portal",
+        saintName: "성균관대학교 나노과학기술원 (SAINT)",
         univName: "성균관대학교",
         kstClock: "한국 표준시 (KST)",
         userRoleDefault: "연구원",
@@ -722,7 +760,7 @@
         btnAddTopic: "새 연구 주제 추가",
         btnAddRow: "새 행 추가",
         btnAddNextDay: "다음 날 추가",
-        colDate: "1. 날짜 및 요일",
+        colDate: "1. 날짜",
         colTasks: "2. 할 일 (Tasks)",
         colProgress: "3. 진행률 (%)",
         colNotes: "4. 노트 / 학습 내용",
@@ -752,6 +790,8 @@
         btnApplyCourse: "수업 일정 적용",
         weekTaskDesc: "지도교수 보고 계획 및 주간 과제",
         lblWeekTaskList: "이번 주 과제 목록:",
+        modalAvatarTitle: "프로필 사진",
+        btnUploadNewPhoto: "다른 사진 업로드",
         statusUnfinished: "미완료",
         statusInProgress: "진행 중",
         statusCompleted: "완료",
@@ -794,7 +834,7 @@
           logs: [
             {
               id: "log_1",
-              dateText: "18/09/2026 (Thứ 6)",
+              dateText: "18/09/2026\n(Thứ 6)",
               tasks: "Đo phổ XRD mẫu A1-A5 và tổng hợp màng mỏng",
               progressStep: 1, // 0 = 0%, 1 = 50%, 2 = 100%
               notes: "Mẫu A3 có tinh thể đồng đều nhất, hiệu suất cao",
@@ -951,8 +991,42 @@
 
     function updateHeaderProfileUI() {
       const p = appData.profile;
-      document.getElementById('header-avatar').src = p.avatar || 'https://placehold.co/100x100/002C5F/FFF?text=EESL';
-      document.getElementById('header-user-name').innerText = p.name || 'Nghiên cứu sinh';
+      const avatarSrc = p.avatar || 'https://placehold.co/100x100/002C5F/FFF?text=EESL';
+      if (document.getElementById('main-avatar-img')) {
+        document.getElementById('main-avatar-img').src = avatarSrc;
+      }
+      if (document.getElementById('header-avatar')) {
+        document.getElementById('header-avatar').src = avatarSrc;
+      }
+      if (document.getElementById('header-user-name')) {
+        document.getElementById('header-user-name').innerText = p.name || 'Nghiên cứu sinh';
+      }
+    }
+
+    // Avatar Modal Logic (Phóng to & Tải ảnh khác)
+    function openAvatarModal() {
+      const avatarSrc = appData.profile.avatar || 'https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab';
+      document.getElementById('enlarged-avatar-img').src = avatarSrc;
+      document.getElementById('avatar-modal').classList.remove('hidden');
+    }
+
+    function closeAvatarModal() {
+      document.getElementById('avatar-modal').classList.add('hidden');
+    }
+
+    function handleAvatarUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const base64Img = e.target.result;
+          appData.profile.avatar = base64Img;
+          saveData();
+          updateHeaderProfileUI();
+          document.getElementById('enlarged-avatar-img').src = base64Img;
+        };
+        reader.readAsDataURL(file);
+      }
     }
 
     // --- 6. MONTH FOLDERS & SUBVIEW ---
@@ -965,7 +1039,6 @@
     function selectMonthFolder(key) {
       appData.selectedMonthKey = key;
       saveData();
-      document.getElementById('month-selection-subview').classList.hidden = true;
       document.getElementById('month-selection-subview').classList.add('hidden');
       document.getElementById('month-detail-subview').classList.remove('hidden');
       document.getElementById('selected-month-title').innerText = `Tháng ${key}`;
@@ -1126,7 +1199,6 @@
       weeksContainer.innerHTML = '';
 
       const nowKST = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
-
       const lastDay = new Date(year, month, 0);
 
       let currentWeekDays = [];
@@ -1398,21 +1470,11 @@
       }
     }
 
-    // --- 11. WEEK TASK MODAL ---
+    // --- 11. WEEK TASK MODAL LOGIC ---
     function openWeekTaskModal(weekKey, weekNum) {
       activeWeekKeyForModal = weekKey;
-      document.getElementById('modal-week-title').innerText = `Kế Hoạch & Task Tuần ${weekNum}`;
-
-      if (!appData.weekTasks[weekKey] || appData.weekTasks[weekKey].length === 0) {
-        appData.weekTasks[weekKey] = [
-          { text: "Read paper của giáo gửi và report vào mỗi thứ 2 hàng tuần", done: false },
-          { text: "Plan làm gì đọc gì cho tuần tới", done: false },
-          { text: "Report các thứ đã làm được trong tuần trước", done: false }
-        ];
-        saveData();
-      }
-
-      renderWeekTasksInModal();
+      document.getElementById('modal-week-title').innerText = `Kế Hoạch Task Tuần ${weekNum}`;
+      renderWeekTasks();
       document.getElementById('week-task-modal').classList.remove('hidden');
     }
 
@@ -1420,14 +1482,21 @@
       document.getElementById('week-task-modal').classList.add('hidden');
     }
 
-    function renderWeekTasksInModal() {
-      const container = document.getElementById('week-task-list');
-      container.innerHTML = '';
-      const tasks = appData.weekTasks[activeWeekKeyForModal] || [];
+    function renderWeekTasks() {
+      const list = document.getElementById('week-task-list');
+      list.innerHTML = '';
+
+      const tasks = appData.weekTasks[activeWeekKeyForModal] || [
+        { text: "Chuẩn bị Slide & Báo cáo với Giáo sư (Advisor Report)", done: false },
+        { text: "Đọc 2 bài báo ISI thuộc nhóm EES Lab", done: false }
+      ];
+
+      appData.weekTasks[activeWeekKeyForModal] = tasks;
+      saveData();
 
       tasks.forEach((t, idx) => {
         const li = document.createElement('li');
-        li.className = "flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700";
+        li.className = "flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700";
         li.innerHTML = `
           <div class="flex items-center gap-3">
             <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleWeekTask(${idx})" class="w-5 h-5 accent-skkuGreen rounded cursor-pointer">
@@ -1435,238 +1504,218 @@
           </div>
           <button onclick="deleteWeekTask(${idx})" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
         `;
-        container.appendChild(li);
+        list.appendChild(li);
       });
     }
 
     function addCustomWeekTaskPrompt() {
-      const text = prompt("Nhập kế hoạch / task tuần mới:");
+      const text = prompt("Nhập task tuần mới:");
       if (text && text.trim()) {
+        if (!appData.weekTasks[activeWeekKeyForModal]) appData.weekTasks[activeWeekKeyForModal] = [];
         appData.weekTasks[activeWeekKeyForModal].push({ text: text.trim(), done: false });
         saveData();
-        renderWeekTasksInModal();
+        renderWeekTasks();
       }
     }
 
     function toggleWeekTask(idx) {
       appData.weekTasks[activeWeekKeyForModal][idx].done = !appData.weekTasks[activeWeekKeyForModal][idx].done;
       saveData();
-      renderWeekTasksInModal();
+      renderWeekTasks();
     }
 
     function deleteWeekTask(idx) {
       appData.weekTasks[activeWeekKeyForModal].splice(idx, 1);
       saveData();
-      renderWeekTasksInModal();
+      renderWeekTasks();
     }
 
-    // --- 12. AUTO-RESIZE TEXTAREA HELPER ---
-    function autoResizeTextarea(el) {
-      el.style.height = 'auto';
-      el.style.height = el.scrollHeight + 'px';
-    }
-
-    // --- 13. RESEARCH LOGS TAB LOGIC ---
+    // --- 12. RESEARCH TAB & TABLE LOGIC ---
     function renderResearchTab() {
-      const topicsContainer = document.getElementById('research-topics-list');
-      topicsContainer.innerHTML = '';
+      renderResearchTopics();
+      renderResearchTable();
+    }
 
-      if (!appData.researchProjects || appData.researchProjects.length === 0) {
-        appData.researchProjects = [
-          { id: "proj_1", title: "Energy & Environmental Catalysts Development", logs: [] }
-        ];
-        saveData();
-      }
+    function renderResearchTopics() {
+      const container = document.getElementById('research-topics-list');
+      container.innerHTML = '';
 
       appData.researchProjects.forEach((proj, idx) => {
         const btn = document.createElement('button');
         const isActive = (idx === appData.activeProjectIndex);
-        btn.className = `px-4 py-2 rounded-2xl text-xs font-black transition whitespace-nowrap shadow-sm border ${
+        btn.className = `px-4 py-2 rounded-2xl font-black text-xs whitespace-nowrap transition flex items-center gap-2 ${
           isActive 
-            ? 'bg-skkuGreen text-slate-900 border-emerald-500' 
-            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:border-skkuGreen'
+            ? 'bg-skkuNavy text-white shadow-md border-2 border-skkuGreen' 
+            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
         }`;
-        btn.innerText = `🧪 ${proj.title}`;
         btn.onclick = () => {
           appData.activeProjectIndex = idx;
           saveData();
           renderResearchTab();
         };
-        topicsContainer.appendChild(btn);
+        btn.innerHTML = `<i class="fa-solid fa-flask text-emerald-400"></i> ${proj.title}`;
+        container.appendChild(btn);
       });
 
-      const currentProj = appData.researchProjects[appData.activeProjectIndex] || appData.researchProjects[0];
-      document.getElementById('current-project-title').innerText = currentProj.title;
-
-      renderResearchTable(currentProj);
-      applyLanguageUI();
-    }
-
-    function editCurrentProjectTitle() {
       const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      const newTitle = prompt("Sửa tên đề tài nghiên cứu:", currentProj.title);
-      if (newTitle && newTitle.trim()) {
-        currentProj.title = newTitle.trim();
-        saveData();
-        renderResearchTab();
+      if (currentProj) {
+        document.getElementById('current-project-title').innerText = currentProj.title;
       }
     }
 
-    function renderResearchTable(project) {
+    function formatResearchDateText(rawText) {
+      if (!rawText) return '';
+      if (rawText.includes(' (') && !rawText.includes('\n')) {
+        return rawText.replace(' (', '\n(');
+      }
+      return rawText;
+    }
+
+    function autoResizeTextarea(el) {
+      el.style.height = 'auto';
+      el.style.height = (el.scrollHeight) + 'px';
+    }
+
+    function renderResearchTable() {
       const tbody = document.getElementById('research-table-body');
       tbody.innerHTML = '';
 
-      if (!project.logs || project.logs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 italic">Chưa có nhật ký nghiên cứu nào. Nhấn "Thêm Dòng Mới" hoặc "Thêm Ngày Hôm Sau" để bắt đầu!</td></tr>`;
-        return;
-      }
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (!currentProj || !currentProj.logs) return;
 
-      const lang = appData.lang || 'vi';
-      const dict = i18nDict[lang] || i18nDict['vi'];
-
-      project.logs.forEach((log, idx) => {
-        // Convert old percentage progress to 3-step if needed
-        if (log.progressStep === undefined) {
-          if (log.progress >= 100) log.progressStep = 2;
-          else if (log.progress >= 50) log.progressStep = 1;
-          else log.progressStep = 0;
-        }
-
-        const step = parseInt(log.progressStep || 0);
-
-        // 3-step switch config
-        let stepText = dict.statusUnfinished + " (0%)";
-        let badgeBg = "bg-red-500 text-white";
-        let trackBg = "bg-red-200 dark:bg-red-950";
-
-        if (step === 1) {
-          stepText = dict.statusInProgress + " (50%)";
-          badgeBg = "bg-amber-500 text-slate-900";
-          trackBg = "bg-amber-200 dark:bg-amber-950";
-        } else if (step === 2) {
-          stepText = dict.statusCompleted + " (100%)";
-          badgeBg = "bg-emerald-600 text-white";
-          trackBg = "bg-emerald-200 dark:bg-emerald-950";
-        }
-
+      currentProj.logs.forEach((log, idx) => {
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition align-top";
+        tr.className = "hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-800";
+
+        const formattedDate = formatResearchDateText(log.dateText);
+
         tr.innerHTML = `
-          <td class="p-3 border-r border-slate-200 dark:border-slate-800">
-            <input type="text" value="${log.dateText || ''}" onchange="updateResearchRow(${idx}, 'dateText', this.value)" class="w-full bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1.5 rounded border border-transparent focus:border-slate-300">
+          <!-- Cột 1: Ngày (Tự động xuống dòng ngày và thứ) -->
+          <td class="p-3 border-r border-slate-200 dark:border-slate-800 w-36 min-w-[130px] text-center">
+            <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'dateText', this.value)" class="auto-expand w-full bg-transparent font-black text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1 rounded border border-transparent focus:border-slate-300 text-center leading-tight resize-none text-sm">${formattedDate || ''}</textarea>
           </td>
+
+          <!-- Cột 2: Việc Cần Làm -->
           <td class="p-3 border-r border-slate-200 dark:border-slate-800">
-            <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'tasks', this.value)" class="auto-expand w-full bg-transparent font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1.5 rounded border border-transparent focus:border-slate-300 leading-normal">${log.tasks || ''}</textarea>
+            <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'tasks', this.value)" class="auto-expand w-full bg-transparent font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1.5 rounded border border-transparent focus:border-slate-300 text-sm leading-snug resize-none">${log.tasks || ''}</textarea>
           </td>
+
+          <!-- Cột 3: Tiến Độ (%) 3 Nút Chọn 0%, 50%, 100% -->
           <td class="p-3 border-r border-slate-200 dark:border-slate-800 text-center">
-            <!-- 3-STEP SWITCH CONTROL -->
-            <div class="flex flex-col items-center justify-center gap-1.5 p-1">
-              <input type="range" min="0" max="2" step="1" value="${step}" oninput="updateProgressStep(${idx}, this.value)" class="w-28 h-3 rounded-lg appearance-none cursor-pointer ${trackBg} accent-skkuNavy dark:accent-emerald-400">
-              <span class="text-xs font-black px-2.5 py-1 rounded-full shadow-sm transition ${badgeBg}">${stepText}</span>
+            <div class="flex items-center justify-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+              <button onclick="setResearchProgress(${idx}, 0)" class="flex-1 py-1 px-1.5 rounded-lg text-[11px] font-black transition ${log.progressStep === 0 ? 'bg-red-500 text-white shadow' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}">0%</button>
+              <button onclick="setResearchProgress(${idx}, 1)" class="flex-1 py-1 px-1.5 rounded-lg text-[11px] font-black transition ${log.progressStep === 1 ? 'bg-amber-500 text-slate-900 shadow' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}">50%</button>
+              <button onclick="setResearchProgress(${idx}, 2)" class="flex-1 py-1 px-1.5 rounded-lg text-[11px] font-black transition ${log.progressStep === 2 ? 'bg-emerald-500 text-white shadow' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}">100%</button>
             </div>
           </td>
+
+          <!-- Cột 4: Take Notes -->
           <td class="p-3 border-r border-slate-200 dark:border-slate-800">
-            <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'notes', this.value)" class="auto-expand w-full bg-transparent font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1.5 rounded border border-transparent focus:border-slate-300 leading-normal">${log.notes || ''}</textarea>
+            <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'notes', this.value)" class="auto-expand w-full bg-transparent font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1.5 rounded border border-transparent focus:border-slate-300 text-sm leading-snug resize-none">${log.notes || ''}</textarea>
           </td>
+
+          <!-- Cột 5: Plan Ngày Mai -->
           <td class="p-3 border-r border-slate-200 dark:border-slate-800">
-            <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'plan', this.value)" class="auto-expand w-full bg-transparent font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1.5 rounded border border-transparent focus:border-slate-300 leading-normal">${log.plan || ''}</textarea>
+            <textarea oninput="autoResizeTextarea(this); updateResearchRow(${idx}, 'plan', this.value)" class="auto-expand w-full bg-transparent font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:bg-white dark:focus:bg-slate-900 p-1.5 rounded border border-transparent focus:border-slate-300 text-sm leading-snug resize-none">${log.plan || ''}</textarea>
           </td>
+
+          <!-- Xóa dòng -->
           <td class="p-3 text-center">
-            <button onclick="deleteResearchRow(${idx})" class="text-slate-400 hover:text-red-500 font-bold p-2"><i class="fa-solid fa-trash-can"></i></button>
+            <button onclick="deleteResearchRow(${idx})" class="text-slate-400 hover:text-red-500 p-2 text-base transition">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
           </td>
         `;
+
         tbody.appendChild(tr);
       });
 
-      // Auto expand all textareas after DOM append
-      setTimeout(() => {
-        document.querySelectorAll('#research-table-body textarea.auto-expand').forEach(el => autoResizeTextarea(el));
-      }, 10);
+      document.querySelectorAll('textarea.auto-expand').forEach(el => autoResizeTextarea(el));
     }
 
-    function updateProgressStep(idx, val) {
-      const proj = appData.researchProjects[appData.activeProjectIndex];
-      proj.logs[idx].progressStep = parseInt(val);
-      saveData();
-      renderResearchTable(proj);
+    function updateResearchRow(idx, field, value) {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (currentProj && currentProj.logs[idx]) {
+        currentProj.logs[idx][field] = value;
+        saveData();
+      }
+    }
+
+    function setResearchProgress(idx, step) {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (currentProj && currentProj.logs[idx]) {
+        currentProj.logs[idx].progressStep = step;
+        saveData();
+        renderResearchTable();
+      }
     }
 
     function addResearchRow() {
-      const proj = appData.researchProjects[appData.activeProjectIndex];
-      const nowStr = new Date().toLocaleDateString('vi-VN');
-      const dayVi = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][new Date().getDay()];
-      if (!proj.logs) proj.logs = [];
-      proj.logs.unshift({
-        id: Date.now(),
-        dateText: `${nowStr} (${dayVi})`,
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (!currentProj) return;
+
+      const now = new Date();
+      const nowStr = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+      const dayVi = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][now.getDay()];
+
+      currentProj.logs.push({
+        id: "log_" + Date.now(),
+        dateText: `${nowStr}\n(${dayVi})`,
         tasks: "",
         progressStep: 0,
         notes: "",
         plan: ""
       });
+
       saveData();
-      renderResearchTab();
+      renderResearchTable();
     }
 
     function addResearchRowNextDay() {
-      const proj = appData.researchProjects[appData.activeProjectIndex];
-      if (!proj.logs) proj.logs = [];
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (!currentProj) return;
 
       let baseDate = new Date();
 
-      if (proj.logs.length > 0) {
-        const firstLog = proj.logs[0];
-        if (firstLog.dateText) {
-          const match = firstLog.dateText.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-          if (match) {
-            const d = parseInt(match[1]);
-            const m = parseInt(match[2]) - 1;
-            const y = parseInt(match[3]);
-            baseDate = new Date(y, m, d + 1);
-          } else {
-            baseDate.setDate(baseDate.getDate() + 1);
-          }
-        } else {
+      if (currentProj.logs.length > 0) {
+        const lastLog = currentProj.logs[currentProj.logs.length - 1];
+        const match = lastLog.dateText ? lastLog.dateText.match(/(\d{2})\/(\d{2})\/(\d{4})/) : null;
+        if (match) {
+          baseDate = new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
           baseDate.setDate(baseDate.getDate() + 1);
         }
       }
 
-      const dayNames = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-      const dd = String(baseDate.getDate()).padStart(2, '0');
-      const mm = String(baseDate.getMonth() + 1).padStart(2, '0');
-      const yyyy = baseDate.getFullYear();
-      const dateStr = `${dd}/${mm}/${yyyy} (${dayNames[baseDate.getDay()]})`;
+      const nextStr = `${String(baseDate.getDate()).padStart(2, '0')}/${String(baseDate.getMonth() + 1).padStart(2, '0')}/${baseDate.getFullYear()}`;
+      const dayVi = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][baseDate.getDay()];
 
-      proj.logs.unshift({
-        id: Date.now(),
-        dateText: dateStr,
+      currentProj.logs.push({
+        id: "log_" + Date.now(),
+        dateText: `${nextStr}\n(${dayVi})`,
         tasks: "",
         progressStep: 0,
         notes: "",
         plan: ""
       });
-      saveData();
-      renderResearchTab();
-    }
 
-    function updateResearchRow(idx, field, val) {
-      const proj = appData.researchProjects[appData.activeProjectIndex];
-      proj.logs[idx][field] = val;
       saveData();
+      renderResearchTable();
     }
 
     function deleteResearchRow(idx) {
-      const proj = appData.researchProjects[appData.activeProjectIndex];
-      proj.logs.splice(idx, 1);
-      saveData();
-      renderResearchTab();
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (currentProj && currentProj.logs) {
+        currentProj.logs.splice(idx, 1);
+        saveData();
+        renderResearchTable();
+      }
     }
 
     function addNewResearchTopicPrompt() {
-      const title = prompt("Nhập tên Đề tài Nghiên cứu mới:");
+      const title = prompt("Nhập tên đề tài nghiên cứu mới:");
       if (title && title.trim()) {
         appData.researchProjects.push({
-          id: `proj_${Date.now()}`,
+          id: "proj_" + Date.now(),
           title: title.trim(),
           logs: []
         });
@@ -1676,12 +1725,23 @@
       }
     }
 
+    function editCurrentProjectTitle() {
+      const currentProj = appData.researchProjects[appData.activeProjectIndex];
+      if (!currentProj) return;
+      const newTitle = prompt("Sửa tên đề tài nghiên cứu:", currentProj.title);
+      if (newTitle && newTitle.trim()) {
+        currentProj.title = newTitle.trim();
+        saveData();
+        renderResearchTab();
+      }
+    }
+
     function deleteCurrentProject() {
       if (appData.researchProjects.length <= 1) {
-        alert("Bạn cần giữ lại ít nhất 1 đề tài nghiên cứu!");
+        alert("Bạn cần giữ ít nhất 1 đề tài nghiên cứu.");
         return;
       }
-      if (confirm("Bạn có chắc chắn muốn xóa đề tài này không?")) {
+      if (confirm("Bạn có chắc chắn muốn xóa đề tài nghiên cứu này không?")) {
         appData.researchProjects.splice(appData.activeProjectIndex, 1);
         appData.activeProjectIndex = 0;
         saveData();
@@ -1689,13 +1749,21 @@
       }
     }
 
-    // --- 14. INITIALIZATION ---
-    window.onload = function() {
+    // --- 13. INITIALIZATION ON PAGE LOAD ---
+    window.addEventListener('DOMContentLoaded', () => {
       applyTheme();
-      updateHeaderProfileUI();
-      showMonthSelectionView();
       applyLanguageUI();
-    };
+      updateHeaderProfileUI();
+      renderMonthsGrid();
+      
+      const now = new Date();
+      const currentMonthKey = `${now.getMonth() + 1}/${now.getFullYear()}`;
+      if (appData.months[currentMonthKey]) {
+        selectMonthFolder(currentMonthKey);
+      } else {
+        selectMonthFolder('9/2026');
+      }
+    });
   </script>
 </body>
 </html>
