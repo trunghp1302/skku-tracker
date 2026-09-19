@@ -3723,6 +3723,8 @@
     let activeWeekKeyForModal = null;
     let expandedDayKey = null;
     let selectedLogIndex = 0;
+    let currentResearchSubTab = 'logs'; // 'logs' or 'papers'
+    let editingPaperId = null;
 
     let _firestoreSaveTimer = null;
     let _isSavingToFirestore = false;
@@ -5490,6 +5492,46 @@
     window.selectMonthFolder = selectMonthFolder;
     window.renderMonthsGrid = renderMonthsGrid;
     window.renderMonthDetail = renderMonthDetail;
+    function toggleDeadline(target) {
+      if (typeof target === 'string' && appData.quickDeadlines && appData.quickDeadlines.some(d => d.id === target)) {
+        toggleQuickDeadlineDone(target);
+        return;
+      }
+      if (typeof toggleMonthTaskDone === 'function') {
+        toggleMonthTaskDone('deadlines', target);
+      }
+    }
+
+    function deleteDeadline(target) {
+      if (typeof target === 'string' && appData.quickDeadlines && appData.quickDeadlines.some(d => d.id === target)) {
+        deleteQuickDeadline(target);
+        return;
+      }
+      if (typeof deleteMonthTaskItem === 'function') {
+        deleteMonthTaskItem('deadlines', target);
+      }
+    }
+
+    function addDeadlinePrompt() {
+      if (typeof openAddMonthTaskModal === 'function') {
+        openAddMonthTaskModal('deadlines');
+      } else if (typeof openQuickDeadlineModal === 'function') {
+        openQuickDeadlineModal();
+      }
+    }
+
+    function deleteNote(target) {
+      if (typeof deleteMonthTaskItem === 'function') {
+        deleteMonthTaskItem('notes', target);
+      }
+    }
+
+    function addNotePrompt() {
+      if (typeof openAddMonthTaskModal === 'function') {
+        openAddMonthTaskModal('notes');
+      }
+    }
+
     window.toggleDeadline = toggleDeadline;
     window.deleteDeadline = deleteDeadline;
     window.addDeadlinePrompt = addDeadlinePrompt;
@@ -7451,8 +7493,6 @@
     // ==========================================
     // --- 9B. QUẢN LÝ BÀI BÁO & TRÍCH DẪN (PAPER REPOSITORY) ---
     // ==========================================
-    let currentResearchSubTab = 'logs'; // 'logs' or 'papers'
-    let editingPaperId = null;
 
     function escapeHtml(str) {
       if (!str) return '';
