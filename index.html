@@ -964,7 +964,8 @@
         <div class="text-right">
           <h2 id="selected-month-title" class="text-2xl md:text-3xl font-black text-skkuNavy dark:text-emerald-400">
             Tháng 9/2026</h2>
-          <p id="selected-month-subtitle" class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="semesterSubtitle">Học kỳ Fall 2026
+          <p id="selected-month-subtitle" class="text-xs font-bold text-slate-500 dark:text-slate-400"
+            data-i18n="semesterSubtitle">Học kỳ Fall 2026
             • Nghiên Cứu EES Lab</p>
         </div>
       </div>
@@ -1083,7 +1084,7 @@
       <div class="flex items-center gap-2.5 border-b border-slate-200 dark:border-slate-800 pb-3 pt-1">
         <button id="subtab-btn-logs" onclick="switchResearchSubTab('logs')"
           class="px-5 py-2.5 rounded-full font-black text-xs sm:text-sm flex items-center gap-2 transition shadow-sm bg-skkuNavy text-white border-2 border-skkuGreen ring-2 ring-skkuGreen/30 scale-105">
-          <span>🧪</span> <span data-i18n="subtabLogs">Nhật ký Thí nghiệm</span>
+          <span>🧪</span> <span data-i18n="subtabLogs">Sổ Nhật Ký</span>
         </button>
         <button id="subtab-btn-papers" onclick="switchResearchSubTab('papers')"
           class="px-5 py-2.5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-2 transition shadow-sm bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700">
@@ -2755,7 +2756,7 @@
         badgeDefaultCourse: "⭐ Mặc định",
         badgeCustomCourse: "Tùy chỉnh",
         weeksUnit: "tuần",
-        currentWeekBadge: "HÔM NAY - Tuần hiện tại",
+        currentWeekBadge: "HÔM NAY – Tuần hiện tại",
         dow1: "T2",
         dow2: "T3",
         dow3: "T4",
@@ -2787,7 +2788,7 @@
         placeholderNewTopic: "Nhập tên đề tài (VD: Solid-State Battery Materials)...",
         btnConfirmOk: "Xác nhận / OK",
         errEmptyTopicName: "Vui lòng nhập tên đề tài!",
-        subtabLogs: "Nhật ký Thí nghiệm",
+        subtabLogs: "Sổ Nhật Ký",
         subtabPapers: "Thư viện Bài báo & DOI",
         papersSubtitle: "Quản lý danh mục bài báo khoa học, mã DOI & tài liệu trích dẫn theo đề tài",
         btnAddPaper: "Thêm Bài Báo",
@@ -3115,7 +3116,7 @@
         badgeDefaultCourse: "⭐ Default",
         badgeCustomCourse: "Custom",
         weeksUnit: "weeks",
-        currentWeekBadge: "TODAY - Current Week",
+        currentWeekBadge: "TODAY – Current Week",
         dow1: "Mon",
         dow2: "Tue",
         dow3: "Wed",
@@ -3147,7 +3148,7 @@
         placeholderNewTopic: "Enter topic name (e.g., Solid-State Battery Materials)...",
         btnConfirmOk: "Confirm / OK",
         errEmptyTopicName: "Please enter topic title!",
-        subtabLogs: "Experiment Logs",
+        subtabLogs: "Research Logbook",
         subtabPapers: "Papers & DOI Library",
         papersSubtitle: "Manage literature repository, DOI links & citations per project",
         btnAddPaper: "Add Paper",
@@ -3475,7 +3476,7 @@
         badgeDefaultCourse: "⭐ 기본",
         badgeCustomCourse: "사용자 지정",
         weeksUnit: "주",
-        currentWeekBadge: "오늘 - 현재 주차",
+        currentWeekBadge: "오늘 – 현재 주차",
         dow1: "월",
         dow2: "화",
         dow3: "수",
@@ -3507,7 +3508,7 @@
         placeholderNewTopic: "연구 주제명을 입력하세요 (예: Solid-State Battery Materials)...",
         btnConfirmOk: "확인 / OK",
         errEmptyTopicName: "연구 주제명을 입력해주세요!",
-        subtabLogs: "실험 일지",
+        subtabLogs: "연구 일지",
         subtabPapers: "논문 & DOI 라이브러리",
         papersSubtitle: "주제별 논문 목록, DOI 링크 및 인용 문헌 관리",
         btnAddPaper: "논문 추가",
@@ -9385,7 +9386,7 @@ Raw daily lab notes:
           <div class="flex flex-wrap items-center justify-between gap-3 p-4 cursor-pointer select-none ${isCurrentWeek ? 'bg-skkuGreen/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
           }" onclick="toggleWeekExpand('week-body-${weekKey}', this)">
             <div class="flex items-center gap-3">
-              ${isCurrentWeek ? `<span class="text-xs font-black bg-skkuGreen text-slate-900 px-3 py-1 rounded-full shadow animate-pulse">${dict.todayBadge || 'HÔM NAY'} - ${dict.currentWeekBadge || 'Tuần hiện tại'}</span>` : ''}
+              ${isCurrentWeek ? `<span class="text-xs font-black bg-skkuGreen text-slate-900 px-3 py-1 rounded-full shadow animate-pulse">${dict.currentWeekBadge || 'HÔM NAY – Tuần hiện tại'}</span>` : ''}
               <div>
                 <div class="flex items-center gap-2">
                   <i class="fa-solid fa-calendar-week text-skkuGreen"></i>
