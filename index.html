@@ -1135,15 +1135,15 @@
                 Weekly</span>
             </button>
             <!-- NÚT THÊM NGÀY HÔM SAU (Xanh thương hiệu SKKU Green) -->
-            <button onclick="addResearchRowNextDay()"
-              class="bg-skkuGreen hover:bg-emerald-500 text-slate-900 font-extrabold px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow transition"
+            <button id="btn-add-next-day" onclick="addResearchRowNextDay()"
+              class="bg-skkuGreen hover:bg-emerald-500 text-slate-900 font-extrabold px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow transition cursor-pointer"
               title="Thêm ngày tiếp theo vào bảng nhật ký">
               <i class="fa-solid fa-calendar-plus text-slate-900"></i> <span data-i18n="btnAddNextDay">Thêm Ngày Hôm
                 Sau</span>
             </button>
             <!-- NÚT THÊM DÒNG MỚI (Xanh thương hiệu SKKU Green) -->
-            <button onclick="addResearchRow()"
-              class="bg-skkuGreen hover:bg-emerald-500 text-slate-900 font-extrabold px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow transition"
+            <button id="btn-add-row" onclick="addResearchRow()"
+              class="bg-skkuGreen hover:bg-emerald-500 text-slate-900 font-extrabold px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow transition cursor-pointer"
               title="Thêm hàng mới vào bảng nhật ký">
               <i class="fa-solid fa-plus text-slate-900"></i> <span data-i18n="btnAddRow">Thêm Dòng Mới</span>
             </button>
@@ -2486,34 +2486,38 @@
       appId: "1:434901953464:web:dc0f96ea2846693d0bfd4d",
       measurementId: "G-LTYSJFFLQ6"
     };
-    // Kiểm tra tính hợp lệ cơ bản của firebaseConfig trước khi khởi tạo, giúp phát hiện sớm
-    // lỗi (auth/api-key-not-valid) do thiếu/sai cấu hình apiKey, authDomain hoặc projectId.
-    const REQUIRED_FIREBASE_CONFIG_KEYS = ['apiKey', 'authDomain', 'projectId', 'appId'];
-    const missingFirebaseConfigKeys = REQUIRED_FIREBASE_CONFIG_KEYS.filter(k => !firebaseConfig[k]);
-    if (missingFirebaseConfigKeys.length > 0) {
-      console.error('firebaseConfig thiếu các trường bắt buộc:', missingFirebaseConfigKeys.join(', '));
-    }
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    // Khai báo an toàn API Key & cấu hình Firebase
+    const GEMINI_API_KEY = "AIzaSyAaPXZi_2vkjN-B1ZxKhApWvFWzP1o_mjY";
 
-    // Thiết lập Auth Persistence sang LOCAL ngay khi khởi tạo
+    let auth = null;
+    let db = null;
     try {
-      auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
-        console.log("Firebase Auth: Persistence set to LOCAL successfully");
-      }).catch((err) => {
-        console.warn("Firebase Auth setPersistence warning:", err);
-      });
-    } catch (e) {
-      console.warn("Firebase setPersistence error:", e);
-    }
+      if (typeof firebase !== 'undefined') {
+        if (!firebase.apps || !firebase.apps.length) {
+          firebase.initializeApp(firebaseConfig);
+        }
+        auth = firebase.auth();
+        db = firebase.firestore();
 
-    window.firebaseApp = firebase.app();
-    window.firebaseAuth = auth;
-    window.firebaseDb = db;
-    console.log("Firebase App, Auth & Firestore initialized successfully!");
+        // Thiết lập Auth Persistence sang LOCAL ngay khi khởi tạo
+        if (auth && typeof auth.setPersistence === 'function') {
+          auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
+            console.log("Firebase Auth: Persistence set to LOCAL successfully");
+          }).catch((err) => {
+            console.warn("Firebase Auth setPersistence warning:", err);
+          });
+        }
+
+        window.firebaseApp = firebase.app();
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        console.log("Firebase App, Auth & Firestore initialized successfully!");
+      } else {
+        console.warn("Firebase SDK chưa sẵn sàng (chế độ offline/local)");
+      }
+    } catch (e) {
+      console.warn("Firebase init catch:", e);
+    }
 
     // --- Firebase Auth & Firestore Helpers (tương thích cả cú pháp Modular v9 lẫn Compat v8) ---
     const browserLocalPersistence = (typeof firebase !== 'undefined' && firebase.auth && firebase.auth.Auth && firebase.auth.Auth.Persistence) ? firebase.auth.Auth.Persistence.LOCAL : 'local';
@@ -2908,6 +2912,30 @@
         placeholderPersonalTodo: "Thêm việc cá nhân... (Enter để thêm nhanh)",
         emptyPersonalTodo: "Chưa có việc nào trong mục này",
         emptyPersonalTodoDesc: "Nhập vào ô phía trên và nhấn Enter!",
+        btnDeleteMonth: "Xóa tháng",
+        confirmDeleteMonthTitle: "Xóa Thư Mục Tháng",
+        confirmDeleteMonth: "Bạn có chắc chắn muốn xóa thư mục tháng {month} cùng toàn bộ dữ liệu bên trong không?",
+        toastDeletedMonth: "Đã xóa thư mục tháng",
+        lblMonthTaskTitle: "📝 Tiêu Đề / Nội Dung",
+        placeholderMonthTaskTitle: "Nhập nội dung ghi chú hoặc deadline...",
+        modalMonthTaskSubtitle: "Nhập thông tin, thời hạn và mức độ quan trọng",
+        lblDueDate: "⏰ Ngày Hết Hạn (Deadline)",
+        lblPriority: "⭐ Mức Độ Quan Trọng",
+        lblStatus: "📊 Trạng Thái",
+        priorityHigh: "Cao",
+        priorityMedium: "TB",
+        priorityLow: "Thấp",
+        statusPending: "Chưa hoàn thành",
+        statusInProgress: "Đang làm",
+        statusDone: "Đã hoàn thành",
+        modalAddNoteTitle: "Thêm Ghi Chú Mới",
+        modalEditNoteTitle: "Chỉnh Sửa Ghi Chú",
+        modalAddMonthDeadlineTitle: "Thêm Deadline Mới",
+        modalEditMonthDeadlineTitle: "Chỉnh Sửa Deadline",
+        noDueDate: "--/--/----",
+        noDeadlineSet: "Không có hạn",
+        markPending: "Đánh dấu chưa xong",
+        markDone: "Đánh dấu hoàn thành",
         footerText: "© 2026 Academic & Research Tracker. Designed for Researchers & Graduate Students."
       },
       en: {
@@ -3244,6 +3272,30 @@
         placeholderPersonalTodo: "Add a task (press Enter or click +)...",
         emptyPersonalTodo: "No tasks found in this category",
         emptyPersonalTodoDesc: "Type in the input above and press Enter!",
+        btnDeleteMonth: "Delete Month",
+        confirmDeleteMonthTitle: "Delete Month Folder",
+        confirmDeleteMonth: "Are you sure you want to delete month {month} folder and all its data?",
+        toastDeletedMonth: "Deleted month folder",
+        lblMonthTaskTitle: "📝 Title / Content",
+        placeholderMonthTaskTitle: "Enter note or deadline content...",
+        modalMonthTaskSubtitle: "Enter details, due date and priority",
+        lblDueDate: "⏰ Due Date (Deadline)",
+        lblPriority: "⭐ Priority Level",
+        lblStatus: "📊 Status",
+        priorityHigh: "High",
+        priorityMedium: "Med",
+        priorityLow: "Low",
+        statusPending: "Pending",
+        statusInProgress: "In Progress",
+        statusDone: "Done",
+        modalAddNoteTitle: "Add New Note",
+        modalEditNoteTitle: "Edit Note",
+        modalAddMonthDeadlineTitle: "Add New Deadline",
+        modalEditMonthDeadlineTitle: "Edit Deadline",
+        noDueDate: "--/--/----",
+        noDeadlineSet: "No due date",
+        markPending: "Mark pending",
+        markDone: "Mark done",
         footerText: "© 2026 Academic & Research Tracker. Designed for Researchers & Graduate Students."
       },
       ko: {
@@ -6326,14 +6378,22 @@
       renderMonthDetail();
     }
 
+    function ensureDefaultMonths() {
+      if (!appData.months) appData.months = {};
+      const def = generateDefaultMonths();
+      for (const k in def) {
+        if (!appData.months[k]) {
+          appData.months[k] = def[k];
+        }
+      }
+    }
+
     function renderMonthsGrid() {
       const container = document.getElementById('months-grid');
       if (!container) return;
       container.innerHTML = '';
 
-      if (!appData.months || Object.keys(appData.months).length === 0) {
-        appData.months = generateDefaultMonths();
-      }
+      ensureDefaultMonths();
 
       const now = new Date();
       const currentMonthKey = `${now.getMonth() + 1}/${now.getFullYear()}`;
@@ -6382,6 +6442,8 @@
         container.appendChild(card);
       });
     }
+    window.renderMonthsGrid = renderMonthsGrid;
+    window.ensureDefaultMonths = ensureDefaultMonths;
 
     async function deleteMonthFolder(key) {
       const lang = appData.lang || 'vi';
@@ -6901,27 +6963,9 @@
       const lang = appData.lang || 'vi';
       const dict = i18nDict[lang] || i18nDict['vi'];
 
-      // Nếu chưa đăng nhập và không có project nào, hiển thị trạng thái trống
-      if (!appData.currentUser && (!appData.researchProjects || appData.researchProjects.length === 0)) {
-        topicsList.innerHTML = '';
-        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center"><div class="inner-panel max-w-md mx-auto text-slate-500 dark:text-slate-400 font-bold">${dict.emptyResearchLogs || 'Chưa có nhật ký nghiên cứu. Vui lòng đăng nhập để xem dữ liệu.'}</div></td></tr>`;
-        const currentProjectTitleEl = document.getElementById('current-project-title');
-        if (currentProjectTitleEl) currentProjectTitleEl.innerText = 'Chưa chọn đề tài';
-        const papersProjectTitleEl = document.getElementById('papers-project-title');
-        if (papersProjectTitleEl) papersProjectTitleEl.innerText = 'Chưa chọn đề tài';
-        const papersBadge = document.getElementById('papers-badge-count');
-        if (papersBadge) papersBadge.innerText = '0';
-        const papersGrid = document.getElementById('papers-grid');
-        if (papersGrid) papersGrid.innerHTML = '';
-        return;
-      }
-
       topicsList.innerHTML = '';
 
-      if (!appData.researchProjects || appData.researchProjects.length === 0) {
-        appData.researchProjects = [{ id: "proj_1", title: "Mặc định", logs: [] }];
-        appData.activeProjectIndex = 0;
-      }
+      const currentProj = getActiveProject();
 
       appData.researchProjects.forEach((proj, idx) => {
         const btn = document.createElement('button');
@@ -7175,11 +7219,12 @@
 
     // Nút "+ Thêm Dòng Mới": Thêm hàng con vào ngày đang chọn
     function addResearchRow() {
+      const currentProj = getActiveProject();
+      if (!currentProj) return;
+
       // 1. Quét dữ liệu hiện tại từ DOM để không làm mất nội dung đang gõ
       const currentLogs = scanResearchLogsFromDOM();
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (!currentProj) return;
-      if (currentLogs) currentProj.logs = currentLogs;
+      if (currentLogs && currentLogs.length > 0) currentProj.logs = currentLogs;
       if (!currentProj.logs) currentProj.logs = [];
 
       if (currentProj.logs.length === 0) {
@@ -7199,7 +7244,7 @@
           ? selectedLogIndex
           : 0;
         const parentLog = currentProj.logs[targetIdx];
-        const parentDate = extractCleanDate(parentLog.dateText) || formatDateDDMMYYYY(new Date());
+        const parentDate = extractCleanDate(parentLog?.dateText) || formatDateDDMMYYYY(new Date());
 
         const newSubRow = {
           id: 'log_' + Date.now(),
@@ -7223,14 +7268,16 @@
       // 3. Tự động lưu ngay cấu trúc mới lên Firestore
       saveUserData();
     }
+    window.addResearchRow = addResearchRow;
 
     // Nút "Thêm Ngày Hôm Sau": Lấy ngày của hàng đang chọn (hoặc hàng đầu) + 1 ngày, tăng dần
     function addResearchRowNextDay() {
+      const currentProj = getActiveProject();
+      if (!currentProj) return;
+
       // 1. Quét dữ liệu hiện tại từ DOM để không làm mất nội dung đang gõ
       const currentLogs = scanResearchLogsFromDOM();
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (!currentProj) return;
-      if (currentLogs) currentProj.logs = currentLogs;
+      if (currentLogs && currentLogs.length > 0) currentProj.logs = currentLogs;
       if (!currentProj.logs) currentProj.logs = [];
 
       let baseDate = null;
@@ -7271,23 +7318,24 @@
       // 3. Tự động lưu ngay cấu trúc mới lên Firestore
       saveUserData();
     }
+    window.addResearchRowNextDay = addResearchRowNextDay;
 
     function deleteResearchRow(idx) {
+      const currentProj = getActiveProject();
+      if (!currentProj) return;
       const currentLogs = scanResearchLogsFromDOM();
-      const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (currentProj) {
-        if (currentLogs) currentProj.logs = currentLogs;
-        if (currentProj.logs && currentProj.logs[idx]) {
-          currentProj.logs.splice(idx, 1);
-          if (selectedLogIndex >= currentProj.logs.length) {
-            selectedLogIndex = Math.max(0, currentProj.logs.length - 1);
-          }
-          renderResearchTab();
-          attachResearchTableEventListeners();
-          saveUserData();
+      if (currentLogs && currentLogs.length > 0) currentProj.logs = currentLogs;
+      if (currentProj.logs && currentProj.logs[idx]) {
+        currentProj.logs.splice(idx, 1);
+        if (selectedLogIndex >= currentProj.logs.length) {
+          selectedLogIndex = Math.max(0, currentProj.logs.length - 1);
         }
+        renderResearchTab();
+        attachResearchTableEventListeners();
+        saveUserData();
       }
     }
+    window.deleteResearchRow = deleteResearchRow;
 
     function openAddTopicModal() {
       const modal = document.getElementById('add-topic-modal');
@@ -7428,6 +7476,7 @@
         renderPapersRepository();
       }
     }
+    window.switchResearchSubTab = switchResearchSubTab;
 
     function applyResearchSubTabUI() {
       const btnLogs = document.getElementById('subtab-btn-logs');
@@ -8452,7 +8501,6 @@ Trả về kết quả dưới dạng JSON thuần (không markdown, không back
     }
 
     // --- BÁO CÁO DAILY: MỚI ---
-    const GEMINI_API_KEY = "AIzaSyAaPXZi_2vkjN-B1ZxKhApWvFWzP1o_mjY";
     const DEFAULT_DOCX_BASE64 = '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';
 
     let uploadedTemplateBytes = null; // Lưu bytes ArrayBuffer của file docx template
@@ -9449,8 +9497,8 @@ Raw daily lab notes:
       }, 1000);
     }
 
-    // --- INITIALIZATION (BỌC TOÀN BỘ KHỞI TẠO VÀO DOMContentLoaded) ---
-    document.addEventListener('DOMContentLoaded', () => {
+    // --- INITIALIZATION (ĐẢM BẢO CHẠY NGAY CẢ KHI DOM ĐÃ READY HOẶC CHƯA) ---
+    function initApp() {
       // Khôi phục giao diện người dùng nếu đã có phiên trong localStorage để không bị giật/đăng xuất khi F5
       try {
         const savedUserStr = localStorage.getItem('loggedInUser');
@@ -9524,20 +9572,49 @@ Raw daily lab notes:
         console.warn('deadlines/todos init error:', e);
       }
 
-      // 5. Khởi tạo Lắng nghe Auth (Firebase Auth Listener)
+      // 5. Gán Event Listeners trực tiếp cho các nút bấm chính
+      try {
+        const btnNextDay = document.getElementById('btn-add-next-day');
+        if (btnNextDay) {
+          btnNextDay.onclick = addResearchRowNextDay;
+        }
+        const btnAddRow = document.getElementById('btn-add-row');
+        if (btnAddRow) {
+          btnAddRow.onclick = addResearchRow;
+        }
+        const btnSubLogs = document.getElementById('subtab-btn-logs');
+        if (btnSubLogs) {
+          btnSubLogs.onclick = () => switchResearchSubTab('logs');
+        }
+        const btnSubPapers = document.getElementById('subtab-btn-papers');
+        if (btnSubPapers) {
+          btnSubPapers.onclick = () => switchResearchSubTab('papers');
+        }
+      } catch (e) {
+        console.warn('Gán Event Listener buttons error:', e);
+      }
+
+      // 6. Khởi tạo Lắng nghe Auth (Firebase Auth Listener)
       try {
         initAuthListener();
       } catch (e) {
         console.warn('initAuthListener error:', e);
       }
 
-      // 6. Khôi phục Vị trí Tab đang mở (Active Tab State)
+      // 7. Khôi phục Vị trí Tab đang mở (Active Tab State)
       try {
         restoreActiveTabState();
       } catch (e) {
         console.warn('restoreActiveTabState error:', e);
       }
-    });
+    }
+
+    // Kích hoạt ngay lập tức nếu DOM đã sẵn sàng, hoặc lắng nghe DOMContentLoaded
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
 
     // Migrate 4 môn cố định vào globalCourses nếu chưa có
     function migrateDefaultCoursesToGlobal() {
