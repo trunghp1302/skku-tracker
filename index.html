@@ -1691,16 +1691,26 @@
       </div>
 
       <!-- FORM ĐĂNG NHẬP -->
-      <form id="auth-form-login" onsubmit="handleLoginSubmit(event)" class="space-y-4 text-sm font-bold">
+      <form id="auth-form-login" onsubmit="handleLoginSubmit(event)" autocomplete="on"
+        class="space-y-4 text-sm font-bold">
         <div>
           <label class="text-xs text-slate-500 uppercase" data-i18n="lblLoginAccount">Email / Tên tài khoản:</label>
-          <input type="text" id="login-email" placeholder="student@skku.edu"
+          <input type="email" id="login-email" name="username" autocomplete="username" placeholder="student@skku.edu"
             class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
         </div>
         <div>
           <label class="text-xs text-slate-500 uppercase" data-i18n="lblPassword">Mật Khẩu:</label>
-          <input type="password" id="login-password" placeholder="••••••••"
+          <input type="password" id="login-password" name="password" autocomplete="current-password"
+            placeholder="••••••••"
             class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+        </div>
+        <div class="flex items-center justify-between pt-0.5">
+          <label
+            class="flex items-center gap-2 cursor-pointer select-none text-xs text-slate-600 dark:text-slate-400 font-semibold">
+            <input type="checkbox" id="login-remember-me"
+              class="w-4 h-4 rounded border-slate-300 text-skkuGreen focus:ring-skkuGreen cursor-pointer">
+            <span data-i18n="rememberMe">Ghi nhớ đăng nhập</span>
+          </label>
         </div>
         <button type="submit" id="btn-submit-login"
           class="w-full py-3 bg-skkuNavy hover:bg-slate-800 text-white font-extrabold rounded-xl shadow-md transition cursor-pointer"
@@ -1718,26 +1728,30 @@
       </form>
 
       <!-- FORM ĐĂNG KÝ -->
-      <form id="auth-form-register" onsubmit="handleRegisterSubmit(event)" class="space-y-4 text-sm font-bold hidden">
+      <form id="auth-form-register" onsubmit="handleRegisterSubmit(event)" autocomplete="on"
+        class="space-y-4 text-sm font-bold hidden">
         <div>
           <label class="text-xs text-slate-500 uppercase" data-i18n="lblFullName">Họ và Tên:</label>
-          <input type="text" id="reg-name" placeholder="Ví dụ: Lê Thành Trung"
+          <input type="text" id="reg-name" name="name" autocomplete="name" placeholder="Ví dụ: Lê Thành Trung"
+            data-i18n-placeholder="placeholderFullName"
             class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
         </div>
         <div>
           <label class="text-xs text-slate-500 uppercase" data-i18n="lblRegEmail">Email Trường (@skku.edu) / Cá
             Nhân:</label>
-          <input type="email" id="reg-email" placeholder="student@skku.edu"
+          <input type="email" id="reg-email" name="email" autocomplete="email" placeholder="student@skku.edu"
             class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
         </div>
         <div>
           <label class="text-xs text-slate-500 uppercase" data-i18n="lblPassword">Mật Khẩu:</label>
-          <input type="password" id="reg-password" placeholder="Tối thiểu 6 ký tự"
+          <input type="password" id="reg-password" name="new-password" autocomplete="new-password"
+            placeholder="Tối thiểu 6 ký tự" data-i18n-placeholder="placeholderPassword"
             class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
         </div>
         <div>
           <label class="text-xs text-slate-500 uppercase" data-i18n="lblConfirmPassword">Xác Nhận Mật Khẩu:</label>
-          <input type="password" id="reg-confirm-password" placeholder="Nhập lại mật khẩu"
+          <input type="password" id="reg-confirm-password" name="confirm-password" autocomplete="new-password"
+            placeholder="Nhập lại mật khẩu" data-i18n-placeholder="placeholderConfirmPassword"
             class="w-full p-3 mt-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
         </div>
         <button type="submit" id="btn-submit-register"
@@ -2380,8 +2394,9 @@
     // ====================================================
     // --- FIREBASE CLOUD FIRESTORE & AUTHENTICATION CONFIG ---
     // ====================================================
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
     const firebaseConfig = {
-      apiKey: "AIzaSyA4LRq30I7H3k5qFTwRb3HWVhRFNsR0XWY",
+      apiKey: "AIzaSyA4lRq30I7H3k5qFTwRb3HWVhRFNsR0XWY",
       authDomain: "trunghp1302.firebaseapp.com",
       projectId: "trunghp1302",
       storageBucket: "trunghp1302.firebasestorage.app",
@@ -2389,15 +2404,82 @@
       appId: "1:434901953464:web:dc0f96ea2846693d0bfd4d",
       measurementId: "G-LTYSJFFLQ6"
     };
+    // Kiểm tra tính hợp lệ cơ bản của firebaseConfig trước khi khởi tạo, giúp phát hiện sớm
+    // lỗi (auth/api-key-not-valid) do thiếu/sai cấu hình apiKey, authDomain hoặc projectId.
+    const REQUIRED_FIREBASE_CONFIG_KEYS = ['apiKey', 'authDomain', 'projectId', 'appId'];
+    const missingFirebaseConfigKeys = REQUIRED_FIREBASE_CONFIG_KEYS.filter(k => !firebaseConfig[k]);
+    if (missingFirebaseConfigKeys.length > 0) {
+      console.error('firebaseConfig thiếu các trường bắt buộc:', missingFirebaseConfigKeys.join(', '));
+    }
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
     const auth = firebase.auth();
     const db = firebase.firestore();
+
+    // Thiết lập Auth Persistence sang LOCAL ngay khi khởi tạo
+    try {
+      auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
+        console.log("Firebase Auth: Persistence set to LOCAL successfully");
+      }).catch((err) => {
+        console.warn("Firebase Auth setPersistence warning:", err);
+      });
+    } catch (e) {
+      console.warn("Firebase setPersistence error:", e);
+    }
+
     window.firebaseApp = firebase.app();
     window.firebaseAuth = auth;
     window.firebaseDb = db;
     console.log("Firebase App, Auth & Firestore initialized successfully!");
+
+    // --- Firebase Auth & Firestore Helpers (tương thích cả cú pháp Modular v9 lẫn Compat v8) ---
+    const browserLocalPersistence = (typeof firebase !== 'undefined' && firebase.auth && firebase.auth.Auth && firebase.auth.Auth.Persistence) ? firebase.auth.Auth.Persistence.LOCAL : 'local';
+
+    const doc = (firestoreDb, col, id) => (firestoreDb && typeof firestoreDb.collection === 'function') ? firestoreDb.collection(col).doc(id) : null;
+
+    const setDoc = async (docRef, data, options = {}) => {
+      if (docRef && typeof docRef.set === 'function') {
+        return await docRef.set(data, options);
+      }
+      return null;
+    };
+
+    const getDoc = async (docRef) => {
+      if (docRef && typeof docRef.get === 'function') {
+        return await docRef.get();
+      }
+      return { exists: false, data: () => null };
+    };
+
+    const setPersistence = async (authInstance, persistenceMode) => {
+      if (authInstance && typeof authInstance.setPersistence === 'function') {
+        return await authInstance.setPersistence(persistenceMode);
+      }
+      return null;
+    };
+
+    const signInWithRedirect = async (authInstance, provider) => {
+      if (authInstance && typeof authInstance.signInWithRedirect === 'function') {
+        return await authInstance.signInWithRedirect(provider);
+      }
+      return null;
+    };
+
+    const getRedirectResult = async (authInstance) => {
+      if (authInstance && typeof authInstance.getRedirectResult === 'function') {
+        return await authInstance.getRedirectResult();
+      }
+      return null;
+    };
+
+    window.doc = doc;
+    window.setDoc = setDoc;
+    window.getDoc = getDoc;
+    window.setPersistence = setPersistence;
+    window.signInWithRedirect = signInWithRedirect;
+    window.getRedirectResult = getRedirectResult;
+    window.browserLocalPersistence = browserLocalPersistence;
 
     // --- 1. LOCALSTORAGE KEY & APP STATE ---
     const STORAGE_KEY = 'EESL_ACADEMIC_TRACKER_V8';
@@ -2468,6 +2550,34 @@
         lblFullName: "Họ và Tên:",
         lblPhone: "Số Điện Thoại:",
         lblPersonalEmail: "Email Cá Nhân:",
+        profileSavedSuccess: "✅ Đã lưu thông tin cá nhân lên Cloud Firestore thành công!",
+        profileSavedLocal: "✅ Đã lưu thông tin cá nhân (chế độ cục bộ)!",
+        googleAuthUnsupported: "Môi trường hiện tại không hỗ trợ popup Google (ví dụ mở file:// hoặc bị chặn Cookie bên thứ ba). Vui lòng đăng nhập bằng Email & Mật khẩu bên dưới hoặc mở qua http://127.0.0.1:5500!",
+        googlePopupBlocked: "Trình duyệt đã chặn cửa sổ Popup Google. Vui lòng cho phép mở Popup hoặc dùng Email/Mật khẩu!",
+        googleDomainUnauthorized: "Tên miền hiện tại chưa được cấp phép trong Firebase Authentication.",
+        errFillEmailPassword: "Vui lòng nhập Email và Mật khẩu!",
+        errFillAllFields: "Vui lòng điền đầy đủ tất cả các trường thông tin!",
+        errPasswordMismatch: "Mật khẩu xác nhận không khớp!",
+        errPasswordTooShort: "Mật khẩu phải có tối thiểu 6 ký tự!",
+        errUserNotFound: "Tài khoản này chưa được đăng ký. Vui lòng đăng ký trước khi đăng nhập!",
+        errWrongPassword: "Sai mật khẩu! Vui lòng kiểm tra lại mật khẩu của bạn.",
+        errInvalidCredential: "Email hoặc mật khẩu không chính xác!",
+        errInvalidEmail: "Định dạng email không hợp lệ!",
+        errUserDisabled: "Tài khoản này đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên!",
+        errTooManyRequests: "Quá nhiều lần thử sai. Vui lòng thử lại sau ít phút!",
+        errNetworkFailed: "Lỗi kết nối mạng. Vui lòng kiểm tra internet và thử lại!",
+        errApiKeyInvalid: "Lỗi cấu hình hệ thống (API Key không hợp lệ). Vui lòng liên hệ quản trị viên!",
+        errEmailAlreadyInUse: "Email này đã được đăng ký! Vui lòng chuyển sang tab Đăng nhập.",
+        errWeakPassword: "Mật khẩu quá yếu (tối thiểu 6 ký tự)!",
+        errOperationNotAllowed: "Phương thức đăng nhập này chưa được kích hoạt trên hệ thống!",
+        errPopupClosed: "Cửa sổ đăng nhập đã bị đóng trước khi hoàn tất xác thực!",
+        errGenericAuth: "Đã xảy ra lỗi xác thực. Vui lòng thử lại!",
+        placeholderFullName: "Ví dụ: Lê Thành Trung",
+        placeholderPassword: "Tối thiểu 6 ký tự",
+        placeholderConfirmPassword: "Nhập lại mật khẩu",
+        loggingInText: "Đang đăng nhập...",
+        registeringText: "Đang tạo tài khoản & đăng ký...",
+        redirectingGoogleText: "Đang chuyển hướng tới Google...",
         lblSchoolEmail: "Email Trường (@skku.edu):",
         lblDob: "Ngày Tháng Năm Sinh:",
         lblPassport: "Số Hộ Chiếu:",
@@ -2510,7 +2620,7 @@
         collapse: "▲ Thu gọn",
         expand: "▼ Chi tiết",
         weekTasksBtn: "Kế Hoạch & Task Tuần ",
-        registerSuccessMsg: "Bạn đã đăng ký thành công! Vui lòng bấm Đăng Nhập để truy cập hệ thống.",
+        registerSuccessMsg: "Tạo tài khoản và đăng nhập thành công!",
         loginSuccessMsg: "Đăng nhập thành công!",
         logoutSuccessMsg: "Đã đăng xuất thành công!",
         daysMap: { 1: 'T2', 2: 'T3', 3: 'T4', 4: 'T5', 5: 'T6', 6: 'T7', 7: 'CN' },
@@ -2641,6 +2751,7 @@
         weatherHumidityLabel: "Độ ẩm",
         btnGoogleAuth: "Tiếp tục bằng Tài khoản Google",
         lblOrEmail: "Hoặc với Email & Mật Khẩu",
+        rememberMe: "Ghi nhớ đăng nhập",
         cloudSyncSaving: "Đang lưu Cloud...",
         cloudSyncSaved: "Đã lưu Cloud",
         cloudSyncLoading: "Đang đồng bộ...",
@@ -2775,6 +2886,34 @@
         lblFullName: "Full Name:",
         lblPhone: "Phone Number:",
         lblPersonalEmail: "Personal Email:",
+        profileSavedSuccess: "✅ Profile information successfully saved to Cloud Firestore!",
+        profileSavedLocal: "✅ Profile saved locally!",
+        googleAuthUnsupported: "Google popup sign-in is not supported in this environment. Please use Email & Password or open via http://127.0.0.1:5500!",
+        googlePopupBlocked: "Browser blocked the Google popup window. Please allow popups or use Email/Password!",
+        googleDomainUnauthorized: "Current domain is not authorized in Firebase Authentication.",
+        errFillEmailPassword: "Please enter your Email and Password!",
+        errFillAllFields: "Please fill in all required fields!",
+        errPasswordMismatch: "Confirmation password does not match!",
+        errPasswordTooShort: "Password must be at least 6 characters long!",
+        errUserNotFound: "This account has not been registered. Please register first before logging in!",
+        errWrongPassword: "Incorrect password! Please check your password again.",
+        errInvalidCredential: "Incorrect email or password!",
+        errInvalidEmail: "Invalid email format!",
+        errUserDisabled: "This account has been disabled. Please contact the administrator!",
+        errTooManyRequests: "Too many failed attempts. Please try again in a few minutes!",
+        errNetworkFailed: "Network connection error. Please check your internet and try again!",
+        errApiKeyInvalid: "System configuration error (Invalid API Key). Please contact the administrator!",
+        errEmailAlreadyInUse: "This email is already registered! Please switch to the Login tab.",
+        errWeakPassword: "Password is too weak (minimum 6 characters)!",
+        errOperationNotAllowed: "This sign-in method is not enabled on the system!",
+        errPopupClosed: "The sign-in popup was closed before completing authentication!",
+        errGenericAuth: "An authentication error occurred. Please try again!",
+        placeholderFullName: "e.g., John Doe",
+        placeholderPassword: "At least 6 characters",
+        placeholderConfirmPassword: "Re-enter password",
+        loggingInText: "Logging in...",
+        registeringText: "Creating account & registering...",
+        redirectingGoogleText: "Redirecting to Google...",
         lblSchoolEmail: "School Email (@skku.edu):",
         lblDob: "Date of Birth:",
         lblPassport: "Passport No.:",
@@ -2817,7 +2956,7 @@
         collapse: "▲ Collapse",
         expand: "▼ Details",
         weekTasksBtn: "Weekly Plan & Tasks Week ",
-        registerSuccessMsg: "Registration successful! Please click Login to access your account.",
+        registerSuccessMsg: "Account created and logged in successfully!",
         loginSuccessMsg: "Login successful!",
         logoutSuccessMsg: "Logged out successfully!",
         daysMap: { 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat', 7: 'Sun' },
@@ -2948,6 +3087,7 @@
         weatherHumidityLabel: "Humidity",
         btnGoogleAuth: "Continue with Google",
         lblOrEmail: "Or with Email & Password",
+        rememberMe: "Remember me",
         cloudSyncSaving: "Saving to Cloud...",
         cloudSyncSaved: "Cloud Synced",
         cloudSyncLoading: "Syncing...",
@@ -3082,6 +3222,34 @@
         lblFullName: "성명:",
         lblPhone: "전화번호:",
         lblPersonalEmail: "개인 이메일:",
+        profileSavedSuccess: "✅ 프로필 정보가 클라우드 Firestore에 성공적으로 저장되었습니다!",
+        profileSavedLocal: "✅ 프로필이 로컬에 저장되었습니다!",
+        googleAuthUnsupported: "현재 환경에서는 Google 팝업 로그인이 지원되지 않습니다. 이메일/비밀번호를 사용하거나 http://127.0.0.1:5500 으로 접속하세요!",
+        googlePopupBlocked: "브라우저가 Google 팝업을 차단했습니다. 팝업을 허용하거나 이메일/비밀번호를 사용하세요!",
+        googleDomainUnauthorized: "현재 도메인이 Firebase Authentication에 승인되지 않았습니다.",
+        errFillEmailPassword: "이메일과 비밀번호를 입력해주세요!",
+        errFillAllFields: "모든 필수 항목을 입력해주세요!",
+        errPasswordMismatch: "비밀번호 확인이 일치하지 않습니다!",
+        errPasswordTooShort: "비밀번호는 최소 6자 이상이어야 합니다!",
+        errUserNotFound: "등록되지 않은 계정입니다. 먼저 회원가입을 진행해주세요!",
+        errWrongPassword: "비밀번호가 올바르지 않습니다! 다시 확인해주세요.",
+        errInvalidCredential: "이메일 또는 비밀번호가 올바르지 않습니다!",
+        errInvalidEmail: "이메일 형식이 올바르지 않습니다!",
+        errUserDisabled: "이 계정은 비활성화되었습니다. 관리자에게 문의하세요!",
+        errTooManyRequests: "너무 많은 시도가 감지되었습니다. 잠시 후 다시 시도해주세요!",
+        errNetworkFailed: "네트워크 연결 오류입니다. 인터넷 연결을 확인 후 다시 시도해주세요!",
+        errApiKeyInvalid: "시스템 설정 오류(API 키가 유효하지 않음)입니다. 관리자에게 문의하세요!",
+        errEmailAlreadyInUse: "이미 등록된 이메일입니다! 로그인 탭으로 전환해주세요.",
+        errWeakPassword: "비밀번호가 너무 약합니다 (최소 6자 이상)!",
+        errOperationNotAllowed: "이 로그인 방식은 시스템에서 활성화되지 않았습니다!",
+        errPopupClosed: "인증이 완료되기 전에 로그인 팝업 창이 닫혔습니다!",
+        errGenericAuth: "인증 오류가 발생했습니다. 다시 시도해주세요!",
+        placeholderFullName: "예: 홍길동",
+        placeholderPassword: "최소 6자 이상",
+        placeholderConfirmPassword: "비밀번호 재입력",
+        loggingInText: "로그인 중...",
+        registeringText: "계정 생성 및 회원가입 중...",
+        redirectingGoogleText: "Google로 리디렉션 중...",
         lblSchoolEmail: "학교 이메일 (@skku.edu):",
         lblDob: "생년월일:",
         lblPassport: "여권 번호:",
@@ -3124,7 +3292,7 @@
         collapse: "▲ 접기",
         expand: "▼ 상세보기",
         weekTasksBtn: "주간 계획 및 과제 ",
-        registerSuccessMsg: "회원가입이 완료되었습니다! 로그인 버튼을 눌러 로그인해주세요.",
+        registerSuccessMsg: "계정 생성 및 로그인이 완료되었습니다!",
         loginSuccessMsg: "로그인되었습니다!",
         logoutSuccessMsg: "로그아웃되었습니다!",
         daysMap: { 1: '월', 2: '화', 3: '수', 4: '목', 5: '금', 6: '토', 7: '일' },
@@ -3255,6 +3423,7 @@
         weatherHumidityLabel: "습도",
         btnGoogleAuth: "Google 계정으로 계속하기",
         lblOrEmail: "또는 이메일 & 비밀번호로",
+        rememberMe: "로그인 상태 유지",
         cloudSyncSaving: "클라우드 저장 중...",
         cloudSyncSaved: "클라우드 동기화됨",
         cloudSyncLoading: "동기화 중...",
@@ -3333,65 +3502,42 @@
       }
     };
 
-    let appData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
-      lang: 'vi',
-      theme: 'light',
-      users: {},
-      currentUser: null,
-      profile: {
-        avatar: 'https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab',
-        name: '',
-        phone: '010-1234-5678',
-        pemail: 'researcher@gmail.com',
-        semail: 'student@skku.edu',
-        dob: '1998-05-15',
-        passport: 'C12345678',
-        arc: '980515-5123456',
-        bankName: 'NH Nonghyup Bank',
-        bankAccount: '302-1234-5678-91'
-      },
-      selectedMonthKey: '9/2026',
-      months: {
-        "9/2026": { year: 2026, month: 9, deadlines: [{ text: "Nộp báo cáo Nanophotonics https://canvas.skku.edu", done: false }], notes: ["Chuẩn bị slide thuyết trình seminar"] },
-        "10/2026": { year: 2026, month: 10, deadlines: [], notes: [] },
-        "11/2026": { year: 2026, month: 11, deadlines: [], notes: [] },
-        "12/2026": { year: 2026, month: 12, deadlines: [], notes: [] },
-        "1/2027": { year: 2027, month: 1, deadlines: [], notes: [] }
-      },
-      globalCourses: [],
-      dayData: {},
-      weekTasks: {},
-      suwonWeather: {
-        temp: 22,
-        humidity: 60,
-        precipitation: 0,
-        weatherCode: 0,
-        aqi: 35,
-        pm25: 14.5,
-        updatedAt: null
-      },
-      notificationsAck: {},
-      researchProjects: [
-        {
-          id: "proj_1",
-          title: "Energy & Environmental Catalysts Development",
-          logs: [
-            {
-              id: "log_1",
-              dateText: "18/09/2026\n(T6)",
-              tasks: "Đo phổ XRD mẫu A1-A5 https://canvas.skku.edu/courses",
-              progressStep: 1,
-              notes: "Mẫu A3 có tinh thể đồng đều nhất",
-              plan: "Đo quang phổ UV-Vis cho mẫu A3 vào sáng mai"
-            }
-          ]
-        }
-      ],
-      activeProjectIndex: 0,
-      quickDeadlines: [],
-      personalTodos: [],
-      personalTodoCollapsed: false
-    };
+    // --- SINGLE SOURCE OF TRUTH: KHỞI TẠO STATE TRẮNG (KHÔNG DÙNG LOCALSTORAGE CHO DỮ LIỆU) ---
+    function getCleanAppData() {
+      return {
+        lang: 'vi',
+        theme: 'light',
+        currentUser: null,
+        profile: {
+          avatar: '',
+          name: '',
+          phone: '',
+          pemail: '',
+          semail: '',
+          dob: '',
+          passport: '',
+          arc: '',
+          bankName: '',
+          bankAccount: ''
+        },
+        selectedMonthKey: '9/2026',
+        months: {},
+        globalCourses: [],
+        courses: [],
+        dayData: {},
+        weekTasks: {},
+        suwonWeather: null,
+        notificationsAck: {},
+        researchProjects: [],
+        activeProjectIndex: 0,
+        quickDeadlines: [],
+        personalTodos: [],
+        personalTodoCollapsed: false
+      };
+    }
+
+    let isAuthLoading = true;
+    let appData = getCleanAppData();
 
     let activeWeekKeyForModal = null;
     let expandedDayKey = null;
@@ -3399,6 +3545,7 @@
 
     let _firestoreSaveTimer = null;
     let _isSavingToFirestore = false;
+    let _firestoreUnsubscribe = null; // Hàm hủy lắng nghe onSnapshot real-time hiện tại (nếu có)
 
     function updateCloudSyncIndicator(status) {
       const badge = document.getElementById('cloud-sync-status');
@@ -3432,15 +3579,28 @@
       }
     }
 
+    // Tự động dọn dẹp các giá trị demo mẫu cũ nếu còn lưu trong localStorage
+    if (appData && appData.profile) {
+      if (appData.profile.phone === '010-1234-5678') appData.profile.phone = '';
+      if (appData.profile.pemail === 'researcher@gmail.com') appData.profile.pemail = '';
+      if (appData.profile.semail === 'student@skku.edu') appData.profile.semail = '';
+      if (appData.profile.dob === '1998-05-15') appData.profile.dob = '';
+      if (appData.profile.passport === 'C12345678') appData.profile.passport = '';
+      if (appData.profile.arc === '980515-5123456') appData.profile.arc = '';
+      if (appData.profile.bankName === 'NH Nonghyup Bank') appData.profile.bankName = '';
+      if (appData.profile.bankAccount === '302-1234-5678-91') appData.profile.bankAccount = '';
+    }
+
     function saveData() {
-      // 1. Luôn lưu vào LocalStorage để đảm bảo phản hồi tức thì và dự phòng ngoại tuyến
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
-      } catch (e) {
-        console.warn('LocalStorage save error:', e);
+      // Quét dữ liệu trực tiếp từ DOM nếu bảng nhật ký đang hiển thị
+      if (typeof scanResearchLogsFromDOM === 'function') {
+        const scanned = scanResearchLogsFromDOM();
+        if (scanned !== null && appData.researchProjects && appData.researchProjects[appData.activeProjectIndex]) {
+          appData.researchProjects[appData.activeProjectIndex].logs = scanned;
+        }
       }
 
-      // 2. Lưu đồng bộ lên Cloud Firestore nếu người dùng đã đăng nhập
+      // LƯU DUY NHẤT LÊN CLOUD FIRESTORE (Single Source of Truth, không lưu dữ liệu vào localStorage)
       if (auth && auth.currentUser && db) {
         const uid = auth.currentUser.uid;
         updateCloudSyncIndicator('saving');
@@ -3449,11 +3609,10 @@
         _firestoreSaveTimer = setTimeout(async () => {
           try {
             _isSavingToFirestore = true;
-            // Làm sạch dữ liệu, loại bỏ undefined/hàm để tương thích 100% với Firestore
             const cleanData = JSON.parse(JSON.stringify(appData));
 
-            // Lưu trực tiếp theo UID: users/{user.uid} với trường app_data
-            await db.collection('users').doc(uid).set({
+            const docRef = doc(db, "users", uid);
+            await setDoc(docRef, {
               app_data: cleanData,
               updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
@@ -4373,6 +4532,20 @@
       const errReg = document.getElementById('reg-error-msg');
       if (errLogin) errLogin.classList.add('hidden');
       if (errReg) errReg.classList.add('hidden');
+
+      // Tự động kiểm tra rememberedEmail để điền sẵn vào ô Email và tick checkbox
+      try {
+        const rememberedEmail = localStorage.getItem('rememberedEmail');
+        const loginEmailInput = document.getElementById('login-email');
+        const rememberMeCheckbox = document.getElementById('login-remember-me');
+        if (rememberedEmail) {
+          if (loginEmailInput) loginEmailInput.value = rememberedEmail;
+          if (rememberMeCheckbox) rememberMeCheckbox.checked = true;
+        } else {
+          if (rememberMeCheckbox) rememberMeCheckbox.checked = false;
+        }
+      } catch (e) { }
+
       document.getElementById('auth-modal').classList.remove('hidden');
     }
 
@@ -4385,70 +4558,139 @@
       const regBtn = document.getElementById('auth-tab-register');
       const loginForm = document.getElementById('auth-form-login');
       const regForm = document.getElementById('auth-form-register');
+      const loginErr = document.getElementById('login-error-msg');
+      const regErr = document.getElementById('reg-error-msg');
+
+      if (loginErr) { loginErr.classList.add('hidden'); loginErr.innerText = ''; }
+      if (regErr) { regErr.classList.add('hidden'); regErr.innerText = ''; }
 
       if (tab === 'login') {
-        loginBtn.className = "text-lg font-black px-3 py-1 rounded-xl text-skkuNavy dark:text-emerald-400 bg-slate-100 dark:bg-slate-800 cursor-pointer";
-        regBtn.className = "text-lg font-black px-3 py-1 rounded-xl text-slate-400 hover:text-slate-600 cursor-pointer";
-        loginForm.classList.remove('hidden');
-        regForm.classList.add('hidden');
+        if (loginBtn) loginBtn.className = "text-lg font-black px-3 py-1 rounded-xl text-skkuNavy dark:text-emerald-400 bg-slate-100 dark:bg-slate-800 cursor-pointer";
+        if (regBtn) regBtn.className = "text-lg font-black px-3 py-1 rounded-xl text-slate-400 hover:text-slate-600 cursor-pointer";
+        if (loginForm) loginForm.classList.remove('hidden');
+        if (regForm) regForm.classList.add('hidden');
+
+        // Khi chuyển sang tab Login: nạp rememberedEmail nếu có
+        try {
+          const rememberedEmail = localStorage.getItem('rememberedEmail');
+          const loginEmailInput = document.getElementById('login-email');
+          const rememberMeCheckbox = document.getElementById('login-remember-me');
+          if (rememberedEmail) {
+            if (loginEmailInput && !loginEmailInput.value) loginEmailInput.value = rememberedEmail;
+            if (rememberMeCheckbox) rememberMeCheckbox.checked = true;
+          }
+        } catch (e) { }
       } else {
-        regBtn.className = "text-lg font-black px-3 py-1 rounded-xl text-skkuNavy dark:text-emerald-400 bg-slate-100 dark:bg-slate-800 cursor-pointer";
-        loginBtn.className = "text-lg font-black px-3 py-1 rounded-xl text-slate-400 hover:text-slate-600 cursor-pointer";
-        regForm.classList.remove('hidden');
-        loginForm.classList.add('hidden');
+        if (regBtn) regBtn.className = "text-lg font-black px-3 py-1 rounded-xl text-skkuNavy dark:text-emerald-400 bg-slate-100 dark:bg-slate-800 cursor-pointer";
+        if (loginBtn) loginBtn.className = "text-lg font-black px-3 py-1 rounded-xl text-slate-400 hover:text-slate-600 cursor-pointer";
+        if (regForm) regForm.classList.remove('hidden');
+        if (loginForm) loginForm.classList.add('hidden');
       }
     }
 
-    // --- TẢI TOÀN BỘ DỮ LIỆU TỪ CLOUD FIRESTORE KHI ĐĂNG NHẬP ---
+    // --- HÀM DÙNG CHUNG: ÁP DỤNG DỮ LIỆU REMOTE TỪ FIRESTORE VÀO appData + RE-RENDER TOÀN BỘ UI ---
+    // Dùng cho cả lần tải đầu tiên (loadUserDataFromFirestore) và mỗi lần onSnapshot bắn ra thay đổi real-time.
+    function applyFirestoreDataToApp(user, remote) {
+      if (!remote) return;
+
+      // Ép buộc Firestore làm nguồn dữ liệu duy nhất (Single Source of Truth)
+      // Khởi tạo appData hoàn toàn mới từ remote.app_data (không kế thừa dữ liệu mẫu/cũ)
+      appData = getCleanAppData();
+      if (remote.app_data) {
+        appData = Object.assign(appData, remote.app_data);
+      }
+
+      // Đồng bộ profile từ Firestore (ưu tiên root profile, sau đó app_data.profile)
+      const firestoreProfile = remote.profile || (remote.app_data && remote.app_data.profile) || {};
+      appData.profile = Object.assign({
+        avatar: '',
+        name: '',
+        phone: '',
+        pemail: '',
+        semail: user.email || '',
+        dob: '',
+        passport: '',
+        arc: '',
+        bankName: '',
+        bankAccount: ''
+      }, firestoreProfile);
+
+      if (!appData.profile) appData.profile = {};
+      if (!appData.researchProjects) appData.researchProjects = [];
+      if (!appData.quickDeadlines) appData.quickDeadlines = [];
+      if (!appData.personalTodos) appData.personalTodos = [];
+      if (!appData.globalCourses) appData.globalCourses = [];
+      if (!appData.months) appData.months = {};
+
+      if (user.displayName && !appData.profile.name) appData.profile.name = user.displayName;
+      if (user.email) {
+        if (!appData.profile.semail) appData.profile.semail = user.email;
+        appData.currentUser = user.email;
+      }
+      if (user.photoURL && (!appData.profile.avatar || appData.profile.avatar.includes('placehold.co'))) {
+        appData.profile.avatar = user.photoURL;
+      }
+
+      // Nếu người dùng vừa nhập thông tin mới trong Form khi chưa đăng nhập, giữ nguyên dữ liệu vừa nhập
+      let pendingData = window.pendingProfileSave;
+      if (!pendingData) {
+        try {
+          const stored = sessionStorage.getItem('pendingProfileSave');
+          if (stored) pendingData = JSON.parse(stored);
+        } catch (e) { }
+      }
+      if (pendingData) {
+        appData.profile = Object.assign({}, appData.profile, pendingData);
+      }
+
+      // Tự động điền ngược lại vào toàn bộ các ô input trong Modal thông tin cá nhân
+      if (typeof fillProfileModalInputs === 'function') {
+        fillProfileModalInputs(appData.profile);
+      }
+
+      // Re-render toàn bộ UI để phản ánh dữ liệu mới nhất ngay lập tức (real-time đa thiết bị/đa trình duyệt)
+      updateHeaderProfileUI();
+      renderNotifications();
+      renderQuickDeadlines();
+      renderPersonalTodos();
+      renderResearchTab();
+      renderCoursesManagement();
+      if (typeof renderMonthsGrid === 'function') renderMonthsGrid();
+      updateTemplateStatusBadge();
+      if (typeof renderSuwonWeatherUI === "function" && appData.suwonWeather) renderSuwonWeatherUI();
+    }
+
+    // --- TẢI TOÀN BỘ DỮ LIỆU TỪ CLOUD FIRESTORE KHI ĐĂNG NHẬP (LẦN ĐẦU) ---
     async function loadUserDataFromFirestore(user) {
       if (!user || !db) return;
       updateCloudSyncIndicator('loading');
       try {
-        const docRef = db.collection('users').doc(user.uid);
-        const docSnap = await docRef.get();
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
 
         if (docSnap.exists) {
           const remote = docSnap.data();
-          if (remote && remote.app_data) {
-            console.log('Tải dữ liệu thành công từ Cloud Firestore cho UID:', user.uid);
-            appData = Object.assign({}, appData, remote.app_data);
-
-            if (!appData.profile) appData.profile = {};
-            if (!appData.researchProjects) appData.researchProjects = [];
-            if (!appData.quickDeadlines) appData.quickDeadlines = [];
-            if (!appData.personalTodos) appData.personalTodos = [];
-            if (!appData.globalCourses) appData.globalCourses = [];
-            if (!appData.months) appData.months = {};
-
-            if (user.displayName && !appData.profile.name) appData.profile.name = user.displayName;
-            if (user.email) {
-              appData.profile.semail = user.email;
-              appData.currentUser = user.email;
-            }
-            if (user.photoURL && (!appData.profile.avatar || appData.profile.avatar.includes('placehold.co'))) {
-              appData.profile.avatar = user.photoURL;
-            }
-
-            try {
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
-            } catch (e) { }
-          }
+          applyFirestoreDataToApp(user, remote);
         } else {
           console.log('Tài khoản mới, khởi tạo dữ liệu mặc định lên Cloud Firestore...');
-          if (user.displayName && !appData.profile.name) appData.profile.name = user.displayName;
-          if (user.email) {
-            appData.profile.semail = user.email;
-            appData.currentUser = user.email;
-          }
+          appData = getCleanAppData();
+          appData.currentUser = user.email;
+          appData.profile.semail = user.email || '';
+          if (user.displayName) appData.profile.name = user.displayName;
           if (user.photoURL) appData.profile.avatar = user.photoURL;
 
           const cleanData = JSON.parse(JSON.stringify(appData));
-          await docRef.set({
+          await setDoc(docRef, {
+            profile: appData.profile || {},
             app_data: cleanData,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             email: user.email || '',
             displayName: user.displayName || ''
           }, { merge: true });
+
+          if (typeof fillProfileModalInputs === 'function') {
+            fillProfileModalInputs(appData.profile);
+          }
         }
 
         updateHeaderProfileUI();
@@ -4457,6 +4699,7 @@
         renderPersonalTodos();
         renderResearchTab();
         renderCoursesManagement();
+        if (typeof renderMonthsGrid === 'function') renderMonthsGrid();
         updateTemplateStatusBadge();
         if (typeof renderSuwonWeatherUI === "function" && appData.suwonWeather) renderSuwonWeatherUI();
 
@@ -4464,6 +4707,10 @@
         const dict = i18nDict[lang] || i18nDict['vi'];
         showSuccessToast(dict.toastCloudSyncSuccess || '☁️ Đã đồng bộ toàn bộ dữ liệu từ Cloud Firestore thành công!');
         updateCloudSyncIndicator('saved');
+
+        // Kích hoạt lắng nghe thay đổi Real-time (onSnapshot) ngay sau khi tải dữ liệu lần đầu thành công,
+        // đảm bảo Cloud Firestore là Single Source of Truth và đồng bộ tức thời giữa nhiều thiết bị/trình duyệt.
+        attachFirestoreRealtimeListener(user);
       } catch (err) {
         console.error('Lỗi khi tải dữ liệu từ Cloud Firestore:', err);
         updateCloudSyncIndicator('error');
@@ -4471,7 +4718,96 @@
       }
     }
 
-    // --- XỬ LÝ SỰ KIỆN NÚT [TIẾP TỤC BẰNG TÀI KHOẢN GOOGLE] ---
+    // --- ĐỒNG BỘ REAL-TIME CLOUD FIRESTORE (SINGLE SOURCE OF TRUTH) ---
+    // Dùng onSnapshot(doc(db, "users", user.uid)) để lắng nghe thay đổi dữ liệu theo thời gian thực,
+    // đảm bảo dữ liệu được đồng bộ ngay lập tức giữa các thiết bị/trình duyệt khác nhau (Chrome, Safari, Cốc Cốc).
+    function attachFirestoreRealtimeListener(user) {
+      if (!user || !db || !user.uid) return;
+
+      // Hủy listener cũ (nếu có) trước khi gắn listener mới, tránh rò rỉ bộ nhớ / lắng nghe trùng lặp
+      if (typeof _firestoreUnsubscribe === 'function') {
+        try { _firestoreUnsubscribe(); } catch (e) { }
+        _firestoreUnsubscribe = null;
+      }
+
+      const docRef = doc(db, "users", user.uid);
+      if (!docRef || typeof docRef.onSnapshot !== 'function') return;
+
+      updateCloudSyncIndicator('loading');
+
+      _firestoreUnsubscribe = docRef.onSnapshot((snapshot) => {
+        // Bỏ qua snapshot phát sinh từ chính thao tác ghi cục bộ (pending writes chưa server xác nhận)
+        // để tránh vòng lặp re-render không cần thiết khi đang gõ / lưu dữ liệu trên chính thiết bị này.
+        if (snapshot.metadata && snapshot.metadata.hasPendingWrites) return;
+
+        if (!snapshot.exists) {
+          console.log('Document users/' + user.uid + ' chưa tồn tại, khởi tạo document mẫu lên Cloud Firestore...');
+          const initialData = getCleanAppData();
+          initialData.currentUser = user.email;
+          initialData.profile.semail = user.email || '';
+          if (user.displayName) initialData.profile.name = user.displayName;
+          if (user.photoURL) initialData.profile.avatar = user.photoURL;
+
+          setDoc(docRef, {
+            profile: initialData.profile || {},
+            app_data: JSON.parse(JSON.stringify(initialData)),
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            lastLoginAt: firebase.firestore.FieldValue.serverTimestamp(),
+            email: user.email || '',
+            displayName: user.displayName || ''
+          }, { merge: true }).catch(e => console.warn('Lỗi tạo user doc ban đầu:', e));
+          return;
+        }
+
+        const remote = snapshot.data();
+        if (!remote) return;
+
+        console.log('onSnapshot: Nhận cập nhật real-time từ Cloud Firestore users/' + user.uid + ', đồng bộ tức thời...');
+        applyFirestoreDataToApp(user, remote);
+        updateCloudSyncIndicator('saved');
+      }, (err) => {
+        console.warn('onSnapshot Firestore real-time listener error:', err);
+        updateCloudSyncIndicator('error');
+      });
+    }
+    window.attachFirestoreRealtimeListener = attachFirestoreRealtimeListener;
+    window.applyFirestoreDataToApp = applyFirestoreDataToApp;
+
+    // --- HÀM XỬ LÝ ĐĂNG NHẬP THÀNH CÔNG DÙNG CHUNG ---
+    async function handleSuccessfulAuth(user) {
+      if (!user) return;
+      if (db && user.uid) {
+        try {
+          await doc(db, 'users', user.uid).set({
+            email: user.email || '',
+            displayName: user.displayName || '',
+            photoURL: user.photoURL || '',
+            lastLoginAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+        } catch (dbErr) {
+          console.warn('Firestore user save warning:', dbErr);
+        }
+      }
+
+      await updateUIForLoggedInUser(user);
+      closeAuthModal();
+
+      const lang = appData.lang || 'vi';
+      const welcomeMsg = lang === 'ko' ? `환영합니다, ${user.displayName || user.email}님!` :
+        (lang === 'en' ? `Welcome, ${user.displayName || user.email}!` : `👋 Xin chào ${user.displayName || user.email}!`);
+      showSuccessToast(welcomeMsg);
+
+      // Kích hoạt lắng nghe Real-time Firestore (Single Source of Truth)
+      attachFirestoreRealtimeListener(user);
+
+      // Tự động lưu hồ sơ nếu có dữ liệu đã nhập trước khi đăng nhập
+      if (typeof checkAndApplyPendingProfileSave === 'function') {
+        await checkAndApplyPendingProfileSave(user);
+      }
+    }
+    window.handleSuccessfulAuth = handleSuccessfulAuth;
+
+    // --- XỬ LÝ SỰ KIỆN NÚT [TIẾP TỤC BẰNG TÀI KHOẢN GOOGLE] (ƯU TIÊN signInWithRedirect) ---
     async function handleGoogleSignIn(e) {
       if (e && typeof e.preventDefault === 'function') e.preventDefault();
 
@@ -4483,10 +4819,12 @@
 
       const btn = document.getElementById('btn-google-auth');
       let origHTML = '';
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
       if (btn) {
         origHTML = btn.innerHTML;
         btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Đang kết nối tài khoản Google...</span>`;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${dict.redirectingGoogleText || 'Đang chuyển hướng tới Google...'}</span>`;
       }
 
       try {
@@ -4496,37 +4834,29 @@
 
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
-        const result = await auth.signInWithPopup(provider);
-        const user = result.user;
 
-        // Lưu thông tin user vào Firestore users/{user.uid}
-        if (db && user) {
-          try {
-            await db.collection('users').doc(user.uid).set({
-              email: user.email || '',
-              displayName: user.displayName || '',
-              photoURL: user.photoURL || '',
-              lastLoginAt: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
-          } catch (dbErr) {
-            console.warn('Firestore user save warning:', dbErr);
+        // 1. Phương thức chính: signInWithPopup mở cửa sổ chọn tài khoản Google chuẩn xác
+        console.log('Khởi chạy Google Auth bằng signInWithPopup...');
+        try {
+          const result = await auth.signInWithPopup(provider);
+          if (result && result.user) {
+            await handleSuccessfulAuth(result.user);
           }
+          return;
+        } catch (popupErr) {
+          // Nếu Popup bị chặn hoặc không khả dụng trong môi trường hiện tại, fallback sang signInWithRedirect
+          const shouldFallbackToRedirect = (
+            popupErr.code === 'auth/popup-blocked' ||
+            popupErr.code === 'auth/operation-not-supported-in-this-environment' ||
+            popupErr.code === 'auth/cancelled-popup-request'
+          );
+          if (shouldFallbackToRedirect) {
+            console.warn('signInWithPopup bị chặn/không khả dụng, chuyển sang signInWithRedirect:', popupErr);
+            await auth.signInWithRedirect(provider);
+            return;
+          }
+          throw popupErr;
         }
-
-        localStorage.setItem('loggedInUser', JSON.stringify({
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName || user.email.split('@')[0]
-        }));
-        await updateUIForLoggedInUser(user);
-        saveData();
-
-        closeAuthModal();
-        const lang = appData.lang || 'vi';
-        const welcomeMsg = lang === 'ko' ? `환영합니다, ${user.displayName || user.email}님!` :
-          (lang === 'en' ? `Welcome, ${user.displayName || user.email}!` : `👋 Xin chào ${user.displayName || user.email}!`);
-        showSuccessToast(welcomeMsg);
-        await loadUserDataFromFirestore(user);
 
       } catch (err) {
         console.error('Google Sign-In error:', err);
@@ -4535,45 +4865,27 @@
           return;
         }
 
-        // Nếu gặp lỗi domain hoặc API Key, tự động chuyển sang chế độ Đăng Nhập Nhanh (Local Session) kèm thông báo
-        const isApiKeyOrDomainError = (
-          err.code === 'auth/api-key-not-valid' ||
-          err.code === 'auth/unauthorized-domain' ||
-          err.code === 'auth/operation-not-allowed' ||
-          (err.message && (err.message.includes('api-key-not-valid') || err.message.includes('API key not valid') || err.message.includes('domain')))
-        );
-
-        if (isApiKeyOrDomainError) {
-          console.warn('Firebase API key/domain restriction detected. Falling back to Local Session...');
-          const localEmail = appData.profile?.pemail || appData.profile?.semail || 'researcher@gmail.com';
-          const localName = appData.profile?.name || 'Nghiên cứu sinh SKKU';
-          appData.currentUser = localEmail;
-          localStorage.setItem('loggedInUser', JSON.stringify({
-            uid: 'local_google_' + Date.now(),
-            email: localEmail,
-            displayName: localName
-          }));
-          saveData();
-          updateHeaderProfileUI();
-          updateCloudSyncIndicator('offline');
-          closeAuthModal();
-
-          showSuccessToast(`⚡ Đã vào chế độ Đăng Nhập Nhanh (Local Session - ${localEmail}) để tiếp tục làm việc!`);
-          return;
+        let msg = dict.errGenericAuth || err.message;
+        if (err.code === 'auth/operation-not-supported-in-this-environment') {
+          msg = dict.googleAuthUnsupported || 'Môi trường hiện tại không hỗ trợ popup Google. Vui lòng đăng nhập bằng Email & Mật khẩu bên dưới hoặc mở qua http://127.0.0.1:5500!';
+        } else if (err.code === 'auth/popup-blocked') {
+          msg = dict.googlePopupBlocked || 'Trình duyệt đã chặn cửa sổ Popup Google. Vui lòng cấp quyền mở Popup hoặc dùng Email/Mật khẩu!';
+        } else if (err.code === 'auth/unauthorized-domain') {
+          msg = dict.googleDomainUnauthorized || 'Tên miền hiện tại chưa được cấp phép trong Firebase Authentication.';
+        } else if (err.code === 'auth/api-key-not-valid' || (err.message && err.message.includes('api-key-not-valid'))) {
+          msg = dict.errApiKeyInvalid || 'Lỗi cấu hình hệ thống (API Key không hợp lệ). Vui lòng liên hệ quản trị viên!';
         }
 
-        // Lỗi khác: Hiển thị chữ màu đỏ ngay trong modal
-        const msg = `Lỗi Google: ${err.message}`;
         if (errorEl) {
           errorEl.innerText = msg;
           errorEl.classList.remove('hidden');
         } else {
-          alert(msg);
+          showSuccessToast(`⚠️ ${msg}`);
         }
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.innerHTML = `<svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg><span data-i18n="btnGoogleAuth">Tiếp tục bằng Tài khoản Google</span>`;
+          btn.innerHTML = origHTML || `<svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg><span data-i18n="btnGoogleAuth">Tiếp tục bằng Tài khoản Google</span>`;
         }
       }
     }
@@ -4586,6 +4898,16 @@
       const pass = document.getElementById('login-password')?.value || '';
       const errorEl = document.getElementById('login-error-msg');
 
+      // Xử lý tính năng Ghi nhớ đăng nhập (Remember Me)
+      const rememberMeChecked = document.getElementById('login-remember-me')?.checked;
+      try {
+        if (rememberMeChecked) {
+          localStorage.setItem('rememberedEmail', email);
+        } else {
+          localStorage.removeItem('rememberedEmail');
+        }
+      } catch (e) { }
+
       const lang = appData.lang || 'vi';
       const dict = i18nDict[lang] || i18nDict['vi'];
 
@@ -4596,7 +4918,7 @@
 
       if (!email || !pass) {
         if (errorEl) {
-          errorEl.innerText = "Vui lòng nhập Email và Mật khẩu!";
+          errorEl.innerText = dict.errFillEmailPassword || "Vui lòng nhập Email và Mật khẩu!";
           errorEl.classList.remove('hidden');
         }
         return;
@@ -4607,63 +4929,58 @@
       if (btn) {
         origHTML = btn.innerHTML;
         btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Đang đăng nhập...</span>`;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${dict.loggingInText || 'Đang đăng nhập...'}</span>`;
       }
 
       try {
+        if (auth && typeof auth.setPersistence === 'function') {
+          try {
+            await auth.setPersistence(browserLocalPersistence);
+          } catch (pErr) {
+            console.warn('setPersistence warn in login:', pErr);
+          }
+        }
+        // Xác thực chuẩn bằng signInWithEmailAndPassword: bắt buộc mật khẩu khớp với hệ thống,
+        // Firebase sẽ tự động từ chối nếu tài khoản chưa đăng ký hoặc sai mật khẩu - không cho phép nhập bừa.
         const cred = await auth.signInWithEmailAndPassword(email, pass);
         const user = cred.user;
         if (user) {
-          localStorage.setItem('loggedInUser', JSON.stringify({
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName || user.email.split('@')[0]
-          }));
           await updateUIForLoggedInUser(user);
+          attachFirestoreRealtimeListener(user);
         }
         closeAuthModal();
-        showSuccessToast('Đăng nhập thành công!');
+        showSuccessToast(dict.loginSuccessMsg || 'Đăng nhập thành công!');
       } catch (err) {
         console.error('Lỗi đăng nhập Email:', err);
 
-        // Fallback sang Local Session nếu API key/domain chưa kích hoạt
-        const isApiKeyOrDomainError = (
-          err.code === 'auth/api-key-not-valid' ||
-          err.code === 'auth/unauthorized-domain' ||
-          (err.message && (err.message.includes('api-key-not-valid') || err.message.includes('API key not valid')))
-        );
-
-        if (isApiKeyOrDomainError) {
-          appData.currentUser = email;
-          const localDisplayName = (appData.users && appData.users[email]?.name) || email.split('@')[0];
-          appData.profile.name = localDisplayName;
-          appData.profile.semail = email;
-          localStorage.setItem('loggedInUser', JSON.stringify({
-            uid: 'local_' + Date.now(),
-            email: email,
-            displayName: localDisplayName
-          }));
-          saveData();
-          closeAuthModal();
-          updateHeaderProfileUI();
-          showSuccessToast('Đăng nhập thành công (Local Session)!');
-          return;
-        }
-
-        let msg = err.message;
-        if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-          msg = 'Email hoặc mật khẩu không chính xác!';
+        // Bắt buộc xác thực mật khẩu trùng khớp với hệ thống Firebase Auth, tuyệt đối không cho phép
+        // đăng nhập bừa với tài khoản chưa đăng ký hoặc sai mật khẩu.
+        let msg = dict.errGenericAuth || err.message;
+        if (err.code === 'auth/user-not-found') {
+          msg = dict.errUserNotFound || 'Tài khoản này chưa được đăng ký. Vui lòng đăng ký trước khi đăng nhập!';
+        } else if (err.code === 'auth/wrong-password') {
+          msg = dict.errWrongPassword || 'Sai mật khẩu! Vui lòng kiểm tra lại mật khẩu của bạn.';
+        } else if (err.code === 'auth/invalid-credential') {
+          msg = dict.errInvalidCredential || 'Email hoặc mật khẩu không chính xác!';
         } else if (err.code === 'auth/invalid-email') {
-          msg = 'Định dạng email không hợp lệ!';
+          msg = dict.errInvalidEmail || 'Định dạng email không hợp lệ!';
+        } else if (err.code === 'auth/user-disabled') {
+          msg = dict.errUserDisabled || 'Tài khoản này đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên!';
         } else if (err.code === 'auth/too-many-requests') {
-          msg = 'Quá nhiều lần thử sai. Vui lòng thử lại sau ít phút!';
+          msg = dict.errTooManyRequests || 'Quá nhiều lần thử sai. Vui lòng thử lại sau ít phút!';
+        } else if (err.code === 'auth/network-request-failed') {
+          msg = dict.errNetworkFailed || 'Lỗi kết nối mạng. Vui lòng kiểm tra internet và thử lại!';
+        } else if (err.code === 'auth/api-key-not-valid' || (err.message && err.message.includes('api-key-not-valid'))) {
+          msg = dict.errApiKeyInvalid || 'Lỗi cấu hình hệ thống (API Key không hợp lệ). Vui lòng liên hệ quản trị viên!';
+        } else if (err.code === 'auth/operation-not-allowed') {
+          msg = dict.errOperationNotAllowed || 'Phương thức đăng nhập này chưa được kích hoạt trên hệ thống!';
         }
 
         if (errorEl) {
           errorEl.innerText = msg;
           errorEl.classList.remove('hidden');
         } else {
-          alert(`Lỗi đăng nhập: ${msg}`);
+          showSuccessToast(`⚠️ ${msg}`);
         }
       } finally {
         if (btn) {
@@ -4683,6 +5000,9 @@
       const confirmPass = document.getElementById('reg-confirm-password')?.value || '';
       const errorEl = document.getElementById('reg-error-msg');
 
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict['vi'];
+
       if (errorEl) {
         errorEl.classList.add('hidden');
         errorEl.innerText = '';
@@ -4691,7 +5011,7 @@
       // 1. Kiểm tra rỗng
       if (!name || !email || !pass || !confirmPass) {
         if (errorEl) {
-          errorEl.innerText = "Vui lòng điền đầy đủ tất cả các trường thông tin!";
+          errorEl.innerText = dict.errFillAllFields || "Vui lòng điền đầy đủ tất cả các trường thông tin!";
           errorEl.classList.remove('hidden');
         }
         return;
@@ -4700,7 +5020,7 @@
       // 2. Kiểm tra Mật khẩu !== Xác nhận mật khẩu -> Hiện thông báo "Mật khẩu xác nhận không khớp!"
       if (pass !== confirmPass) {
         if (errorEl) {
-          errorEl.innerText = "Mật khẩu xác nhận không khớp!";
+          errorEl.innerText = dict.errPasswordMismatch || "Mật khẩu xác nhận không khớp!";
           errorEl.classList.remove('hidden');
         }
         return;
@@ -4709,7 +5029,7 @@
       // 3. Kiểm tra độ dài mật khẩu
       if (pass.length < 6) {
         if (errorEl) {
-          errorEl.innerText = "Mật khẩu phải có tối thiểu 6 ký tự!";
+          errorEl.innerText = dict.errPasswordTooShort || "Mật khẩu phải có tối thiểu 6 ký tự!";
           errorEl.classList.remove('hidden');
         }
         return;
@@ -4720,11 +5040,11 @@
       if (btn) {
         origHTML = btn.innerHTML;
         btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Đang tạo tài khoản & đăng ký...</span>`;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${dict.registeringText || 'Đang tạo tài khoản & đăng ký...'}</span>`;
       }
 
       try {
-        // Thực thi auth.createUserWithEmailAndPassword(email, password)
+        // Thực thi auth.createUserWithEmailAndPassword(email, password) để khởi tạo user mới trên Firebase Auth
         const cred = await auth.createUserWithEmailAndPassword(email, pass);
         const user = cred.user;
 
@@ -4733,16 +5053,18 @@
             await user.updateProfile({ displayName: name });
           } catch (pErr) { }
 
+          appData = getCleanAppData();
           appData.profile.name = name;
           appData.profile.semail = email;
           appData.currentUser = email;
 
-          // Lưu thông tin user vào Firestore users/{user.uid}
+          // Sau khi đăng ký thành công: tự động tạo document mẫu tại Firestore users/{user.uid}
           if (db) {
             try {
               const cleanData = JSON.parse(JSON.stringify(appData));
-              await db.collection('users').doc(user.uid).set({
+              await doc(db, 'users', user.uid).set({
                 app_data: cleanData,
+                profile: appData.profile,
                 email: email,
                 displayName: name,
                 photoURL: user.photoURL || '',
@@ -4753,65 +5075,38 @@
               console.warn('Firestore user doc warning:', dbErr);
             }
           }
-          saveData();
+
+          await updateUIForLoggedInUser(user);
+          attachFirestoreRealtimeListener(user);
         }
 
-        if (user) {
-          localStorage.setItem('loggedInUser', JSON.stringify({
-            uid: user.uid,
-            email: user.email,
-            displayName: name || user.displayName || user.email.split('@')[0]
-          }));
-          await updateUIForLoggedInUser(user);
-        }
-        // Khi thành công: hiển thị "Đăng ký thành công!" và tự động đóng Modal
+        // Khi thành công: hiển thị thông báo và tự động đóng Modal
         closeAuthModal();
-        showSuccessToast('Đăng ký thành công!');
+        showSuccessToast(dict.registerSuccessMsg || 'Đăng ký tài khoản thành công!');
 
       } catch (err) {
         console.error('Lỗi đăng ký Firebase:', err);
 
-        // Fallback sang Local Session nếu API key chưa cấu hình xong
-        const isApiKeyOrDomainError = (
-          err.code === 'auth/api-key-not-valid' ||
-          err.code === 'auth/unauthorized-domain' ||
-          (err.message && (err.message.includes('api-key-not-valid') || err.message.includes('API key not valid')))
-        );
-
-        if (isApiKeyOrDomainError) {
-          console.warn('Firebase API key error. Creating local account fallback...');
-          if (!appData.users) appData.users = {};
-          appData.users[email] = { name, email, pass };
-          appData.currentUser = email;
-          appData.profile.name = name;
-          appData.profile.semail = email;
-          localStorage.setItem('loggedInUser', JSON.stringify({
-            uid: 'local_' + Date.now(),
-            email: email,
-            displayName: name
-          }));
-          saveData();
-          closeAuthModal();
-          updateHeaderProfileUI();
-          showSuccessToast('Đăng ký thành công (Chế độ Local Session)!');
-          return;
-        }
-
-        // Khi thất bại: Hiển thị lỗi rõ ràng ngay trong khung Modal dưới dạng chữ màu đỏ
-        let msg = err.message;
+        let msg = dict.errGenericAuth || err.message;
         if (err.code === 'auth/email-already-in-use') {
-          msg = 'Email này đã được đăng ký! Vui lòng chuyển sang tab Đăng nhập.';
+          msg = dict.errEmailAlreadyInUse || 'Email này đã được đăng ký! Vui lòng chuyển sang tab Đăng nhập.';
         } else if (err.code === 'auth/invalid-email') {
-          msg = 'Định dạng email không hợp lệ!';
+          msg = dict.errInvalidEmail || 'Định dạng email không hợp lệ!';
         } else if (err.code === 'auth/weak-password') {
-          msg = 'Mật khẩu quá yếu (tối thiểu 6 ký tự)!';
+          msg = dict.errWeakPassword || 'Mật khẩu quá yếu (tối thiểu 6 ký tự)!';
+        } else if (err.code === 'auth/network-request-failed') {
+          msg = dict.errNetworkFailed || 'Lỗi kết nối mạng. Vui lòng kiểm tra internet và thử lại!';
+        } else if (err.code === 'auth/api-key-not-valid' || (err.message && err.message.includes('api-key-not-valid'))) {
+          msg = dict.errApiKeyInvalid || 'Lỗi cấu hình hệ thống (API Key không hợp lệ). Vui lòng liên hệ quản trị viên!';
+        } else if (err.code === 'auth/operation-not-allowed') {
+          msg = dict.errOperationNotAllowed || 'Phương thức đăng ký này chưa được kích hoạt trên hệ thống!';
         }
 
         if (errorEl) {
           errorEl.innerText = msg;
           errorEl.classList.remove('hidden');
         } else {
-          alert(`Lỗi đăng ký: ${msg}`);
+          showSuccessToast(`⚠️ ${msg}`);
         }
       } finally {
         if (btn) {
@@ -4844,20 +5139,81 @@
 
       // Cập nhật giao diện Header
       updateHeaderProfileUI();
+    }
 
-      // Nếu là user Firebase hợp lệ (có UID và auth.currentUser khớp)
-      if (auth && auth.currentUser && user.uid && auth.currentUser.uid === user.uid) {
-        updateCloudSyncIndicator('saving');
-        try {
-          await loadUserDataFromFirestore(user);
-          updateCloudSyncIndicator('saved');
-        } catch (err) {
-          console.warn('loadUserDataFromFirestore error:', err);
-          updateCloudSyncIndicator('offline');
-        }
-      } else {
-        updateCloudSyncIndicator('offline');
+    // --- HÀM XÓA SẠCH DỮ LIỆU GIAO DIỆN & RESET TRẠNG THÁI KHI ĐĂNG XUẤT ---
+    function clearUserDataUI(preserveSession = false) {
+      console.log('clearUserDataUI: Xóa sạch dữ liệu giao diện và reset trạng thái... (preserveSession=' + preserveSession + ')');
+
+      // 1. Reset toàn bộ 10 ô input trong Modal Profile về rỗng ("")
+      const profileInputIds = [
+        'prof-avatar', 'prof-name', 'prof-phone', 'prof-pemail', 'prof-semail',
+        'prof-dob', 'prof-passport', 'prof-arc', 'prof-bankname', 'prof-bankaccount'
+      ];
+      profileInputIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      const previewAvatar = document.getElementById('profile-avatar-preview') || document.getElementById('prof-preview-avatar');
+      if (previewAvatar) {
+        previewAvatar.src = 'https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab';
       }
+
+      // 2. Reset các biến lưu trữ trạng thái (state) về trạng thái sạch hoàn toàn
+      appData = getCleanAppData();
+
+      selectedLogIndex = 0;
+      activeWeekKeyForModal = null;
+      expandedDayKey = null;
+
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem('activeMonthKey');
+        localStorage.removeItem('activeTabModal');
+        if (!preserveSession) {
+          localStorage.removeItem('loggedInUser');
+        }
+      } catch (e) {
+        console.warn('clearUserDataUI: LocalStorage clear error:', e);
+      }
+
+      // 3. Xóa sạch danh sách nhật ký, lịch học, deadline đang hiển thị trên giao diện màn hình
+      // A. Nhật ký nghiên cứu (Research topics & logs table)
+      const topicsList = document.getElementById('research-topics-list');
+      if (topicsList) topicsList.innerHTML = '';
+      const researchTbody = document.getElementById('research-table-body');
+      if (researchTbody) {
+        const lang = appData.lang || 'vi';
+        const dict = i18nDict[lang] || i18nDict['vi'];
+        researchTbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center"><div class="inner-panel max-w-md mx-auto text-slate-500 dark:text-slate-400 font-bold">${dict.emptyResearchLogs || 'Chưa có nhật ký nghiên cứu. Vui lòng đăng nhập để xem dữ liệu.'}</div></td></tr>`;
+      }
+      const currentProjectTitleEl = document.getElementById('current-project-title');
+      if (currentProjectTitleEl) currentProjectTitleEl.innerText = 'Chưa chọn đề tài';
+      const papersProjectTitleEl = document.getElementById('papers-project-title');
+      if (papersProjectTitleEl) papersProjectTitleEl.innerText = 'Chưa chọn đề tài';
+      const papersBadge = document.getElementById('papers-badge-count');
+      if (papersBadge) papersBadge.innerText = '0';
+      const papersGrid = document.getElementById('papers-grid');
+      if (papersGrid) papersGrid.innerHTML = '';
+
+      // Thư mục tháng
+      renderMonthsGrid();
+
+      // B. Lịch học (Today's Schedule / notifications-box)
+      renderNotifications();
+
+      // C. Deadline quan trọng (quick-deadlines-list)
+      renderQuickDeadlines();
+
+      // D. Ghi chú cá nhân (personal-todo-list)
+      renderPersonalTodos();
+
+      // E. Quản lý môn học (courses-management-list)
+      renderCoursesManagement();
+
+      // F. Cập nhật header và đồng bộ hóa đám mây
+      updateHeaderProfileUI();
+      updateCloudSyncIndicator('offline');
     }
 
     // --- HÀM CẬP NHẬT GIAO DIỆN KHI ĐÃ ĐĂNG XUẤT ---
@@ -4868,10 +5224,17 @@
       updateCloudSyncIndicator('offline');
     }
 
-    // --- ĐĂNG XUẤT TÀI KHOẢN ---
+    // --- ĐĂNG XUẤT TÀI KHOẢN (CHỦ ĐỘNG) ---
     async function handleLogout() {
       const lang = appData.lang || 'vi';
       const dict = i18nDict[lang] || i18nDict['vi'];
+
+      // Hủy lắng nghe Real-time onSnapshot của tài khoản hiện tại NGAY LẬP TỨC để tránh
+      // rò rỉ dữ liệu (data leak) giữa các tài khoản khác nhau khi có người đăng nhập tiếp theo.
+      if (typeof _firestoreUnsubscribe === 'function') {
+        try { _firestoreUnsubscribe(); } catch (e) { }
+        _firestoreUnsubscribe = null;
+      }
 
       if (auth) {
         try {
@@ -4880,8 +5243,9 @@
           console.warn('Lỗi khi signOut:', err);
         }
       }
-      // Xóa bộ nhớ cục bộ loggedInUser theo đúng yêu cầu
-      localStorage.removeItem('loggedInUser');
+      // CHỈ XÓA DỮ LIỆU KHI CHỦ ĐỘNG ĐĂNG XUẤT: Gọi hàm clearUserDataUI(true) xóa sạch dữ liệu cá nhân
+      // trên DOM lập tức, đảm bảo không rò rỉ dữ liệu giữa các tài khoản khác nhau.
+      clearUserDataUI(true);
       updateUIForLoggedOutUser();
       showSuccessToast(dict.logoutSuccessMsg || 'Đã đăng xuất tài khoản thành công!');
     }
@@ -4892,9 +5256,9 @@
       const loggedInBox = document.getElementById('header-logged-in');
       const p = appData.profile || {};
       const currentFirebaseUser = (auth && auth.currentUser) ? auth.currentUser : null;
-      const avatarSrc = (currentFirebaseUser && currentFirebaseUser.photoURL) || p.avatar || 'https://placehold.co/100x100/002C5F/FFF?text=EESL';
-      const displayName = (currentFirebaseUser && currentFirebaseUser.displayName) || p.name || 'Nghiên cứu sinh';
-      const displayEmail = (currentFirebaseUser && currentFirebaseUser.email) || appData.currentUser || p.semail || '';
+      const avatarSrc = p.avatar || (currentFirebaseUser && currentFirebaseUser.photoURL) || 'https://placehold.co/100x100/002C5F/FFF?text=EESL';
+      const displayName = p.name || (currentFirebaseUser && currentFirebaseUser.displayName) || 'Nghiên cứu sinh';
+      const displayEmail = p.semail || (currentFirebaseUser && currentFirebaseUser.email) || appData.currentUser || '';
 
       if (currentFirebaseUser || appData.currentUser) {
         if (loggedOutBox) loggedOutBox.classList.add('hidden');
@@ -4921,15 +5285,203 @@
     window.openAuthModal = openAuthModal;
     window.closeAuthModal = closeAuthModal;
     window.switchAuthTab = switchAuthTab;
+    window.switchMainTab = switchMainTab;
+    window.switchResearchSubTab = switchResearchSubTab;
     window.handleGoogleSignIn = handleGoogleSignIn;
     window.handleLoginSubmit = handleLoginSubmit;
     window.handleRegisterSubmit = handleRegisterSubmit;
     window.handleLogout = handleLogout;
     window.updateUIForLoggedInUser = updateUIForLoggedInUser;
     window.updateUIForLoggedOutUser = updateUIForLoggedOutUser;
+    window.clearUserDataUI = clearUserDataUI;
+    window.openProfileModal = openProfileModal;
+    window.closeProfileModal = closeProfileModal;
+    window.saveProfileInfo = saveProfileInfo;
+    window.openAvatarModal = openAvatarModal;
+    window.closeAvatarModal = closeAvatarModal;
+    window.showMonthSelectionView = showMonthSelectionView;
+    window.selectMonthFolder = selectMonthFolder;
+    window.renderMonthsGrid = renderMonthsGrid;
+    window.renderMonthDetail = renderMonthDetail;
+    window.toggleDeadline = toggleDeadline;
+    window.deleteDeadline = deleteDeadline;
+    window.addDeadlinePrompt = addDeadlinePrompt;
+    window.deleteNote = deleteNote;
+    window.addNotePrompt = addNotePrompt;
     window.updateHeaderProfileUI = updateHeaderProfileUI;
+    // --- AUTO-SAVE & QUÉT DỮ LIỆU TRỰC TIẾP TỪ DOM BẢNG NHẬT KÝ ---
+    function scanResearchLogsFromDOM() {
+      const tbody = document.getElementById('research-table-body');
+      if (!tbody || typeof tbody.querySelectorAll !== 'function') return null;
+
+      const rows = tbody.querySelectorAll('tr');
+      if (!rows || rows.length === 0) return null;
+
+      // Nếu là hàng thông báo trạng thái trống thì trả về mảng rỗng
+      if (rows.length === 1 && rows[0].querySelector('td[colspan]')) {
+        return [];
+      }
+
+      const logs = [];
+      const currentProj = (appData.researchProjects && appData.researchProjects[appData.activeProjectIndex])
+        ? appData.researchProjects[appData.activeProjectIndex]
+        : null;
+
+      rows.forEach((tr, index) => {
+        // 1. Ô Ngày (input text)
+        const dateInput = tr.querySelector('input[type="text"]') || tr.querySelector('input');
+        const dateVal = dateInput ? dateInput.value.trim() : '';
+
+        // 2. Trạng thái Hàng con (isSubRow)
+        const isSubRow = tr.dataset.isSubrow === 'true' ||
+          tr.innerHTML.includes('↳') ||
+          tr.classList.contains('bg-amber-50/20');
+
+        // 3. Ô Việc Cần Làm (tasks)
+        const tasksEl = tr.querySelector('[data-field="tasks"]');
+        let tasksVal = '';
+        if (tasksEl) {
+          tasksVal = (typeof tasksEl.value !== 'undefined') ? tasksEl.value : (tasksEl.innerText || tasksEl.textContent || '');
+        }
+
+        // 4. Ô Tiến Độ (progressStep: 0, 2, 4)
+        const progressTrack = tr.querySelector('.progress-switch-track');
+        let progressStep = 0;
+        if (progressTrack) {
+          if (progressTrack.classList.contains('state-2')) progressStep = 4;
+          else if (progressTrack.classList.contains('state-1')) progressStep = 2;
+          else progressStep = 0;
+        }
+
+        // 5. Ô Ghi Chú & Bài Học (notes)
+        const notesEl = tr.querySelector('[data-field="notes"]');
+        let notesVal = '';
+        if (notesEl) {
+          const clone = notesEl.cloneNode(true);
+          clone.querySelectorAll('button').forEach(btn => btn.remove());
+          notesVal = (typeof clone.value !== 'undefined') ? clone.value : (clone.innerText || clone.textContent || '');
+        }
+
+        // 6. Ô Kế Hoạch Ngày Mai (plan)
+        const planEl = tr.querySelector('[data-field="plan"]');
+        let planVal = '';
+        if (planEl) {
+          planVal = (typeof planEl.value !== 'undefined') ? planEl.value : (planEl.innerText || planEl.textContent || '');
+        }
+
+        const existingLog = (currentProj && currentProj.logs && currentProj.logs[index]) ? currentProj.logs[index] : {};
+
+        logs.push({
+          id: existingLog.id || ('log_' + Date.now() + '_' + index),
+          dateText: dateVal || existingLog.dateText || formatDateDDMMYYYY(new Date()),
+          tasks: tasksVal.trim(),
+          progressStep: progressStep,
+          notes: notesVal.trim(),
+          plan: planVal.trim(),
+          isSubRow: isSubRow
+        });
+      });
+
+      return logs;
+    }
+    window.scanResearchLogsFromDOM = scanResearchLogsFromDOM;
+
+    let _researchAutoSaveTimer = null;
+    function triggerAutoSaveResearchLogs(immediate = false) {
+      clearTimeout(_researchAutoSaveTimer);
+      if (immediate) {
+        saveUserData();
+      } else {
+        updateCloudSyncIndicator('saving');
+        _researchAutoSaveTimer = setTimeout(() => {
+          saveUserData();
+        }, 500);
+      }
+    }
+    window.triggerAutoSaveResearchLogs = triggerAutoSaveResearchLogs;
+
+    function attachResearchTableEventListeners() {
+      const tbody = document.getElementById('research-table-body');
+      if (!tbody || typeof tbody.querySelectorAll !== 'function') return;
+
+      // 1. Lắng nghe cấp độ bảng (Event Delegation) để không bao giờ bỏ sót ô nào
+      if (!tbody._autoSaveDelegated) {
+        tbody._autoSaveDelegated = true;
+        tbody.addEventListener('input', (e) => {
+          triggerAutoSaveResearchLogs(false); // Debounce 500ms khi gõ
+        });
+        tbody.addEventListener('change', (e) => {
+          triggerAutoSaveResearchLogs(true); // Lưu ngay khi change
+        });
+        tbody.addEventListener('focusout', (e) => {
+          triggerAutoSaveResearchLogs(true); // Lưu ngay khi blur / focusout
+        });
+      }
+
+      // 2. Gắn trực tiếp cho từng phần tử của mỗi dòng
+      const rows = tbody.querySelectorAll('tr');
+      rows.forEach(tr => {
+        const dateInput = tr.querySelector('input');
+        if (dateInput && !dateInput._autoSaveBound) {
+          dateInput._autoSaveBound = true;
+          dateInput.addEventListener('input', () => triggerAutoSaveResearchLogs(false));
+          dateInput.addEventListener('change', () => triggerAutoSaveResearchLogs(true));
+          dateInput.addEventListener('blur', () => triggerAutoSaveResearchLogs(true));
+        }
+
+        const cells = tr.querySelectorAll('.research-cell[contenteditable="true"]');
+        cells.forEach(cell => {
+          if (!cell._autoSaveBound) {
+            cell._autoSaveBound = true;
+            cell.addEventListener('input', () => triggerAutoSaveResearchLogs(false));
+            cell.addEventListener('blur', () => triggerAutoSaveResearchLogs(true));
+          }
+        });
+      });
+    }
+    window.attachResearchTableEventListeners = attachResearchTableEventListeners;
+
+    async function saveUserData(user) {
+      // 1. Quét dữ liệu trực tiếp từ DOM khi Lưu
+      const scannedLogs = scanResearchLogsFromDOM();
+      if (scannedLogs !== null && appData.researchProjects && appData.researchProjects[appData.activeProjectIndex]) {
+        appData.researchProjects[appData.activeProjectIndex].logs = scannedLogs;
+      }
+
+      // 2. Ghi vĩnh viễn lên Cloud Firestore làm Single Source of Truth (không lưu dữ liệu vào localStorage)
+      const u = user || (typeof auth !== 'undefined' && auth && auth.currentUser);
+      if (u && typeof db !== 'undefined' && db) {
+        try {
+          updateCloudSyncIndicator('saving');
+          const docRef = doc(db, "users", u.uid);
+          const cleanData = JSON.parse(JSON.stringify(appData));
+          await setDoc(docRef, {
+            app_data: cleanData,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+          updateCloudSyncIndicator('saved');
+        } catch (err) {
+          console.error('saveUserData error:', err);
+          updateCloudSyncIndicator('offline');
+        }
+      }
+    }
+    window.saveUserData = saveUserData;
+    window.loadUserData = loadUserDataFromFirestore;
     window.updateCloudSyncIndicator = updateCloudSyncIndicator;
     window.loadUserDataFromFirestore = loadUserDataFromFirestore;
+
+    // Cập nhật DOM vào in-memory appData trước khi người dùng reload / tắt trang
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+      window.addEventListener('beforeunload', () => {
+        if (typeof scanResearchLogsFromDOM === 'function') {
+          const scanned = scanResearchLogsFromDOM();
+          if (scanned !== null && appData.researchProjects && appData.researchProjects[appData.activeProjectIndex]) {
+            appData.researchProjects[appData.activeProjectIndex].logs = scanned;
+          }
+        }
+      });
+    }
 
     // --- 2. MULTI-LANGUAGE SYSTEM ---
     function changeLanguage(lang) {
@@ -5043,10 +5595,11 @@
       const mm = String(nowKST.getMonth() + 1).padStart(2, '0');
       const yyyy = nowKST.getFullYear();
 
-      document.getElementById('kst-time').innerText = timeStr;
-      document.getElementById('kst-date').innerText = `${dayName}, ${dd}/${mm}/${yyyy}`;
+      const kstTimeEl = document.getElementById('kst-time');
+      const kstDateEl = document.getElementById('kst-date');
+      if (kstTimeEl) kstTimeEl.innerText = timeStr;
+      if (kstDateEl) kstDateEl.innerText = `${dayName}, ${dd}/${mm}/${yyyy}`;
     }
-    setInterval(updateKSTClock, 1000);
 
     // --- 3.1 SUWON WEATHER HELPER & OPEN-METEO INTEGRATION ---
     function getSuwonWeatherMeta(code, lang) {
@@ -5193,15 +5746,7 @@
       }
     }
 
-    // Hiển thị ngay từ dữ liệu đệm nếu có
-    if (appData.suwonWeather) {
-      renderSuwonWeatherUI();
-    }
-    // Gọi tải dữ liệu thực tế Open-Meteo
-    fetchSuwonWeather();
-
-    // Tự động làm mới dữ liệu mỗi 15 phút (15 * 60 * 1000 ms)
-    setInterval(fetchSuwonWeather, 15 * 60 * 1000);
+    // Thời tiết và đồng hồ sẽ được khởi tạo trong document.addEventListener('DOMContentLoaded')
 
     // --- 4. DARK / LIGHT THEME ---
     const themeToggleBtn = document.getElementById('theme-toggle');
@@ -5217,11 +5762,13 @@
       }
     }
 
-    themeToggleBtn.addEventListener('click', () => {
-      appData.theme = (appData.theme === 'dark') ? 'light' : 'dark';
-      saveData();
-      applyTheme();
-    });
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        appData.theme = (appData.theme === 'dark') ? 'light' : 'dark';
+        saveData();
+        applyTheme();
+      });
+    }
 
     // --- 5. NOTIFICATIONS SYSTEM ---
     function renderNotifications() {
@@ -5332,66 +5879,262 @@
 
     // --- 6. NAVIGATION TABS & PROFILE ---
     function switchMainTab(tab) {
+      try {
+        localStorage.setItem('activeTab', tab);
+      } catch (e) { }
+
       const calBtn = document.getElementById('tab-btn-calendar');
       const resBtn = document.getElementById('tab-btn-research');
       const calView = document.getElementById('view-calendar-tab');
       const resView = document.getElementById('view-research-tab');
 
       if (tab === 'calendar') {
-        calBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition shadow-md bg-skkuNavy text-white";
-        resBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800";
-        calView.classList.remove('hidden');
-        resView.classList.add('hidden');
+        if (calBtn) calBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition shadow-md bg-skkuNavy text-white";
+        if (resBtn) resBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800";
+        if (calView) calView.classList.remove('hidden');
+        if (resView) resView.classList.add('hidden');
         renderNotifications();
       } else {
-        resBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition shadow-md bg-skkuNavy text-white";
-        calBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800";
-        resView.classList.remove('hidden');
-        calView.classList.add('hidden');
+        if (resBtn) resBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition shadow-md bg-skkuNavy text-white";
+        if (calBtn) calBtn.className = "px-5 py-3 rounded-2xl font-extrabold text-base flex items-center gap-2 transition text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800";
+        if (resView) resView.classList.remove('hidden');
+        if (calView) calView.classList.add('hidden');
         renderResearchTab();
       }
     }
 
+    function restoreActiveTabState() {
+      const activeTab = localStorage.getItem('activeTab') || 'calendar';
+      console.log('restoreActiveTabState: Khôi phục tab:', activeTab);
+
+      if (activeTab === 'research') {
+        switchMainTab('research');
+        const activeResearchSubTab = localStorage.getItem('activeResearchSubTab');
+        if (activeResearchSubTab === 'papers' || activeResearchSubTab === 'logs') {
+          switchResearchSubTab(activeResearchSubTab);
+        }
+      } else {
+        switchMainTab('calendar');
+        const activeSubTab = localStorage.getItem('activeSubTab');
+        const activeMonthKey = localStorage.getItem('activeMonthKey');
+        if (activeSubTab === 'month-detail' && activeMonthKey && appData.months && appData.months[activeMonthKey]) {
+          selectMonthFolder(activeMonthKey);
+        } else {
+          showMonthSelectionView();
+        }
+      }
+
+      const activeTabModal = localStorage.getItem('activeTabModal');
+      if (activeTabModal === 'profile') {
+        openProfileModal();
+      }
+    }
+    window.restoreActiveTabState = restoreActiveTabState;
+
+    // --- ĐIỀN DỮ LIỆU PROFILE VÀO TẤT CẢ CÁC Ô INPUT TRONG MODAL ---
+    function fillProfileModalInputs(p) {
+      if (!p) p = (appData && appData.profile) ? appData.profile : {};
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val || '';
+      };
+      setVal('prof-avatar', p.avatar || '');
+      setVal('prof-name', p.name || '');
+      setVal('prof-phone', p.phone || '');
+      setVal('prof-pemail', p.pemail || '');
+      setVal('prof-semail', p.semail || '');
+      setVal('prof-dob', p.dob || '');
+      setVal('prof-passport', p.passport || '');
+      setVal('prof-arc', p.arc || '');
+      setVal('prof-bankname', p.bankName || '');
+      setVal('prof-bankaccount', p.bankAccount || '');
+      if (typeof updateAvatarPreview === 'function') {
+        updateAvatarPreview(p.avatar);
+      }
+    }
+
     function openProfileModal() {
-      const p = appData.profile;
-      document.getElementById('prof-avatar').value = p.avatar || '';
-      document.getElementById('prof-name').value = p.name || '';
-      document.getElementById('prof-phone').value = p.phone || '';
-      document.getElementById('prof-pemail').value = p.pemail || '';
-      document.getElementById('prof-semail').value = p.semail || '';
-      document.getElementById('prof-dob').value = p.dob || '';
-      document.getElementById('prof-passport').value = p.passport || '';
-      document.getElementById('prof-arc').value = p.arc || '';
-      document.getElementById('prof-bankname').value = p.bankName || '';
-      document.getElementById('prof-bankaccount').value = p.bankAccount || '';
-      updateAvatarPreview(p.avatar);
-      document.getElementById('profile-modal').classList.remove('hidden');
+      fillProfileModalInputs(appData.profile);
+      const modal = document.getElementById('profile-modal');
+      if (modal) modal.classList.remove('hidden');
+      try {
+        localStorage.setItem('activeTabModal', 'profile');
+      } catch (e) { }
     }
 
     function closeProfileModal() {
-      document.getElementById('profile-modal').classList.add('hidden');
+      const modal = document.getElementById('profile-modal');
+      if (modal) modal.classList.add('hidden');
+      try {
+        localStorage.removeItem('activeTabModal');
+      } catch (e) { }
     }
 
     function updateAvatarPreview(url) {
-      document.getElementById('profile-avatar-preview').src = url || 'https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab';
+      const preview = document.getElementById('profile-avatar-preview');
+      if (preview) {
+        preview.src = url || 'https://placehold.co/150x150/002C5F/8CB72A?text=EES+Lab';
+      }
     }
 
-    function saveProfileInfo() {
-      appData.profile = {
-        avatar: document.getElementById('prof-avatar').value,
-        name: document.getElementById('prof-name').value,
-        phone: document.getElementById('prof-phone').value,
-        pemail: document.getElementById('prof-pemail').value,
-        semail: document.getElementById('prof-semail').value,
-        dob: document.getElementById('prof-dob').value,
-        passport: document.getElementById('prof-passport').value,
-        arc: document.getElementById('prof-arc').value,
-        bankName: document.getElementById('prof-bankname').value,
-        bankAccount: document.getElementById('prof-bankaccount').value
+    // --- TỰ ĐỘNG LƯU HỒ SƠ SAU KHI ĐĂNG NHẬP THÀNH CÔNG ---
+    async function checkAndApplyPendingProfileSave(user) {
+      if (!user || !db) return;
+
+      // 1. Kiểm tra pendingProfileSave từ biến hoặc sessionStorage
+      let pendingData = window.pendingProfileSave;
+      if (!pendingData) {
+        try {
+          const stored = sessionStorage.getItem('pendingProfileSave');
+          if (stored) pendingData = JSON.parse(stored);
+        } catch (e) { }
+      }
+
+      // 2. Hoặc kiểm tra xem trong Form Modal Hồ Sơ Cá Nhân có dữ liệu do người dùng vừa nhập hay không
+      if (!pendingData) {
+        const profName = (document.getElementById('prof-name')?.value || '').trim();
+        const profPhone = (document.getElementById('prof-phone')?.value || '').trim();
+        const profPemail = (document.getElementById('prof-pemail')?.value || '').trim();
+        if (profName || profPhone || profPemail) {
+          pendingData = {
+            avatar: (document.getElementById('prof-avatar')?.value || '').trim(),
+            name: profName,
+            phone: profPhone,
+            pemail: profPemail,
+            semail: (document.getElementById('prof-semail')?.value || '').trim(),
+            dob: (document.getElementById('prof-dob')?.value || '').trim(),
+            passport: (document.getElementById('prof-passport')?.value || '').trim(),
+            arc: (document.getElementById('prof-arc')?.value || '').trim(),
+            bankName: (document.getElementById('prof-bankname')?.value || '').trim(),
+            bankAccount: (document.getElementById('prof-bankaccount')?.value || '').trim()
+          };
+        }
+      }
+
+      if (pendingData) {
+        try {
+          updateCloudSyncIndicator('saving');
+          const docRef = doc(db, "users", user.uid);
+          await setDoc(docRef, {
+            profile: pendingData,
+            "app_data.profile": pendingData,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+
+          appData.profile = Object.assign({}, appData.profile || {}, pendingData);
+          updateHeaderProfileUI();
+          if (typeof fillProfileModalInputs === 'function') {
+            fillProfileModalInputs(appData.profile);
+          }
+          updateCloudSyncIndicator('saved');
+
+          window.pendingProfileSave = null;
+          try { sessionStorage.removeItem('pendingProfileSave'); } catch (e) { }
+
+          showSuccessToast('✅ Đã đăng nhập và tự động lưu hồ sơ cá nhân lên Cloud Firestore thành công!');
+        } catch (err) {
+          console.warn('Lỗi tự động lưu pendingProfileSave lên Firestore:', err);
+        }
+      }
+    }
+    window.checkAndApplyPendingProfileSave = checkAndApplyPendingProfileSave;
+
+    // --- LƯU THÔNG TIN PROFILE VĨNH VIỄN LÊN CLOUD FIRESTORE ({ merge: true }) (KHÔNG LƯU LOCALSTORAGE) ---
+    async function saveProfileInfo() {
+      const saveBtn = document.querySelector('[data-i18n="btnSaveProfile"]');
+      const origBtnHTML = saveBtn ? saveBtn.innerHTML : 'Lưu Thông Tin';
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Đang lưu...</span>`;
+      }
+
+      // Khởi tạo Auth đúng lúc: Nếu đang trong quá trình phục hồi phiên sau F5, chờ tối đa 1.5s
+      if (typeof isAuthLoading !== 'undefined' && isAuthLoading) {
+        await new Promise(resolve => {
+          const checkTimer = setInterval(() => {
+            if (!isAuthLoading) {
+              clearInterval(checkTimer);
+              resolve();
+            }
+          }, 50);
+          setTimeout(() => {
+            clearInterval(checkTimer);
+            resolve();
+          }, 1500);
+        });
+      }
+
+      // Lấy toàn bộ giá trị các ô input trong Modal Hồ Sơ Cá Nhân
+      const profileData = {
+        avatar: (document.getElementById('prof-avatar')?.value || '').trim(),
+        name: (document.getElementById('prof-name')?.value || '').trim(),
+        phone: (document.getElementById('prof-phone')?.value || '').trim(),
+        pemail: (document.getElementById('prof-pemail')?.value || '').trim(),
+        semail: (document.getElementById('prof-semail')?.value || '').trim(),
+        dob: (document.getElementById('prof-dob')?.value || '').trim(),
+        passport: (document.getElementById('prof-passport')?.value || '').trim(),
+        arc: (document.getElementById('prof-arc')?.value || '').trim(),
+        bankName: (document.getElementById('prof-bankname')?.value || '').trim(),
+        bankAccount: (document.getElementById('prof-bankaccount')?.value || '').trim()
       };
-      saveData();
+
+      // 1. Giữ lại dữ liệu vừa nhập: Cập nhật state in-memory appData & cập nhật hiển thị avatar/tên trên thanh điều hướng
+      appData.profile = Object.assign({}, appData.profile || {}, profileData);
       updateHeaderProfileUI();
-      closeProfileModal();
+
+      // Kiểm tra lại auth.currentUser sau khi chờ Auth sẵn sàng
+      const currentUser = (typeof auth !== 'undefined' && auth && auth.currentUser) ? auth.currentUser : null;
+      if (currentUser && typeof db !== 'undefined' && db) {
+        try {
+          updateCloudSyncIndicator('saving');
+          const docRef = doc(db, "users", currentUser.uid);
+          const userDocRef = docRef;
+          await setDoc(docRef, {
+            profile: profileData,
+            "app_data.profile": profileData,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+
+          const lang = appData.lang || 'vi';
+          const dict = i18nDict[lang] || i18nDict['vi'];
+          updateCloudSyncIndicator('saved');
+          showSuccessToast(dict.profileSavedSuccess || '✅ Đã lưu vĩnh viễn thông tin cá nhân lên Cloud Firestore thành công!');
+        } catch (err) {
+          console.warn('Lỗi khi lưu profile lên Cloud Firestore:', err);
+          updateCloudSyncIndicator('offline');
+          showSuccessToast('⚠️ Không thể kết nối Cloud Firestore. Vui lòng thử lại!');
+        }
+
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = origBtnHTML;
+        }
+
+        closeProfileModal();
+      } else {
+        // 2. Tự động kích hoạt Đăng nhập: Lưu lại dữ liệu vừa nhập, KHÔNG xóa input, mở Modal Đăng nhập
+        window.pendingProfileSave = profileData;
+        try {
+          sessionStorage.setItem('pendingProfileSave', JSON.stringify(profileData));
+        } catch (e) { }
+
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = origBtnHTML;
+        }
+
+        // Đóng modal profile tạm thời (giữ nguyên toàn bộ giá trị input) và mở ngay modal đăng nhập
+        closeProfileModal();
+        openAuthModal('login');
+
+        // Hiển thị thông báo nhẹ nhàng
+        showSuccessToast('ℹ️ Vui lòng đăng nhập để hoàn tất lưu hồ sơ cá nhân');
+        const loginErr = document.getElementById('login-error-msg');
+        if (loginErr) {
+          loginErr.innerText = 'Vui lòng đăng nhập để hoàn tất lưu hồ sơ cá nhân.';
+          loginErr.className = 'text-xs text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 p-3 rounded-xl font-bold border border-emerald-200 dark:border-emerald-900/60 block';
+        }
+      }
     }
 
     function openAvatarModal() {
@@ -5421,8 +6164,14 @@
 
     // --- 7. MONTH FOLDERS & SUBVIEW ---
     function showMonthSelectionView() {
-      document.getElementById('month-selection-subview').classList.remove('hidden');
-      document.getElementById('month-detail-subview').classList.add('hidden');
+      try {
+        localStorage.setItem('activeTab', 'calendar');
+        localStorage.setItem('activeSubTab', 'month-selection');
+      } catch (e) { }
+      const selView = document.getElementById('month-selection-subview');
+      const detView = document.getElementById('month-detail-subview');
+      if (selView) selView.classList.remove('hidden');
+      if (detView) detView.classList.add('hidden');
       renderMonthsGrid();
       renderNotifications();
     }
@@ -5430,8 +6179,15 @@
     function selectMonthFolder(key) {
       appData.selectedMonthKey = key;
       saveData();
-      document.getElementById('month-selection-subview').classList.add('hidden');
-      document.getElementById('month-detail-subview').classList.remove('hidden');
+      try {
+        localStorage.setItem('activeTab', 'calendar');
+        localStorage.setItem('activeSubTab', 'month-detail');
+        localStorage.setItem('activeMonthKey', key);
+      } catch (e) { }
+      const selView = document.getElementById('month-selection-subview');
+      const detView = document.getElementById('month-detail-subview');
+      if (selView) selView.classList.add('hidden');
+      if (detView) detView.classList.remove('hidden');
       renderMonthDetail();
     }
 
@@ -5646,10 +6402,28 @@
 
     function renderResearchTab() {
       const topicsList = document.getElementById('research-topics-list');
-      topicsList.innerHTML = '';
+      const tbody = document.getElementById('research-table-body');
+      if (!topicsList || !tbody) return;
 
       const lang = appData.lang || 'vi';
       const dict = i18nDict[lang] || i18nDict['vi'];
+
+      // Nếu chưa đăng nhập và không có project nào, hiển thị trạng thái trống
+      if (!appData.currentUser && (!appData.researchProjects || appData.researchProjects.length === 0)) {
+        topicsList.innerHTML = '';
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center"><div class="inner-panel max-w-md mx-auto text-slate-500 dark:text-slate-400 font-bold">${dict.emptyResearchLogs || 'Chưa có nhật ký nghiên cứu. Vui lòng đăng nhập để xem dữ liệu.'}</div></td></tr>`;
+        const currentProjectTitleEl = document.getElementById('current-project-title');
+        if (currentProjectTitleEl) currentProjectTitleEl.innerText = 'Chưa chọn đề tài';
+        const papersProjectTitleEl = document.getElementById('papers-project-title');
+        if (papersProjectTitleEl) papersProjectTitleEl.innerText = 'Chưa chọn đề tài';
+        const papersBadge = document.getElementById('papers-badge-count');
+        if (papersBadge) papersBadge.innerText = '0';
+        const papersGrid = document.getElementById('papers-grid');
+        if (papersGrid) papersGrid.innerHTML = '';
+        return;
+      }
+
+      topicsList.innerHTML = '';
 
       if (!appData.researchProjects || appData.researchProjects.length === 0) {
         appData.researchProjects = [{ id: "proj_1", title: "Mặc định", logs: [] }];
@@ -5691,7 +6465,6 @@
       // Render papers repository
       renderPapersRepository();
 
-      const tbody = document.getElementById('research-table-body');
       tbody.innerHTML = '';
 
       if (!currentProj.logs || currentProj.logs.length === 0) {
@@ -5715,6 +6488,7 @@
           : (isSubRow ? 'bg-amber-50/20 dark:bg-amber-950/10 hover:bg-slate-50 dark:hover:bg-slate-800/50' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50')
           }`;
         tr.dataset.logIdx = lIdx;
+        tr.dataset.isSubrow = isSubRow ? "true" : "false";
         tr.draggable = true;
 
         tr.onclick = () => {
@@ -5779,6 +6553,11 @@
 
         tbody.appendChild(tr);
       });
+
+      // Gắn lắng nghe sự kiện Auto-Save cho toàn bộ các dòng vừa render
+      if (typeof attachResearchTableEventListeners === 'function') {
+        attachResearchTableEventListeners();
+      }
     }
 
     // --- DRAG AND DROP ROW REORDER ---
@@ -5840,8 +6619,7 @@
       const text = el.innerText;
       const currentProj = appData.researchProjects[appData.activeProjectIndex];
       if (currentProj && currentProj.logs[idx]) {
-        currentProj.logs[idx][field] = (text && text.trim()) ? text : '';
-        saveData();
+        currentProj.logs[idx][field] = (text && text.trim()) ? text.trim() : '';
       }
       // Re-render with links or empty for placeholder
       if (!text || !text.trim()) {
@@ -5849,18 +6627,22 @@
       } else {
         el.innerHTML = cellContentWithLinks(text);
       }
+      // Kích hoạt lưu tự động ngay khi blur/rời ô
+      triggerAutoSaveResearchLogs(true);
     }
+
     function updateResearchLogDate(idx, val, tr) {
       const currentProj = appData.researchProjects[appData.activeProjectIndex];
       if (currentProj && currentProj.logs[idx]) {
         currentProj.logs[idx].dateText = val.trim();
-        saveData();
         const badge = tr.querySelector('.weekday-badge');
         const lang = appData.lang || 'vi';
         if (badge) {
           badge.textContent = getWeekdayLabel(val, lang);
         }
       }
+      // Debounce lưu tự động khi đang gõ ngày
+      triggerAutoSaveResearchLogs(false);
     }
 
     // --- 3-STATE PROGRESS SWITCH ---
@@ -5887,20 +6669,24 @@
       // Save: map 0->0, 1->2, 2->4
       const stepMap = [0, 2, 4];
       updateResearchLog(idx, 'progressStep', stepMap[nextState]);
+      triggerAutoSaveResearchLogs(true);
     }
 
     function updateResearchLog(idx, field, val) {
       const currentProj = appData.researchProjects[appData.activeProjectIndex];
       if (currentProj && currentProj.logs[idx]) {
         currentProj.logs[idx][field] = val;
-        saveData();
+        triggerAutoSaveResearchLogs(true);
       }
     }
 
     // Nút "+ Thêm Dòng Mới": Thêm hàng con vào ngày đang chọn
     function addResearchRow() {
+      // 1. Quét dữ liệu hiện tại từ DOM để không làm mất nội dung đang gõ
+      const currentLogs = scanResearchLogsFromDOM();
       const currentProj = appData.researchProjects[appData.activeProjectIndex];
       if (!currentProj) return;
+      if (currentLogs) currentProj.logs = currentLogs;
       if (!currentProj.logs) currentProj.logs = [];
 
       if (currentProj.logs.length === 0) {
@@ -5937,14 +6723,21 @@
         selectedLogIndex = targetIdx + 1;
       }
 
-      saveData();
+      // 2. Render lại bảng và gắn ngay sự kiện input/change/blur cho các ô
       renderResearchTab();
+      attachResearchTableEventListeners();
+
+      // 3. Tự động lưu ngay cấu trúc mới lên Firestore
+      saveUserData();
     }
 
     // Nút "Thêm Ngày Hôm Sau": Lấy ngày của hàng đang chọn (hoặc hàng đầu) + 1 ngày, tăng dần
     function addResearchRowNextDay() {
+      // 1. Quét dữ liệu hiện tại từ DOM để không làm mất nội dung đang gõ
+      const currentLogs = scanResearchLogsFromDOM();
       const currentProj = appData.researchProjects[appData.activeProjectIndex];
       if (!currentProj) return;
+      if (currentLogs) currentProj.logs = currentLogs;
       if (!currentProj.logs) currentProj.logs = [];
 
       let baseDate = null;
@@ -5977,19 +6770,29 @@
       });
 
       selectedLogIndex = 0;
-      saveData();
+
+      // 2. Render lại bảng và gắn ngay sự kiện input/change/blur cho các ô
       renderResearchTab();
+      attachResearchTableEventListeners();
+
+      // 3. Tự động lưu ngay cấu trúc mới lên Firestore
+      saveUserData();
     }
 
     function deleteResearchRow(idx) {
+      const currentLogs = scanResearchLogsFromDOM();
       const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (currentProj && currentProj.logs[idx]) {
-        currentProj.logs.splice(idx, 1);
-        if (selectedLogIndex >= currentProj.logs.length) {
-          selectedLogIndex = Math.max(0, currentProj.logs.length - 1);
+      if (currentProj) {
+        if (currentLogs) currentProj.logs = currentLogs;
+        if (currentProj.logs && currentProj.logs[idx]) {
+          currentProj.logs.splice(idx, 1);
+          if (selectedLogIndex >= currentProj.logs.length) {
+            selectedLogIndex = Math.max(0, currentProj.logs.length - 1);
+          }
+          renderResearchTab();
+          attachResearchTableEventListeners();
+          saveUserData();
         }
-        saveData();
-        renderResearchTab();
       }
     }
 
@@ -6123,6 +6926,10 @@
 
     function switchResearchSubTab(tab) {
       currentResearchSubTab = tab;
+      try {
+        localStorage.setItem('activeTab', 'research');
+        localStorage.setItem('activeResearchSubTab', tab);
+      } catch (e) { }
       applyResearchSubTabUI();
       if (tab === 'papers') {
         renderPapersRepository();
@@ -6160,50 +6967,14 @@
 
     function getProjectPapers(proj) {
       if (!proj) return [];
-      if (!proj.papers) {
-        try {
-          const stored = localStorage.getItem('ees_papers_' + proj.id);
-          if (stored) {
-            proj.papers = JSON.parse(stored);
-          }
-        } catch (e) { }
-        if (!proj.papers) proj.papers = [];
-      }
-      // Khởi tạo 2 bài mẫu nếu là proj_1 và chưa từng tạo
-      if (proj.id === 'proj_1' && proj.papers.length === 0 && !localStorage.getItem('ees_papers_init_' + proj.id)) {
-        proj.papers = [
-          {
-            id: 'paper_sample_1',
-            title: 'Atomically Dispersed Transition Metals on N-doped Carbon for Efficient Oxygen Reduction Reaction',
-            doi: '10.1038/s41560-022-01000-8',
-            status: 'reading',
-            abstract: 'Single-atom catalysts (SACs) have attracted immense interest in electrocatalysis due to their maximum atomic utilization and distinctive electronic structures. Here, we report a general synthetic strategy to construct high-density transition metal single atoms supported on porous carbon network.',
-            findings: '• Phương pháp tổng hợp: Nhiệt phân tiền chất MOF phối vị kim loại Fe/Co ở 900°C dưới dòng Ar.\n• Kết quả hoạt tính: Thế bán sóng E_half = 0.91 V vs RHE trong KOH 0.1 M, vượt trội so với Pt/C 20% thương mại.\n• Độ bền: Duy trì 96.4% dòng ban đầu sau 30.000 chu kỳ thử nghiệm tăng tốc (ADT).',
-            createdAt: '2026-09-18'
-          },
-          {
-            id: 'paper_sample_2',
-            title: 'Recent Advances in 2D MXene-Based Heterostructures for Solar Water Splitting',
-            doi: 'https://doi.org/10.1002/adma.202305123',
-            status: 'cited',
-            abstract: 'Two-dimensional MXenes have emerged as prominent cocatalysts and conductive scaffolds for photocatalytic water splitting owing to their metallic conductivity, hydrophilic surfaces, and abundant functional groups.',
-            findings: '• Cơ chế tiếp xúc: Tạo dị thể Schottky tại biên tiếp xúc MXene/TiO2 giúp ức chế tái hợp điện tích quang sinh.\n• Tốc độ sinh H2: Đạt 18.5 mmol/g/h dưới bức xạ ánh sáng khả kiến mà không cần chất trợ xúc tác quý.',
-            createdAt: '2026-09-15'
-          }
-        ];
-        try {
-          localStorage.setItem('ees_papers_init_' + proj.id, 'true');
-        } catch (e) { }
-        saveProjectPapers(proj, proj.papers);
+      if (!proj.papers || !Array.isArray(proj.papers)) {
+        proj.papers = [];
       }
       return proj.papers;
     }
 
     function saveProjectPapers(proj, papers) {
       proj.papers = papers;
-      try {
-        localStorage.setItem('ees_papers_' + proj.id, JSON.stringify(papers));
-      } catch (e) { }
       saveData();
     }
 
@@ -8149,20 +8920,93 @@ Raw daily lab notes:
       return html;
     }
 
-    // --- INITIALIZATION ---
+    // --- INITIALIZATION (BỌC TOÀN BỘ KHỞI TẠO VÀO DOMContentLoaded) ---
     document.addEventListener('DOMContentLoaded', () => {
-      applyTheme();
-      applyLanguageUI();
-      migrateDefaultCoursesToGlobal();
-      renderMonthsGrid();
-      initReportTemplate();
-      // Initialize new features
-      if (!appData.quickDeadlines) appData.quickDeadlines = [];
-      if (!appData.personalTodos) appData.personalTodos = [];
-      if (appData.personalTodoCollapsed === undefined) appData.personalTodoCollapsed = false;
-      renderQuickDeadlines();
-      renderPersonalTodos();
-      applyPersonalTodoCollapseState();
+      // Khôi phục giao diện người dùng nếu đã có phiên trong localStorage để không bị giật/đăng xuất khi F5
+      try {
+        const savedUserStr = localStorage.getItem('loggedInUser');
+        if (savedUserStr) {
+          const savedUser = JSON.parse(savedUserStr);
+          updateUIForLoggedInUser(savedUser);
+          updateCloudSyncIndicator('loading');
+        }
+      } catch (e) { }
+
+      try {
+        applyTheme();
+      } catch (e) {
+        console.warn('applyTheme init error:', e);
+      }
+
+      try {
+        applyLanguageUI();
+      } catch (e) {
+        console.warn('applyLanguageUI init error:', e);
+      }
+
+      // 1. Khởi tạo Đồng hồ KST
+      try {
+        updateKSTClock();
+        setInterval(updateKSTClock, 1000);
+      } catch (e) {
+        console.warn('updateKSTClock init error:', e);
+      }
+
+      // 2. Khởi tạo Weather API (Open-Meteo Suwon)
+      try {
+        if (appData.suwonWeather) {
+          renderSuwonWeatherUI();
+        }
+        fetchSuwonWeather();
+        setInterval(fetchSuwonWeather, 15 * 60 * 1000);
+      } catch (e) {
+        console.warn('fetchSuwonWeather init error:', e);
+      }
+
+      // 3. Khởi tạo Khóa học & Thư mục tháng
+      try {
+        migrateDefaultCoursesToGlobal();
+      } catch (e) {
+        console.warn('migrateDefaultCoursesToGlobal error:', e);
+      }
+
+      try {
+        renderMonthsGrid();
+      } catch (e) {
+        console.warn('renderMonthsGrid error:', e);
+      }
+
+      try {
+        initReportTemplate();
+      } catch (e) {
+        console.warn('initReportTemplate error:', e);
+      }
+
+      // 4. Khởi tạo Quick Deadlines & Personal Todos
+      try {
+        if (!appData.quickDeadlines) appData.quickDeadlines = [];
+        if (!appData.personalTodos) appData.personalTodos = [];
+        if (appData.personalTodoCollapsed === undefined) appData.personalTodoCollapsed = false;
+        renderQuickDeadlines();
+        renderPersonalTodos();
+        applyPersonalTodoCollapseState();
+      } catch (e) {
+        console.warn('deadlines/todos init error:', e);
+      }
+
+      // 5. Khởi tạo Lắng nghe Auth (Firebase Auth Listener)
+      try {
+        initAuthListener();
+      } catch (e) {
+        console.warn('initAuthListener error:', e);
+      }
+
+      // 6. Khôi phục Vị trí Tab đang mở (Active Tab State)
+      try {
+        restoreActiveTabState();
+      } catch (e) {
+        console.warn('restoreActiveTabState error:', e);
+      }
     });
 
     // Migrate 4 môn cố định vào globalCourses nếu chưa có
@@ -8433,19 +9277,7 @@ Raw daily lab notes:
         courses = [...appData.courses];
       }
 
-      // 2. Lấy trực tiếp từ localStorage (STORAGE_KEY)
-      if (!courses.length) {
-        try {
-          const rawSaved = localStorage.getItem(STORAGE_KEY);
-          if (rawSaved) {
-            const parsed = JSON.parse(rawSaved);
-            if (parsed.globalCourses && parsed.globalCourses.length) courses = [...parsed.globalCourses];
-            else if (parsed.courses && parsed.courses.length) courses = [...parsed.courses];
-          }
-        } catch (e) {
-          console.warn('Lỗi đọc localStorage:', e);
-        }
-      }
+      // (Đã loại bỏ đọc từ localStorage để đồng bộ 100% với Firestore)
 
       // 3. Quét thông tin từ DOM nếu localStorage/in-memory rỗng (DOM Fallback)
       if (!courses.length) {
@@ -9832,53 +10664,74 @@ Original note:
     }
 
     // ====================================================
-    // --- TỰ ĐỘNG LẮNG NGHE & DUY TRÌ PHIÊN ĐĂNG NHẬP ---
+    // --- HÀM KHỞI TẠO & LẮNG NGHE PHIÊN ĐĂNG NHẬP ---
     // ====================================================
-    if (typeof auth !== 'undefined' && auth) {
-      try {
-        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch((err) => {
-          console.warn('Firebase setPersistence warning:', err);
-        });
-      } catch (e) {
-        console.warn('setPersistence catch:', e);
-      }
+    function initAuthListener() {
+      if (typeof auth !== 'undefined' && auth) {
+        try {
+          auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch((err) => {
+            console.warn('Firebase setPersistence warning:', err);
+          });
+        } catch (e) {
+          console.warn('setPersistence catch:', e);
+        }
 
-      auth.onAuthStateChanged((user) => {
-        if (user) {
-          // Trường hợp Firebase Auth hợp lệ:
-          updateUIForLoggedInUser(user);
-          localStorage.setItem('loggedInUser', JSON.stringify({
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName || user.email.split('@')[0]
-          }));
-        } else {
-          // Trường hợp dùng Local Mode hoặc Refresh trang:
-          const savedUser = localStorage.getItem('loggedInUser');
-          if (savedUser) {
-            try {
-              updateUIForLoggedInUser(JSON.parse(savedUser));
-            } catch (e) {
+        // Bắt kết quả trả về từ signInWithRedirect khi trang web load lại
+        if (typeof auth.getRedirectResult === 'function') {
+          auth.getRedirectResult().then(async (result) => {
+            if (result && result.user) {
+              console.log('getRedirectResult thành công cho user:', result.user.email);
+              await handleSuccessfulAuth(result.user);
+            }
+          }).catch((err) => {
+            console.warn('getRedirectResult warning:', err);
+          });
+        }
+
+        auth.onAuthStateChanged(async (user) => {
+          isAuthLoading = false;
+          try {
+            if (user) {
+              console.log('onAuthStateChanged: Người dùng đã xác thực thành công:', user.email, user.uid);
+
+              // 1. XÓA SẠCH TOÀN BỘ DỮ LIỆU CŨ/MẪU TRÊN DOM TRƯỚC KHI NẠP DỮ LIỆU MỚI
+              clearUserDataUI(true);
+
+              // 2. Cập nhật trạng thái đăng nhập trên navbar
+              await updateUIForLoggedInUser(user);
+
+              // 3. ÉP BUỘC FIRESTORE LÀM NGUỒN DỮ LIỆU DUY NHẤT (Single Source of Truth)
+              // Kích hoạt lắng nghe onSnapshot real-time trên users/{user.uid}
+              attachFirestoreRealtimeListener(user);
+
+              // 4. Tự động lưu hồ sơ nếu người dùng đã nhập thông tin trước khi đăng nhập
+              if (typeof checkAndApplyPendingProfileSave === 'function') {
+                await checkAndApplyPendingProfileSave(user);
+              }
+            } else {
+              console.log('onAuthStateChanged: Không có phiên Firebase (user = null)');
+              // Hủy lắng nghe Real-time onSnapshot cũ (nếu có) để tránh rò rỉ dữ liệu giữa các tài khoản
+              if (typeof _firestoreUnsubscribe === 'function') {
+                try { _firestoreUnsubscribe(); } catch (e) { }
+                _firestoreUnsubscribe = null;
+              }
+              // Khi đăng xuất (signOut): Gọi hàm clearUserDataUI(true) để xóa sạch dữ liệu cá nhân trên DOM lập tức
+              clearUserDataUI(true);
               updateUIForLoggedOutUser();
             }
-          } else {
-            updateUIForLoggedOutUser();
+          } catch (generalAuthErr) {
+            console.error('onAuthStateChanged general error:', generalAuthErr);
           }
-        }
-      });
-    } else {
-      // Fallback nếu auth chưa sẵn sàng
-      const savedUser = localStorage.getItem('loggedInUser');
-      if (savedUser) {
-        try {
-          updateUIForLoggedInUser(JSON.parse(savedUser));
-        } catch (e) {
-          updateUIForLoggedOutUser();
-        }
+        });
       } else {
+        // Fallback an toàn nếu Firebase Auth chưa sẵn sàng
+        isAuthLoading = false;
+        console.log('Firebase Auth chưa sẵn sàng');
+        clearUserDataUI(true);
         updateUIForLoggedOutUser();
       }
     }
+    window.initAuthListener = initAuthListener;
 
   </script>
 </body>
