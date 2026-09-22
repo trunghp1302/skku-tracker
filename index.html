@@ -2487,8 +2487,9 @@
       appId: "1:434901953464:web:dc0f96ea2846693d0bfd4d",
       measurementId: "G-LTYSJFFLQ6"
     };
-    // Khai báo an toàn API Key & cấu hình Firebase
-    const GEMINI_API_KEY = "AIzaSyAaPXZi_2vkjN-B1ZxKhApWvFWzP1o_mjY";
+    // Fix BUG #9: Khóa API cũ đã bị lộ trong source HTML nên PHẢI revoke và tạo khóa mới tại Google AI Studio (https://aistudio.google.com/).
+    // GIẢI PHÁP LÂU DÀI: Cần proxy các request AI qua Cloud Function / Backend server có xác thực, KHÔNG để API key ở phía client.
+    const GEMINI_API_KEY = window.__GEMINI_KEY__ || "";
 
     let auth = null;
     let db = null;
@@ -2499,6 +2500,15 @@
         }
         auth = firebase.auth();
         db = firebase.firestore();
+
+        // Fix BUG #4: Bật offline persistence ngay sau db = firebase.firestore();
+        try {
+          db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
+            if (err.code === 'failed-precondition') console.warn('Persistence: nhiều tab đang mở, bỏ qua.');
+            else if (err.code === 'unimplemented') console.warn('Persistence: trình duyệt không hỗ trợ.');
+            else console.warn('Persistence:', err);
+          });
+        } catch (e) { console.warn('enablePersistence catch:', e); }
 
         // Thiết lập Auth Persistence sang LOCAL ngay khi khởi tạo
         if (auth && typeof auth.setPersistence === 'function') {
@@ -2523,7 +2533,8 @@
     // --- Firebase Auth & Firestore Helpers (tương thích cả cú pháp Modular v9 lẫn Compat v8) ---
     const browserLocalPersistence = (typeof firebase !== 'undefined' && firebase.auth && firebase.auth.Auth && firebase.auth.Auth.Persistence) ? firebase.auth.Auth.Persistence.LOCAL : 'local';
 
-    const doc = (firestoreDb, col, id) => (firestoreDb && typeof firestoreDb.collection === 'function') ? firestoreDb.collection(col).doc(id) : null;
+    // Fix BUG #7: Đổi tên doc thành getDocRef để tránh nhầm với document và tránh bị thư viện khác ghi đè
+    const getDocRef = (firestoreDb, col, id) => (firestoreDb && typeof firestoreDb.collection === 'function') ? firestoreDb.collection(col).doc(id) : null;
 
     const setDoc = async (docRef, data, options = {}) => {
       if (docRef && typeof docRef.set === 'function') {
@@ -2560,7 +2571,8 @@
       return null;
     };
 
-    window.doc = doc;
+    // Fix BUG #7: Thay window.doc = doc bằng window.getDocRef = getDocRef
+    window.getDocRef = getDocRef;
     window.setDoc = setDoc;
     window.getDoc = getDoc;
     window.setPersistence = setPersistence;
@@ -2568,8 +2580,107 @@
     window.getRedirectResult = getRedirectResult;
     window.browserLocalPersistence = browserLocalPersistence;
 
+    // Fix BUG #8: Kiểm tra môi trường hoạt động và hiển thị cảnh báo banner cố định ở đầu trang
+    function checkEnvironment() {
+      const warnings = [];
+      const lang = (window.appData && window.appData.lang) || 'vi';
+      const dict = (typeof i18nDict !== 'undefined' && i18nDict[lang]) || (typeof i18nDict !== 'undefined' && i18nDict['vi']) || {};
+
+      // 1. location.protocol === 'file:'
+      if (window.location && window.location.protocol === 'file:') {
+        warnings.push({
+          type: 'amber',
+          icon: 'fa-triangle-exclamation',
+          text: dict.envWarningFileProtocol || "Bạn đang mở file trực tiếp (file://) — Firebase Auth không hoạt động ở chế độ này nên dữ liệu sẽ không đồng bộ được. Hãy chạy qua localhost (python3 -m http.server / Live Server) hoặc deploy lên Firebase Hosting / GitHub Pages."
+        });
+      }
+
+      // 2. navigator.cookieEnabled === false
+      if (navigator.cookieEnabled === false) {
+        warnings.push({
+          type: 'rose',
+          icon: 'fa-cookie-bite',
+          text: dict.envWarningCookiesBlocked || "Trình duyệt đang chặn cookie. Hãy tắt chặn cookie cho trang này (Cốc Cốc: Shield / Quyền riêng tư) để đăng nhập được."
+        });
+      }
+
+      // 3. Test ghi và đọc localStorage trong try/catch; nếu thất bại
+      let storageOk = true;
+      try {
+        const testKey = '__eesl_env_test__';
+        localStorage.setItem(testKey, '1');
+        const testVal = localStorage.getItem(testKey);
+        localStorage.removeItem(testKey);
+        if (testVal !== '1') storageOk = false;
+      } catch (e) {
+        storageOk = false;
+      }
+
+      if (!storageOk) {
+        warnings.push({
+          type: 'rose',
+          icon: 'fa-database',
+          text: dict.envWarningStorageFailed || "Không thể lưu dữ liệu cục bộ trên trình duyệt này (có thể do chế độ ẩn danh). Dữ liệu sẽ mất khi đóng tab."
+        });
+      }
+
+      if (warnings.length === 0) return;
+
+      let container = document.getElementById('env-warning-banner-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'env-warning-banner-container';
+        container.className = 'fixed top-3 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl space-y-2.5 pointer-events-none transition-all duration-300';
+        document.body.prepend(container);
+      } else {
+        container.innerHTML = '';
+      }
+
+      warnings.forEach(warn => {
+        const banner = document.createElement('div');
+        const bgBorder = warn.type === 'amber'
+          ? 'bg-amber-500/95 dark:bg-amber-600/95 border-amber-300 dark:border-amber-400 text-amber-950 dark:text-amber-50 shadow-amber-500/20'
+          : 'bg-rose-500/95 dark:bg-rose-600/95 border-rose-300 dark:border-rose-400 text-rose-950 dark:text-white shadow-rose-500/20';
+
+        banner.className = `env-warning-banner pointer-events-auto flex items-start justify-between gap-3 p-3.5 sm:p-4 rounded-xl border backdrop-blur-md shadow-lg ${bgBorder} transition duration-200`;
+        banner.innerHTML = `
+          <div class="flex items-start gap-3 flex-1 min-w-0">
+            <i class="fa-solid ${warn.icon} text-lg sm:text-xl flex-shrink-0 mt-0.5"></i>
+            <p class="text-xs sm:text-sm font-semibold leading-relaxed tracking-wide">${warn.text}</p>
+          </div>
+          <button type="button" aria-label="Close" class="flex-shrink-0 text-current opacity-70 hover:opacity-100 hover:scale-110 transition p-1 rounded-lg focus:outline-none" onclick="this.closest('.env-warning-banner')?.remove()">
+            <i class="fa-solid fa-xmark text-base sm:text-lg"></i>
+          </button>
+        `;
+        container.appendChild(banner);
+      });
+    }
+    window.checkEnvironment = checkEnvironment;
+
     // --- 1. LOCALSTORAGE KEY & APP STATE ---
     const STORAGE_KEY = 'EESL_ACADEMIC_TRACKER_V8';
+
+    // Fix BUG #3b: Hàm getClientId sinh và lưu bền clientId trong localStorage (an toàn trong try/catch)
+    function getClientId() {
+      try {
+        const stored = localStorage.getItem('EESL_CLIENT_ID');
+        if (stored) return stored;
+      } catch (e) {
+        console.warn('getClientId: Không thể đọc localStorage:', e);
+      }
+
+      const newId = 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
+      try {
+        localStorage.setItem('EESL_CLIENT_ID', newId);
+      } catch (e) {
+        console.warn('getClientId: Không thể ghi localStorage:', e);
+      }
+      return newId;
+    }
+
+    const clientId = getClientId();
+    window.clientId = clientId;
+    console.log('clientId:', clientId);
 
     const DEFAULT_FIXED_SCHEDULE = {
       1: { name: "Academic Writing", time: "Online", room: "Video Course" },
@@ -2937,7 +3048,22 @@
         noDeadlineSet: "Không có hạn",
         markPending: "Đánh dấu chưa xong",
         markDone: "Đánh dấu hoàn thành",
-        footerText: "© 2026 Academic & Research Tracker. Designed for Researchers & Graduate Students."
+        footerText: "© 2026 Academic & Research Tracker. Designed for Researchers & Graduate Students.",
+        // Fix BUG #4: Thông báo lỗi Cloud sync
+        cloudSaveError: "⚠️ Chưa lưu được lên Cloud ({error}). Dữ liệu đã được giữ tạm trên máy này.",
+        cloudPermissionDenied: "Kiểm tra Firestore Security Rules trong Firebase Console.",
+        // Fix BUG #6: Hộp thoại gộp dữ liệu local chưa đồng bộ
+        confirmMergeLocalTitle: "Phát hiện dữ liệu chưa đồng bộ",
+        confirmMergeLocalMessage: "Máy này có dữ liệu chưa được đồng bộ lên tài khoản. Bạn muốn gộp dữ liệu đó vào tài khoản, hay chỉ dùng dữ liệu đang có trên Cloud?",
+        btnMergeToAccount: "Gộp vào tài khoản",
+        btnUseCloudOnly: "Chỉ dùng dữ liệu Cloud",
+        toastMergedSuccess: "✅ Đã gộp dữ liệu thành công!",
+        // Fix BUG #8: Cảnh báo môi trường
+        envWarningFileProtocol: "Bạn đang mở file trực tiếp (file://) — Firebase Auth không hoạt động ở chế độ này nên dữ liệu sẽ không đồng bộ được. Hãy chạy qua localhost (python3 -m http.server / Live Server) hoặc deploy lên Firebase Hosting / GitHub Pages.",
+        envWarningCookiesBlocked: "Trình duyệt đang chặn cookie. Hãy tắt chặn cookie cho trang này (Cốc Cốc: Shield / Quyền riêng tư) để đăng nhập được.",
+        envWarningStorageFailed: "Không thể lưu dữ liệu cục bộ trên trình duyệt này (có thể do chế độ ẩn danh). Dữ liệu sẽ mất khi đóng tab.",
+        // Fix BUG #9: Thông báo khóa API Gemini
+        aiKeyMissing: "Tính năng AI chưa được cấu hình khóa API"
       },
       en: {
         kstClock: "Korea Time (KST)",
@@ -3297,7 +3423,22 @@
         noDeadlineSet: "No due date",
         markPending: "Mark pending",
         markDone: "Mark done",
-        footerText: "© 2026 Academic & Research Tracker. Designed for Researchers & Graduate Students."
+        footerText: "© 2026 Academic & Research Tracker. Designed for Researchers & Graduate Students.",
+        // Fix BUG #4: Thông báo lỗi Cloud sync
+        cloudSaveError: "⚠️ Could not save to Cloud ({error}). Data is temporarily saved on this device.",
+        cloudPermissionDenied: "Check Firestore Security Rules in the Firebase Console.",
+        // Fix BUG #6: Hộp thoại gộp dữ liệu local chưa đồng bộ
+        confirmMergeLocalTitle: "Unsynced Local Data Detected",
+        confirmMergeLocalMessage: "This device has data that has not been synced to your account. Do you want to merge it into your account or only use the data on Cloud?",
+        btnMergeToAccount: "Merge into Account",
+        btnUseCloudOnly: "Use Cloud Data Only",
+        toastMergedSuccess: "✅ Data merged successfully!",
+        // Fix BUG #8: Environment warnings
+        envWarningFileProtocol: "You are opening the file directly (file://) — Firebase Auth does not work in this mode, so data cannot be synchronized. Please run via localhost (python3 -m http.server / Live Server) or deploy to Firebase Hosting / GitHub Pages.",
+        envWarningCookiesBlocked: "Browser is blocking cookies. Please disable cookie blocking for this site (Coc Coc: Shield / Privacy settings) to log in.",
+        envWarningStorageFailed: "Unable to save local data on this browser (possibly due to incognito mode). Data will be lost when closing the tab.",
+        // Fix BUG #9: Missing Gemini API key
+        aiKeyMissing: "AI features have not been configured with an API key"
       },
       ko: {
         kstClock: "한국 표준시 (KST)",
@@ -3657,7 +3798,22 @@
         noDeadlineSet: "기한 없음",
         markPending: "미완료로 표시",
         markDone: "완료로 표시",
-        footerText: "© 2026 Academic & Research Tracker. Designed for Researchers & Graduate Students."
+        footerText: "© 2026 Academic & Research Tracker. Designed for Researchers & Graduate Students.",
+        // Fix BUG #4: Thông báo lỗi Cloud sync
+        cloudSaveError: "⚠️ 클라우드에 저장하지 못했습니다 ({error}). 데이터는 이 기기에 임시 보관되었습니다.",
+        cloudPermissionDenied: "Firebase Console에서 Firestore Security Rules를 확인하세요.",
+        // Fix BUG #6: Hộp thoại gộp dữ liệu local chưa đồng bộ
+        confirmMergeLocalTitle: "동기화되지 않은 로컬 데이터 발견",
+        confirmMergeLocalMessage: "이 기기에 계정에 동기화되지 않은 데이터가 있습니다. 해당 데이터를 계정에 병합하시겠습니까, 아니면 클라우드의 데이터만 사용하시겠습니까?",
+        btnMergeToAccount: "계정에 병합",
+        btnUseCloudOnly: "클라우드 데이터만 사용",
+        toastMergedSuccess: "✅ 데이터가 성공적으로 병합되었습니다!",
+        // Fix BUG #8: 환경 경고
+        envWarningFileProtocol: "파일을 직접 열고 있습니다 (file://) — 이 모드에서는 Firebase Auth가 작동하지 않아 데이터가 동기화되지 않습니다. localhost (python3 -m http.server / Live Server)를 통해 실행하거나 Firebase Hosting / GitHub Pages에 배포하세요.",
+        envWarningCookiesBlocked: "브라우저가 쿠키를 차단하고 있습니다. 로그인하려면 이 사이트의 쿠키 차단을 해제하세요 (Cốc Cốc: Shield / 개인정보 보호 설정).",
+        envWarningStorageFailed: "이 브라우저에서 로컬 데이터를 저장할 수 없습니다 (시크릿 모드일 수 있음). 탭을 닫으면 데이터가 손실됩니다.",
+        // Fix BUG #9: Gemini API 키 누락 메시지
+        aiKeyMissing: "AI 기능에 API 키가 구성되지 않았습니다"
       }
     };
 
@@ -3684,7 +3840,7 @@
       return months;
     }
 
-    // --- SINGLE SOURCE OF TRUTH: KHỞI TẠO STATE TRẮNG (KHÔNG DÙNG LOCALSTORAGE CHO DỮ LIỆU) ---
+    // Fix BUG #1: KHỞI TẠO STATE TRẮNG MẶC ĐỊNH ---
     function getCleanAppData() {
       return {
         lang: 'vi',
@@ -3718,8 +3874,228 @@
       };
     }
 
+    // Fix BUG #1: Hàm deepMerge dùng chung, merge sâu các object lồng nhau (array thì ghi đè)
+    function deepMerge(base, override) {
+      if (!override || typeof override !== 'object') return base;
+      if (!base || typeof base !== 'object') return override;
+      const result = Array.isArray(base) ? [...base] : Object.assign({}, base);
+      for (const key of Object.keys(override)) {
+        const baseVal = result[key];
+        const overVal = override[key];
+        if (
+          baseVal &&
+          typeof baseVal === 'object' &&
+          !Array.isArray(baseVal) &&
+          overVal &&
+          typeof overVal === 'object' &&
+          !Array.isArray(overVal)
+        ) {
+          result[key] = deepMerge(baseVal, overVal);
+        } else {
+          result[key] = overVal;
+        }
+      }
+      return result;
+    }
+
+    // Fix BUG #1: Hàm lưu appData vào localStorage
+    function saveLocal() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+      } catch (err) {
+        console.warn('saveLocal error:', err);
+      }
+    }
+
+    // Fix BUG #1: Hàm đọc appData từ localStorage và bù các field mới còn thiếu
+    function loadLocal() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const duLieuDaDoc = JSON.parse(raw);
+        if (!duLieuDaDoc || typeof duLieuDaDoc !== 'object') return null;
+        return deepMerge(getCleanAppData(), duLieuDaDoc);
+      } catch (err) {
+        console.warn('loadLocal error:', err);
+        return null;
+      }
+    }
+
+    // Fix BUG #3c: Hàm mergeById gộp hai mảng, khử trùng lặp theo field id (hoặc JSON.stringify), hỗ trợ xóa mềm (tombstone)
+    function mergeById(localArr, remoteArr) {
+      const genId = () => Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+      const local = (Array.isArray(localArr) ? localArr : []).map(item => {
+        if (item && typeof item === 'object' && !item.id) item.id = genId();
+        return item;
+      });
+      const remote = (Array.isArray(remoteArr) ? remoteArr : []).map(item => {
+        if (item && typeof item === 'object' && !item.id) item.id = genId();
+        return item;
+      });
+      if (!local.length) return [...remote];
+      if (!remote.length) return [...local];
+
+      const map = new Map();
+      const getKey = (item) => {
+        if (item && typeof item === 'object' && item.id != null) {
+          return 'id:' + String(item.id);
+        }
+        try {
+          return 'json:' + JSON.stringify(item);
+        } catch (e) {
+          return 'ref:' + String(item);
+        }
+      };
+
+      const getTime = (val) => {
+        if (!val) return 0;
+        if (typeof val === 'number') return val;
+        if (typeof val.toMillis === 'function') return val.toMillis();
+        const parsed = new Date(val).getTime();
+        return isNaN(parsed) ? 0 : parsed;
+      };
+
+      const getItemTime = (item) => {
+        if (!item || typeof item !== 'object') return 0;
+        return getTime(item.updatedAt) || getTime(item.modifiedAt) || getTime(item.createdAt);
+      };
+
+      const getDeletedTime = (item) => {
+        if (!item || typeof item !== 'object') return 0;
+        return getTime(item.deletedAt) || getItemTime(item);
+      };
+
+      for (const item of local) {
+        if (item == null) continue;
+        map.set(getKey(item), item);
+      }
+
+      for (const rItem of remote) {
+        if (rItem == null) continue;
+        const key = getKey(rItem);
+        if (!map.has(key)) {
+          map.set(key, rItem);
+        } else {
+          const lItem = map.get(key);
+          const lDeleted = !!lItem.deleted;
+          const rDeleted = !!rItem.deleted;
+          const lTime = getItemTime(lItem);
+          const rTime = getItemTime(rItem);
+          const lDelTime = getDeletedTime(lItem);
+          const rDelTime = getDeletedTime(rItem);
+
+          if (lDeleted && rDeleted) {
+            map.set(key, rTime >= lTime ? rItem : lItem);
+          } else if (lDeleted && !rDeleted) {
+            // lItem bị xóa, rItem còn: chỉ giữ rItem nếu rItem cập nhật sau khi lItem bị xóa
+            if (rTime > lDelTime) {
+              map.set(key, rItem);
+            } else {
+              map.set(key, lItem);
+            }
+          } else if (!lDeleted && rDeleted) {
+            // rItem bị xóa, lItem còn: chỉ giữ lItem nếu lItem cập nhật sau khi rItem bị xóa
+            if (lTime > rDelTime) {
+              map.set(key, lItem);
+            } else {
+              map.set(key, rItem);
+            }
+          } else {
+            // Cả hai chưa bị xóa: ưu tiên bản có updatedAt lớn hơn (nếu bằng nhau ưu tiên remote)
+            map.set(key, rTime >= lTime ? rItem : lItem);
+          }
+        }
+      }
+
+      return Array.from(map.values());
+    }
+
+    // Fix BUG #3c: Hàm dọn rác các phần tử xóa mềm (tombstones) cũ hơn 30 ngày
+    function purgeOldTombstones() {
+      if (!appData) return;
+      const now = Date.now();
+      const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+      const isOldTombstone = (item) => {
+        if (!item || !item.deleted) return false;
+        const delTime = item.deletedAt || item.updatedAt || 0;
+        const timeMs = typeof delTime === 'number' ? delTime : new Date(delTime).getTime();
+        return (now - timeMs) > THIRTY_DAYS;
+      };
+
+      if (Array.isArray(appData.quickDeadlines)) {
+        appData.quickDeadlines = appData.quickDeadlines.filter(x => !isOldTombstone(x));
+      }
+      if (Array.isArray(appData.personalTodos)) {
+        appData.personalTodos = appData.personalTodos.filter(x => !isOldTombstone(x));
+      }
+      if (Array.isArray(appData.researchProjects)) {
+        appData.researchProjects = appData.researchProjects.filter(x => !isOldTombstone(x));
+        // Fix BUG #3c: Dọn rác các bài báo và nhật ký xóa mềm trong từng đề tài
+        appData.researchProjects.forEach(p => {
+          if (p && Array.isArray(p.papers)) p.papers = p.papers.filter(x => !isOldTombstone(x));
+          if (p && Array.isArray(p.logs)) p.logs = p.logs.filter(x => !isOldTombstone(x));
+        });
+      }
+      if (Array.isArray(appData.globalCourses)) {
+        appData.globalCourses = appData.globalCourses.filter(x => !isOldTombstone(x));
+      }
+      if (Array.isArray(appData.courses)) {
+        appData.courses = appData.courses.filter(x => !isOldTombstone(x));
+      }
+
+      if (appData.months && typeof appData.months === 'object') {
+        for (const key of Object.keys(appData.months)) {
+          const m = appData.months[key];
+          if (isOldTombstone(m)) {
+            delete appData.months[key];
+            continue;
+          }
+          if (m && Array.isArray(m.deadlines)) {
+            m.deadlines = m.deadlines.filter(x => !isOldTombstone(x));
+          }
+          if (m && Array.isArray(m.notes)) {
+            m.notes = m.notes.filter(x => !isOldTombstone(x));
+          }
+        }
+      }
+
+      if (appData.weekTasks && typeof appData.weekTasks === 'object') {
+        for (const key of Object.keys(appData.weekTasks)) {
+          if (Array.isArray(appData.weekTasks[key])) {
+            appData.weekTasks[key] = appData.weekTasks[key].filter(x => !isOldTombstone(x));
+          }
+        }
+      }
+
+      // Fix BUG #3c: Dọn rác customClasses trong dayData
+      if (appData.dayData && typeof appData.dayData === 'object') {
+        for (const key of Object.keys(appData.dayData)) {
+          const d = appData.dayData[key];
+          if (isOldTombstone(d)) {
+            delete appData.dayData[key];
+            continue;
+          }
+          if (d && Array.isArray(d.customClasses)) {
+            d.customClasses = d.customClasses.filter(x => !isOldTombstone(x));
+          }
+        }
+      }
+    }
+
     let isAuthLoading = true;
-    let appData = getCleanAppData();
+    // Fix BUG #2: Biến cờ theo dõi lần gọi onAuthStateChanged đầu tiên
+    let hasResolvedInitialAuth = false;
+
+    // Fix BUG #3: Biến cờ và bộ đếm hoãn apply snapshot khi user đang gõ
+    let _isUserEditing = false;
+    let _editIdleTimer = null;
+    let _pendingRemoteSnapshot = null;
+
+    // Fix BUG #3: Biến cờ chống vòng lặp ghi ↔ snapshot
+    let _isApplyingRemote = false;
+
+    // Fix BUG #1: Khởi tạo appData từ localStorage nếu có, nếu không thì dùng clean state
+    let appData = loadLocal() || getCleanAppData();
 
     let activeWeekKeyForModal = null;
     let expandedDayKey = null;
@@ -3730,6 +4106,12 @@
     let _firestoreSaveTimer = null;
     let _isSavingToFirestore = false;
     let _firestoreUnsubscribe = null; // Hàm hủy lắng nghe onSnapshot real-time hiện tại (nếu có)
+
+    // Fix BUG #4: Hàng đợi thử lại với backoff
+    let _pendingCloudSync = false;
+    let _retryAttempt = 0;
+    let _retryTimer = null;
+    const _retryDelays = [1000, 3000, 10000, 30000];
 
     function updateCloudSyncIndicator(status) {
       const badge = document.getElementById('cloud-sync-status');
@@ -3776,6 +4158,9 @@
     }
 
     function saveData() {
+      // Fix BUG #3: Chống vòng lặp ghi ↔ snapshot: nếu đang nạp remote thì return sớm
+      if (_isApplyingRemote) return;
+
       // Quét dữ liệu trực tiếp từ DOM nếu bảng nhật ký đang hiển thị
       if (typeof scanResearchLogsFromDOM === 'function') {
         const scanned = scanResearchLogsFromDOM();
@@ -3784,7 +4169,13 @@
         }
       }
 
-      // LƯU DUY NHẤT LÊN CLOUD FIRESTORE (Single Source of Truth, không lưu dữ liệu vào localStorage)
+      // Fix BUG #3: Cập nhật mốc thời gian local trước khi lưu
+      appData.updatedAtLocal = Date.now();
+
+      // Fix BUG #1: Gọi saveLocal() đồng bộ ngay sau bước quét DOM và TRƯỚC toàn bộ logic Firestore
+      saveLocal();
+
+      // Fix BUG #1: Lưu lên Cloud Firestore (đồng bộ song song với localStorage)
       if (auth && auth.currentUser && db) {
         const uid = auth.currentUser.uid;
         updateCloudSyncIndicator('saving');
@@ -3795,16 +4186,46 @@
             _isSavingToFirestore = true;
             const cleanData = JSON.parse(JSON.stringify(appData));
 
-            const docRef = doc(db, "users", uid);
+            // Fix BUG #7: getDocRef thay vì doc
+            const docRef = getDocRef(db, "users", uid);
+            // Fix BUG #3: Thêm lastWriteBy: clientId để nhận diện snapshot từ chính client này
             await setDoc(docRef, {
               app_data: cleanData,
+              lastWriteBy: clientId,
               updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
 
+            // Fix BUG #4: Khi ghi thành công: _pendingCloudSync = false; _retryAttempt = 0; và badge 'saved'
+            _pendingCloudSync = false;
+            _retryAttempt = 0;
+            clearTimeout(_retryTimer);
             updateCloudSyncIndicator('saved');
           } catch (err) {
             console.error('Lỗi khi lưu lên Cloud Firestore:', err);
+            // Fix BUG #4: Xử lý khi ghi lỗi, thông báo người dùng và lên lịch retry với backoff
+            _pendingCloudSync = true;
             updateCloudSyncIndicator('error');
+
+            const lang = appData.lang || 'vi';
+            const dict = i18nDict[lang] || i18nDict['vi'];
+            const errDetail = err.code || err.message || '';
+            let errorToastMsg = (dict.cloudSaveError || '⚠️ Chưa lưu được lên Cloud ({error}). Dữ liệu đã được giữ tạm trên máy này.').replace('{error}', errDetail);
+            if (err.code === 'permission-denied') {
+              errorToastMsg += ' ' + (dict.cloudPermissionDenied || 'Kiểm tra Firestore Security Rules trong Firebase Console.');
+            }
+            showSuccessToast(errorToastMsg);
+
+            clearTimeout(_retryTimer);
+            if (_retryAttempt < _retryDelays.length) {
+              const delay = _retryDelays[_retryAttempt];
+              _retryAttempt++;
+              console.log(`Fix BUG #4: Cloud sync retry attempt ${_retryAttempt} in ${delay}ms...`);
+              _retryTimer = setTimeout(() => {
+                saveData();
+              }, delay);
+            } else {
+              console.warn('Fix BUG #4: Cloud sync đã thử lại tối đa 4 lần, dừng retry và giữ badge error.');
+            }
           } finally {
             _isSavingToFirestore = false;
           }
@@ -3813,6 +4234,40 @@
         updateCloudSyncIndicator('offline');
       }
     }
+
+    // Fix BUG #4: Tự đẩy lên cloud khi có mạng lại hoặc khi đăng nhập
+    function flushPendingToCloud() {
+      if (_pendingCloudSync && auth && auth.currentUser) {
+        console.log('Fix BUG #4: flushPendingToCloud - Đang đẩy dữ liệu chờ lên Cloud...');
+        saveData();
+      }
+    }
+
+    // Fix BUG #1: Thêm flush trước khi rời trang để tránh mất write do debounce 300ms
+    window.addEventListener('beforeunload', () => { try { saveLocal(); } catch (e) { } });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') { try { saveLocal(); } catch (e) { } }
+    });
+
+    // Fix BUG #4: Gắn listener online/offline
+    window.addEventListener('online', flushPendingToCloud);
+    window.addEventListener('offline', () => updateCloudSyncIndicator('offline'));
+
+    // Fix BUG #3: Gắn listener toàn cục để hoãn apply snapshot khi user đang gõ
+    function handleUserActivity() {
+      _isUserEditing = true;
+      clearTimeout(_editIdleTimer);
+      _editIdleTimer = setTimeout(() => {
+        _isUserEditing = false;
+        if (_pendingRemoteSnapshot) {
+          const { user, remote } = _pendingRemoteSnapshot;
+          _pendingRemoteSnapshot = null;
+          applyFirestoreDataToApp(user, remote);
+        }
+      }, 2000);
+    }
+    document.addEventListener('input', handleUserActivity, true);
+    document.addEventListener('focusin', handleUserActivity, true);
 
     // ====================================================
     // --- MODERN CUSTOM PROMPT & CONFIRM DIALOG SYSTEM ---
@@ -4155,18 +4610,21 @@
           appData.quickDeadlines[idx].datetime = datetime;
           appData.quickDeadlines[idx].highlight = highlight;
           appData.quickDeadlines[idx].color = color;
-          appData.quickDeadlines[idx].updatedAt = new Date().toISOString();
+          // Fix BUG #3c: Gán updatedAt = Date.now()
+          appData.quickDeadlines[idx].updatedAt = Date.now();
         }
         showSuccessToast('✨ Đã cập nhật deadline: "' + title + '"');
       } else {
+        // Fix BUG #3c: Đảm bảo có id và updatedAt = Date.now()
         appData.quickDeadlines.push({
-          id: 'qdl_' + Date.now(),
+          id: 'qdl_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
           title,
           datetime,
           highlight,
           color,
           done: false,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          updatedAt: Date.now()
         });
         showSuccessToast('🔥 Đã thêm deadline: "' + title + '"');
       }
@@ -4193,7 +4651,12 @@
       });
       if (!confirmed) return;
 
-      appData.quickDeadlines = appData.quickDeadlines.filter(item => item.id !== id);
+      // Fix BUG #3c: Xóa mềm (soft delete / tombstone)
+      if (d) {
+        d.deleted = true;
+        d.deletedAt = Date.now();
+        d.updatedAt = Date.now();
+      }
       saveData();
       renderQuickDeadlines();
       showSuccessToast('🗑️ Đã xóa deadline');
@@ -4245,7 +4708,8 @@
 
       const lang = appData.lang || 'vi';
       const dict = i18nDict[lang] || i18nDict['vi'];
-      const items = appData.quickDeadlines;
+      // Fix BUG #3c: Bỏ qua phần tử có deleted === true
+      const items = appData.quickDeadlines.filter(d => !d.deleted);
 
       if (items.length === 0) {
         container.innerHTML = `
@@ -4380,7 +4844,8 @@
         const lang = appData.lang || 'vi';
         const dict = i18nDict[lang] || i18nDict['vi'];
         appData.quickDeadlines.forEach(d => {
-          if (d.done) return;
+          // Fix BUG #3c: Bỏ qua deadline đã xong hoặc đã bị xóa mềm
+          if (d.done || d.deleted) return;
           const el = document.querySelector(`[data-deadline-id="${d.id}"]`);
           if (!el) return;
           const { text, urgent, overdue } = getCountdownText(d.datetime);
@@ -4424,12 +4889,14 @@
       if (!text) { if (input) input.focus(); return; }
 
       if (!appData.personalTodos) appData.personalTodos = [];
+      // Fix BUG #3c: Đảm bảo có id và updatedAt = Date.now()
       appData.personalTodos.unshift({
-        id: 'pt_' + Date.now(),
+        id: 'pt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
         text,
         tag: tagSelect ? tagSelect.value : 'personal',
         done: false,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        updatedAt: Date.now()
       });
       saveData();
       if (input) input.value = '';
@@ -4440,7 +4907,13 @@
     function togglePersonalTodoDone(id) {
       if (!appData.personalTodos) return;
       const item = appData.personalTodos.find(t => t.id === id);
-      if (item) { item.done = !item.done; saveData(); renderPersonalTodos(); }
+      if (item) {
+        item.done = !item.done;
+        // Fix BUG #3c: Cập nhật updatedAt
+        item.updatedAt = Date.now();
+        saveData();
+        renderPersonalTodos();
+      }
     }
 
     async function deletePersonalTodo(id) {
@@ -4453,7 +4926,13 @@
         isDestructive: true
       });
       if (!confirmed) return;
-      appData.personalTodos = appData.personalTodos.filter(t => t.id !== id);
+
+      // Fix BUG #3c: Xóa mềm (soft delete / tombstone)
+      if (t) {
+        t.deleted = true;
+        t.deletedAt = Date.now();
+        t.updatedAt = Date.now();
+      }
       saveData();
       renderPersonalTodos();
     }
@@ -4475,7 +4954,8 @@
         personal: { label: dict.tagPersonal || '🌟 Cá nhân', emoji: '🌟' }
       };
 
-      const all = appData.personalTodos;
+      // Fix BUG #3c: Bỏ qua phần tử có deleted === true khi render và đếm
+      const all = appData.personalTodos.filter(t => !t.deleted);
       const filtered = _personalTodoFilter === 'all' ? all : all.filter(t => t.tag === _personalTodoFilter);
 
       // Update badge count (total undone)
@@ -4565,7 +5045,9 @@
         startDate: "2026-09-01",
         endDate: "2026-12-20",
         weeks: 16,
-        isDefault: true
+        isDefault: true,
+        // Fix BUG #3c: Đảm bảo có id và updatedAt = Date.now()
+        updatedAt: Date.now()
       },
       {
         id: "course_default_2",
@@ -4579,7 +5061,9 @@
         startDate: "2026-09-01",
         endDate: "2026-12-20",
         weeks: 16,
-        isDefault: true
+        isDefault: true,
+        // Fix BUG #3c: Đảm bảo có id và updatedAt = Date.now()
+        updatedAt: Date.now()
       },
       {
         id: "course_default_3",
@@ -4593,7 +5077,9 @@
         startDate: "2026-09-01",
         endDate: "2026-12-20",
         weeks: 16,
-        isDefault: true
+        isDefault: true,
+        // Fix BUG #3c: Đảm bảo có id và updatedAt = Date.now()
+        updatedAt: Date.now()
       },
       {
         id: "course_default_4",
@@ -4607,7 +5093,9 @@
         startDate: "2026-09-01",
         endDate: "2026-12-20",
         weeks: 16,
-        isDefault: true
+        isDefault: true,
+        // Fix BUG #3c: Đảm bảo có id và updatedAt = Date.now()
+        updatedAt: Date.now()
       }
     ];
 
@@ -4777,74 +5265,200 @@
     function applyFirestoreDataToApp(user, remote) {
       if (!remote) return;
 
-      // Ép buộc Firestore làm nguồn dữ liệu duy nhất (Single Source of Truth)
-      // Khởi tạo appData hoàn toàn mới từ remote.app_data (không kế thừa dữ liệu mẫu/cũ)
-      appData = getCleanAppData();
-      if (remote.app_data) {
-        appData = Object.assign(appData, remote.app_data);
-      }
+      // Fix BUG #3b: Bỏ hoàn toàn so sánh thời gian remoteMs < updatedAtLocal để chống clock skew gây mất dữ liệu
 
-      // Đồng bộ profile từ Firestore (ưu tiên root profile, sau đó app_data.profile)
-      const firestoreProfile = remote.profile || (remote.app_data && remote.app_data.profile) || {};
-      appData.profile = Object.assign({
-        avatar: '',
-        name: '',
-        phone: '',
-        pemail: '',
-        semail: user.email || '',
-        dob: '',
-        passport: '',
-        arc: '',
-        bankName: '',
-        bankAccount: ''
-      }, firestoreProfile);
+      // Fix BUG #3: Bật cờ chống vòng lặp ghi ↔ snapshot
+      _isApplyingRemote = true;
+      try {
+        const remoteData = remote.app_data || {};
+        const localData = appData || getCleanAppData();
 
-      if (!appData.profile) appData.profile = {};
-      if (!appData.researchProjects) appData.researchProjects = [];
-      if (!appData.quickDeadlines) appData.quickDeadlines = [];
-      if (!appData.personalTodos) appData.personalTodos = [];
-      if (!appData.globalCourses) appData.globalCourses = [];
-      if (!appData.months) appData.months = {};
+        // Fix BUG #3c: Áp dụng mergeById cho các mảng quickDeadlines, personalTodos, researchProjects, globalCourses, courses
+        const mergedQuickDeadlines = mergeById(localData.quickDeadlines, remoteData.quickDeadlines);
+        const mergedPersonalTodos = mergeById(localData.personalTodos, remoteData.personalTodos);
+        const mergedResearchProjects = mergeById(localData.researchProjects, remoteData.researchProjects);
+        const mergedGlobalCourses = mergeById(localData.globalCourses, remoteData.globalCourses);
+        const mergedCourses = mergeById(localData.courses, remoteData.courses);
 
-      if (user.displayName && !appData.profile.name) appData.profile.name = user.displayName;
-      if (user.email) {
-        if (!appData.profile.semail) appData.profile.semail = user.email;
-        appData.currentUser = user.email;
-      }
-      if (user.photoURL && (!appData.profile.avatar || appData.profile.avatar.includes('placehold.co'))) {
-        appData.profile.avatar = user.photoURL;
-      }
+        // Fix BUG #3c: Với months, dayData, weekTasks: áp dụng merge và soft delete
+        const cleanBase = getCleanAppData();
+        const newAppData = deepMerge(cleanBase, remoteData);
 
-      // Nếu người dùng vừa nhập thông tin mới trong Form khi chưa đăng nhập, giữ nguyên dữ liệu vừa nhập
-      let pendingData = window.pendingProfileSave;
-      if (!pendingData) {
+        newAppData.quickDeadlines = mergedQuickDeadlines;
+        newAppData.personalTodos = mergedPersonalTodos;
+        newAppData.researchProjects = mergedResearchProjects;
+        newAppData.globalCourses = mergedGlobalCourses;
+        newAppData.courses = mergedCourses;
+
+        // Merge months & nested deadlines/notes
+        newAppData.months = deepMerge(cleanBase.months, remoteData.months || {});
+        const allMonthKeys = new Set([...Object.keys(localData.months || {}), ...Object.keys(remoteData.months || {})]);
+        for (const mKey of allMonthKeys) {
+          const lMonth = (localData.months && localData.months[mKey]) || {};
+          const rMonth = (remoteData.months && remoteData.months[mKey]) || {};
+          if (!newAppData.months[mKey]) newAppData.months[mKey] = {};
+          if (lMonth.deleted || rMonth.deleted) {
+            const lDelTime = lMonth.deletedAt || lMonth.updatedAt || 0;
+            const rDelTime = rMonth.deletedAt || rMonth.updatedAt || 0;
+            const lUpTime = lMonth.updatedAt || 0;
+            const rUpTime = rMonth.updatedAt || 0;
+            if (lMonth.deleted && !rMonth.deleted) {
+              newAppData.months[mKey].deleted = !(rUpTime > lDelTime);
+            } else if (!lMonth.deleted && rMonth.deleted) {
+              newAppData.months[mKey].deleted = !(lUpTime > rDelTime);
+            } else {
+              newAppData.months[mKey].deleted = true;
+            }
+            newAppData.months[mKey].deletedAt = Math.max(lDelTime, rDelTime);
+          }
+          newAppData.months[mKey].deadlines = mergeById(lMonth.deadlines, rMonth.deadlines);
+          newAppData.months[mKey].notes = mergeById(lMonth.notes, rMonth.notes);
+        }
+
+        // Merge weekTasks
+        newAppData.weekTasks = {};
+        const allWeekKeys = new Set([...Object.keys(localData.weekTasks || {}), ...Object.keys(remoteData.weekTasks || {})]);
+        for (const wKey of allWeekKeys) {
+          const lTasks = (localData.weekTasks && localData.weekTasks[wKey]) || [];
+          const rTasks = (remoteData.weekTasks && remoteData.weekTasks[wKey]) || [];
+          newAppData.weekTasks[wKey] = mergeById(lTasks, rTasks);
+        }
+
+        newAppData.dayData = deepMerge(localData.dayData || {}, remoteData.dayData || {});
+        newAppData.notificationsAck = deepMerge(localData.notificationsAck || {}, remoteData.notificationsAck || {});
+
+        // Fix BUG #3: Thay Object.assign bằng deepMerge ở phần merge profile
+        const firestoreProfile = remote.profile || (remoteData && remoteData.profile) || {};
+        newAppData.profile = deepMerge({
+          avatar: '',
+          name: '',
+          phone: '',
+          pemail: '',
+          semail: user.email || '',
+          dob: '',
+          passport: '',
+          arc: '',
+          bankName: '',
+          bankAccount: ''
+        }, firestoreProfile);
+
+        if (!newAppData.profile) newAppData.profile = {};
+        if (user.displayName && !newAppData.profile.name) newAppData.profile.name = user.displayName;
+        if (user.email) {
+          if (!newAppData.profile.semail) newAppData.profile.semail = user.email;
+          newAppData.currentUser = user.email;
+        }
+        if (user.photoURL && (!newAppData.profile.avatar || newAppData.profile.avatar.includes('placehold.co'))) {
+          newAppData.profile.avatar = user.photoURL;
+        }
+
+        // Nếu người dùng vừa nhập thông tin mới trong Form khi chưa đăng nhập, giữ nguyên dữ liệu vừa nhập
+        let pendingData = window.pendingProfileSave;
+        if (!pendingData) {
+          try {
+            const stored = sessionStorage.getItem('pendingProfileSave');
+            if (stored) pendingData = JSON.parse(stored);
+          } catch (e) { }
+        }
+        if (pendingData) {
+          newAppData.profile = deepMerge(newAppData.profile, pendingData);
+        }
+
+        appData = newAppData;
+        // Fix BUG #3b: Lưu state đã merge đồng bộ vào localStorage
+        saveLocal();
+
+        // Tự động điền ngược lại vào toàn bộ các ô input trong Modal thông tin cá nhân
+        if (typeof fillProfileModalInputs === 'function') {
+          fillProfileModalInputs(appData.profile);
+        }
+
+        // Fix BUG #3: Lưu focus và vị trí con trỏ trước khi re-render
+        let activeId = null;
+        let selStart = null;
+        let selEnd = null;
         try {
-          const stored = sessionStorage.getItem('pendingProfileSave');
-          if (stored) pendingData = JSON.parse(stored);
+          const activeEl = document.activeElement;
+          if (activeEl && activeEl.id) {
+            activeId = activeEl.id;
+            if (typeof activeEl.selectionStart === 'number') {
+              selStart = activeEl.selectionStart;
+              selEnd = activeEl.selectionEnd;
+            }
+          }
         } catch (e) { }
+
+        // Re-render toàn bộ UI để phản ánh dữ liệu mới nhất ngay lập tức (real-time đa thiết bị/đa trình duyệt)
+        updateHeaderProfileUI();
+        renderNotifications();
+        renderQuickDeadlines();
+        renderPersonalTodos();
+        renderResearchTab();
+        renderCoursesManagement();
+        if (typeof renderMonthsGrid === 'function') renderMonthsGrid();
+        if (!document.getElementById('month-detail-subview')?.classList.contains('hidden')) {
+          if (typeof renderMonthDetail === 'function') renderMonthDetail();
+        }
+        updateTemplateStatusBadge();
+        if (typeof renderSuwonWeatherUI === "function" && appData.suwonWeather) renderSuwonWeatherUI();
+
+        // Fix BUG #3: Khôi phục lại focus và con trỏ nếu element vẫn tồn tại
+        if (activeId) {
+          try {
+            const restoredEl = document.getElementById(activeId);
+            if (restoredEl) {
+              restoredEl.focus();
+              if (selStart !== null && typeof restoredEl.setSelectionRange === 'function') {
+                restoredEl.setSelectionRange(selStart, selEnd);
+              }
+            }
+          } catch (e) { }
+        }
+      } finally {
+        // Fix BUG #3: Tắt cờ chống vòng lặp ghi ↔ snapshot
+        _isApplyingRemote = false;
       }
-      if (pendingData) {
-        appData.profile = Object.assign({}, appData.profile, pendingData);
+    }
+
+    // Fix BUG #6: Cờ giới hạn hỏi gộp tối đa một lần cho mỗi phiên đăng nhập
+    let _hasPromptedMergeThisSession = false;
+
+    // Fix BUG #6: Hàm kiểm tra xem data có dữ liệu thật hay không (bỏ qua các phần tử có deleted === true)
+    function hasMeaningfulLocalData(data) {
+      if (!data || typeof data !== 'object') return false;
+
+      // 1. data.profile có bất kỳ field khác rỗng
+      if (data.profile && typeof data.profile === 'object') {
+        const hasProfileField = Object.values(data.profile).some(v => typeof v === 'string' && v.trim() !== '');
+        if (hasProfileField) return true;
       }
 
-      // Tự động điền ngược lại vào toàn bộ các ô input trong Modal thông tin cá nhân
-      if (typeof fillProfileModalInputs === 'function') {
-        fillProfileModalInputs(appData.profile);
+      // 2. data.researchProjects có phần tử chưa bị xóa
+      if (Array.isArray(data.researchProjects) && data.researchProjects.some(p => p && !p.deleted)) {
+        return true;
       }
 
-      // Re-render toàn bộ UI để phản ánh dữ liệu mới nhất ngay lập tức (real-time đa thiết bị/đa trình duyệt)
-      updateHeaderProfileUI();
-      renderNotifications();
-      renderQuickDeadlines();
-      renderPersonalTodos();
-      renderResearchTab();
-      renderCoursesManagement();
-      if (typeof renderMonthsGrid === 'function') renderMonthsGrid();
-      if (!document.getElementById('month-detail-subview')?.classList.contains('hidden')) {
-        if (typeof renderMonthDetail === 'function') renderMonthDetail();
+      // 3. data.quickDeadlines có phần tử chưa bị xóa
+      if (Array.isArray(data.quickDeadlines) && data.quickDeadlines.some(d => d && !d.deleted)) {
+        return true;
       }
-      updateTemplateStatusBadge();
-      if (typeof renderSuwonWeatherUI === "function" && appData.suwonWeather) renderSuwonWeatherUI();
+
+      // 4. data.personalTodos có phần tử chưa bị xóa
+      if (Array.isArray(data.personalTodos) && data.personalTodos.some(t => t && !t.deleted)) {
+        return true;
+      }
+
+      // 5. data.globalCourses có phần tử chưa bị xóa
+      if (Array.isArray(data.globalCourses) && data.globalCourses.some(c => c && !c.deleted)) {
+        return true;
+      }
+
+      // 6. Object.keys(data.dayData || {}).length > 0
+      if (data.dayData && typeof data.dayData === 'object' && Object.keys(data.dayData).length > 0) {
+        return true;
+      }
+
+      return false;
     }
 
     // --- TẢI TOÀN BỘ DỮ LIỆU TỪ CLOUD FIRESTORE KHI ĐĂNG NHẬP (LẦN ĐẦU) ---
@@ -4852,28 +5466,123 @@
       if (!user || !db) return;
       updateCloudSyncIndicator('loading');
       try {
-        const docRef = doc(db, "users", user.uid);
+        // Fix BUG #7: getDocRef thay vì doc
+        const docRef = getDocRef(db, "users", user.uid);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists) {
+          // Fix BUG #6: TRƯỚC khi apply dữ liệu remote, lưu ảnh chụp dữ liệu local
+          const localSnapshot = JSON.parse(JSON.stringify(appData));
           const remote = docSnap.data();
           applyFirestoreDataToApp(user, remote);
-        } else {
-          console.log('Tài khoản mới, khởi tạo dữ liệu mặc định lên Cloud Firestore...');
-          appData = getCleanAppData();
-          appData.currentUser = user.email;
-          appData.profile.semail = user.email || '';
-          if (user.displayName) appData.profile.name = user.displayName;
-          if (user.photoURL) appData.profile.avatar = user.photoURL;
 
-          const cleanData = JSON.parse(JSON.stringify(appData));
-          await setDoc(docRef, {
-            profile: appData.profile || {},
-            app_data: cleanData,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            email: user.email || '',
-            displayName: user.displayName || ''
-          }, { merge: true });
+          // Fix BUG #6: Sau khi apply remote xong, nếu localSnapshot có dữ liệu thật và chưa hỏi phiên này
+          if (!_hasPromptedMergeThisSession && hasMeaningfulLocalData(localSnapshot)) {
+            _hasPromptedMergeThisSession = true;
+            const lang = appData.lang || 'vi';
+            const dict = i18nDict[lang] || i18nDict['vi'];
+
+            const shouldMerge = await showCustomConfirm({
+              title: dict.confirmMergeLocalTitle || "Phát hiện dữ liệu chưa đồng bộ",
+              message: dict.confirmMergeLocalMessage || "Máy này có dữ liệu chưa được đồng bộ lên tài khoản. Bạn muốn gộp dữ liệu đó vào tài khoản, hay chỉ dùng dữ liệu đang có trên Cloud?",
+              confirmText: dict.btnMergeToAccount || "Gộp vào tài khoản",
+              cancelText: dict.btnUseCloudOnly || "Chỉ dùng dữ liệu Cloud",
+              isDestructive: false,
+              icon: "fa-solid fa-cloud-arrow-up"
+            });
+
+            if (shouldMerge) {
+              console.log('Fix BUG #6: Người dùng chọn gộp dữ liệu local vào tài khoản...');
+              // Dùng mergeById cho các mảng (quickDeadlines, personalTodos, researchProjects, globalCourses, courses)
+              appData.quickDeadlines = mergeById(appData.quickDeadlines, localSnapshot.quickDeadlines);
+              appData.personalTodos = mergeById(appData.personalTodos, localSnapshot.personalTodos);
+              appData.researchProjects = mergeById(appData.researchProjects, localSnapshot.researchProjects);
+              if (Array.isArray(localSnapshot.researchProjects)) {
+                localSnapshot.researchProjects.forEach(locProj => {
+                  if (!locProj || !locProj.id) return;
+                  const targetProj = appData.researchProjects.find(p => p && p.id === locProj.id);
+                  if (targetProj && targetProj !== locProj) {
+                    targetProj.logs = mergeById(targetProj.logs, locProj.logs);
+                    targetProj.papers = mergeById(targetProj.papers, locProj.papers);
+                  }
+                });
+              }
+              appData.globalCourses = mergeById(appData.globalCourses, localSnapshot.globalCourses);
+              appData.courses = mergeById(appData.courses, localSnapshot.courses);
+
+              // Dùng deepMerge cho các object
+              if (localSnapshot.months && typeof localSnapshot.months === 'object') {
+                const allMonthKeys = new Set([...Object.keys(appData.months || {}), ...Object.keys(localSnapshot.months || {})]);
+                for (const mKey of allMonthKeys) {
+                  const currM = (appData.months && appData.months[mKey]) || {};
+                  const locM = (localSnapshot.months && localSnapshot.months[mKey]) || {};
+                  if (!appData.months[mKey]) appData.months[mKey] = deepMerge({}, locM);
+                  appData.months[mKey].deadlines = mergeById(currM.deadlines, locM.deadlines);
+                  appData.months[mKey].notes = mergeById(currM.notes, locM.notes);
+                }
+              }
+              if (localSnapshot.weekTasks && typeof localSnapshot.weekTasks === 'object') {
+                const allWeekKeys = new Set([...Object.keys(appData.weekTasks || {}), ...Object.keys(localSnapshot.weekTasks || {})]);
+                for (const wKey of allWeekKeys) {
+                  const currW = (appData.weekTasks && appData.weekTasks[wKey]) || [];
+                  const locW = (localSnapshot.weekTasks && localSnapshot.weekTasks[wKey]) || [];
+                  appData.weekTasks[wKey] = mergeById(currW, locW);
+                }
+              }
+              if (localSnapshot.dayData && typeof localSnapshot.dayData === 'object') {
+                appData.dayData = deepMerge(appData.dayData || {}, localSnapshot.dayData);
+              }
+              if (localSnapshot.profile && typeof localSnapshot.profile === 'object') {
+                for (const k of Object.keys(localSnapshot.profile)) {
+                  if (localSnapshot.profile[k] && (!appData.profile[k] || appData.profile[k].trim() === '')) {
+                    appData.profile[k] = localSnapshot.profile[k];
+                  }
+                }
+              }
+
+              // Gọi saveData() để đẩy lên cloud
+              saveData();
+              showSuccessToast(dict.toastMergedSuccess || '✅ Đã gộp dữ liệu thành công!');
+            }
+          }
+        } else {
+          console.log('Tài khoản mới, cloud chưa có document...');
+          // Fix BUG #6: Nếu có dữ liệu local thật thì TỰ ĐỘNG đẩy lên cloud, KHÔNG cần hỏi người dùng
+          if (hasMeaningfulLocalData(appData)) {
+            console.log('Fix BUG #6: Tự động đẩy dữ liệu local hiện có lên Cloud cho tài khoản mới...');
+            appData.currentUser = user.email;
+            if (!appData.profile) appData.profile = {};
+            if (!appData.profile.semail) appData.profile.semail = user.email || '';
+            if (user.displayName && !appData.profile.name) appData.profile.name = user.displayName;
+            if (user.photoURL && !appData.profile.avatar) appData.profile.avatar = user.photoURL;
+
+            const cleanData = JSON.parse(JSON.stringify(appData));
+            await setDoc(docRef, {
+              profile: appData.profile || {},
+              app_data: cleanData,
+              lastWriteBy: clientId,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+              email: user.email || '',
+              displayName: user.displayName || ''
+            }, { merge: true });
+          } else {
+            console.log('Khởi tạo dữ liệu mặc định lên Cloud Firestore...');
+            appData = getCleanAppData();
+            appData.currentUser = user.email;
+            appData.profile.semail = user.email || '';
+            if (user.displayName) appData.profile.name = user.displayName;
+            if (user.photoURL) appData.profile.avatar = user.photoURL;
+
+            const cleanData = JSON.parse(JSON.stringify(appData));
+            await setDoc(docRef, {
+              profile: appData.profile || {},
+              app_data: cleanData,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+              email: user.email || '',
+              displayName: user.displayName || ''
+            }, { merge: true });
+          }
 
           if (typeof fillProfileModalInputs === 'function') {
             fillProfileModalInputs(appData.profile);
@@ -4909,7 +5618,7 @@
     }
 
     // --- ĐỒNG BỘ REAL-TIME CLOUD FIRESTORE (SINGLE SOURCE OF TRUTH) ---
-    // Dùng onSnapshot(doc(db, "users", user.uid)) để lắng nghe thay đổi dữ liệu theo thời gian thực,
+    // Fix BUG #7: Dùng onSnapshot(getDocRef(db, "users", user.uid)) để lắng nghe thay đổi dữ liệu theo thời gian thực,
     // đảm bảo dữ liệu được đồng bộ ngay lập tức giữa các thiết bị/trình duyệt khác nhau (Chrome, Safari, Cốc Cốc).
     function attachFirestoreRealtimeListener(user) {
       if (!user || !db || !user.uid) return;
@@ -4920,7 +5629,8 @@
         _firestoreUnsubscribe = null;
       }
 
-      const docRef = doc(db, "users", user.uid);
+      // Fix BUG #7: getDocRef thay vì doc
+      const docRef = getDocRef(db, "users", user.uid);
       if (!docRef || typeof docRef.onSnapshot !== 'function') return;
 
       updateCloudSyncIndicator('loading');
@@ -4952,6 +5662,20 @@
         const remote = snapshot.data();
         if (!remote) return;
 
+        // Fix BUG #3b: Bỏ qua snapshot của chính client này (an toàn với giá trị rỗng)
+        if (remote.lastWriteBy && clientId && remote.lastWriteBy === clientId) {
+          updateCloudSyncIndicator('saved');
+          return;
+        }
+
+        // Fix BUG #3: Hoãn apply khi user đang gõ
+        if (_isUserEditing) {
+          console.log('onSnapshot: Người dùng đang thao tác/gõ phím, hoãn apply snapshot...');
+          _pendingRemoteSnapshot = { user, remote };
+          updateCloudSyncIndicator('loading');
+          return;
+        }
+
         console.log('onSnapshot: Nhận cập nhật real-time từ Cloud Firestore users/' + user.uid + ', đồng bộ tức thời...');
         applyFirestoreDataToApp(user, remote);
         updateCloudSyncIndicator('saved');
@@ -4968,7 +5692,8 @@
       if (!user) return;
       if (db && user.uid) {
         try {
-          await doc(db, 'users', user.uid).set({
+          // Fix BUG #7: getDocRef thay vì doc
+          await getDocRef(db, 'users', user.uid).set({
             email: user.email || '',
             displayName: user.displayName || '',
             photoURL: user.photoURL || '',
@@ -4994,6 +5719,9 @@
       if (typeof checkAndApplyPendingProfileSave === 'function') {
         await checkAndApplyPendingProfileSave(user);
       }
+
+      // Fix BUG #4: Tự đẩy lên cloud khi đăng nhập nếu có dữ liệu chờ
+      flushPendingToCloud();
     }
     window.handleSuccessfulAuth = handleSuccessfulAuth;
 
@@ -5252,7 +5980,8 @@
           if (db) {
             try {
               const cleanData = JSON.parse(JSON.stringify(appData));
-              await doc(db, 'users', user.uid).set({
+              // Fix BUG #7: getDocRef thay vì doc
+              await getDocRef(db, 'users', user.uid).set({
                 app_data: cleanData,
                 profile: appData.profile,
                 email: email,
@@ -5357,10 +6086,13 @@
       expandedDayKey = null;
 
       try {
-        localStorage.removeItem(STORAGE_KEY);
         localStorage.removeItem('activeMonthKey');
         localStorage.removeItem('activeTabModal');
+        // Fix BUG #2: Chỉ xóa STORAGE_KEY khi đăng xuất thật sự (!preserveSession)
         if (!preserveSession) {
+          // Fix BUG #6: Reset cờ hỏi gộp khi đăng xuất
+          _hasPromptedMergeThisSession = false;
+          localStorage.removeItem(STORAGE_KEY);
           localStorage.removeItem('loggedInUser');
         }
       } catch (e) {
@@ -5433,9 +6165,8 @@
           console.warn('Lỗi khi signOut:', err);
         }
       }
-      // CHỈ XÓA DỮ LIỆU KHI CHỦ ĐỘNG ĐĂNG XUẤT: Gọi hàm clearUserDataUI(true) xóa sạch dữ liệu cá nhân
-      // trên DOM lập tức, đảm bảo không rò rỉ dữ liệu giữa các tài khoản khác nhau.
-      clearUserDataUI(true);
+      // Fix BUG #2: Đổi clearUserDataUI(true) thành clearUserDataUI(false) để đăng xuất thật sự xóa được localStorage
+      clearUserDataUI(false);
       updateUIForLoggedOutUser();
       showSuccessToast(dict.logoutSuccessMsg || 'Đã đăng xuất tài khoản thành công!');
     }
@@ -5599,7 +6330,10 @@
           planVal = (typeof planEl.value !== 'undefined') ? planEl.value : (planEl.innerText || planEl.textContent || '');
         }
 
-        const existingLog = (currentProj && currentProj.logs && currentProj.logs[index]) ? currentProj.logs[index] : {};
+        const logIdx = parseInt(tr.dataset.logIdx);
+        const existingLog = (!isNaN(logIdx) && currentProj && currentProj.logs && currentProj.logs[logIdx])
+          ? currentProj.logs[logIdx]
+          : ((currentProj && currentProj.logs && currentProj.logs[index]) ? currentProj.logs[index] : {});
 
         logs.push({
           id: existingLog.id || ('log_' + Date.now() + '_' + index),
@@ -5608,9 +6342,16 @@
           progressStep: progressStep,
           notes: notesVal.trim(),
           plan: planVal.trim(),
-          isSubRow: isSubRow
+          isSubRow: isSubRow,
+          updatedAt: existingLog.updatedAt || Date.now()
         });
       });
+
+      // Fix BUG #3c: Giữ lại các logs đã bị xóa mềm trong project
+      if (currentProj && Array.isArray(currentProj.logs)) {
+        const deletedLogs = currentProj.logs.filter(l => l && l.deleted);
+        deletedLogs.forEach(dl => logs.push(dl));
+      }
 
       return logs;
     }
@@ -5678,15 +6419,18 @@
         appData.researchProjects[appData.activeProjectIndex].logs = scannedLogs;
       }
 
-      // 2. Ghi vĩnh viễn lên Cloud Firestore làm Single Source of Truth (không lưu dữ liệu vào localStorage)
+      // Fix BUG #1: 2. Ghi vĩnh viễn lên Cloud Firestore làm Single Source of Truth (kết hợp lưu đồng bộ với localStorage)
       const u = user || (typeof auth !== 'undefined' && auth && auth.currentUser);
       if (u && typeof db !== 'undefined' && db) {
         try {
           updateCloudSyncIndicator('saving');
-          const docRef = doc(db, "users", u.uid);
+          // Fix BUG #7: getDocRef thay vì doc
+          const docRef = getDocRef(db, "users", u.uid);
           const cleanData = JSON.parse(JSON.stringify(appData));
+          // Fix BUG #3: Thêm lastWriteBy: clientId
           await setDoc(docRef, {
             app_data: cleanData,
+            lastWriteBy: clientId,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
           updateCloudSyncIndicator('saved');
@@ -6019,8 +6763,9 @@
 
       let todayCourses = [];
       // Dùng globalCourses (bao gồm môn mặc định đã migrate) với hỗ trợ dows[]
+      // Fix BUG #3c: Bỏ qua môn học có deleted === true
       if (appData.globalCourses) {
-        appData.globalCourses.forEach(c => {
+        appData.globalCourses.filter(c => !c.deleted).forEach(c => {
           const dows = c.dows || [c.dow];
           const matchDow = dows.includes(dow);
           let inRange = true;
@@ -6034,8 +6779,9 @@
         });
       }
 
+      // Fix BUG #3c: Bỏ qua customClasses có deleted === true
       if (appData.dayData[todayStr] && appData.dayData[todayStr].customClasses) {
-        appData.dayData[todayStr].customClasses.forEach(c => {
+        appData.dayData[todayStr].customClasses.filter(c => !c.deleted).forEach(c => {
           todayCourses.push({ name: c.name, time: c.time, room: c.room });
         });
       }
@@ -6245,7 +6991,8 @@
       if (pendingData) {
         try {
           updateCloudSyncIndicator('saving');
-          const docRef = doc(db, "users", user.uid);
+          // Fix BUG #7: getDocRef thay vì doc
+          const docRef = getDocRef(db, "users", user.uid);
           await setDoc(docRef, {
             profile: pendingData,
             "app_data.profile": pendingData,
@@ -6318,7 +7065,8 @@
       if (currentUser && typeof db !== 'undefined' && db) {
         try {
           updateCloudSyncIndicator('saving');
-          const docRef = doc(db, "users", currentUser.uid);
+          // Fix BUG #7: getDocRef thay vì doc
+          const docRef = getDocRef(db, "users", currentUser.uid);
           const userDocRef = docRef;
           await setDoc(docRef, {
             profile: profileData,
@@ -6444,8 +7192,11 @@
       const lang = appData.lang || 'vi';
       const dict = i18nDict[lang] || i18nDict['vi'];
 
-      // Sắp xếp các tháng theo thứ tự thời gian tăng dần từ trái sang phải (09/2026 -> 09/2028)
-      const sortedKeys = Object.keys(appData.months).sort((a, b) => {
+      // Fix BUG #3c: Bỏ qua các tháng có deleted === true
+      const sortedKeys = Object.keys(appData.months).filter(key => {
+        const m = appData.months[key];
+        return m && !m.deleted;
+      }).sort((a, b) => {
         const [m1, y1] = a.split('/').map(Number);
         const [m2, y2] = b.split('/').map(Number);
         if (y1 !== y2) return y1 - y2;
@@ -6499,7 +7250,12 @@
       });
       if (!confirmed) return;
 
-      delete appData.months[key];
+      // Fix BUG #3c: Xóa mềm thư mục tháng (soft delete)
+      if (appData.months && appData.months[key]) {
+        appData.months[key].deleted = true;
+        appData.months[key].deletedAt = Date.now();
+        appData.months[key].updatedAt = Date.now();
+      }
       saveData();
       renderMonthsGrid();
       showSuccessToast(`🗑️ ${dict.toastDeletedMonth || 'Đã xóa thư mục tháng'} ${key}`);
@@ -6522,8 +7278,17 @@
           const y = parseInt(parts[1]);
           if (!isNaN(m) && !isNaN(y)) {
             const key = `${m}/${y}`;
-            if (!appData.months[key]) {
-              appData.months[key] = { year: y, month: m, deadlines: [], notes: [] };
+            if (!appData.months[key] || appData.months[key].deleted) {
+              // Fix BUG #3c: Đảm bảo có id, updatedAt và khôi phục nếu trước đó bị soft-deleted
+              appData.months[key] = {
+                id: 'month_' + key.replace('/', '_'),
+                year: y,
+                month: m,
+                deadlines: (appData.months[key] && appData.months[key].deadlines) || [],
+                notes: (appData.months[key] && appData.months[key].notes) || [],
+                deleted: false,
+                updatedAt: Date.now()
+              };
               saveData();
               renderMonthsGrid();
             }
@@ -6710,7 +7475,9 @@
       const lang = appData.lang || 'vi';
       const dict = i18nDict[lang] || i18nDict['vi'];
 
-      if (monthObj[type].length === 0) {
+      // Fix BUG #3c: Bỏ qua các mục đã bị xóa mềm
+      const activeItems = monthObj[type].filter(item => !item.deleted);
+      if (activeItems.length === 0) {
         listEl.innerHTML = `<li class="text-xs text-slate-400 italic p-3 text-center bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">${type === 'deadlines' ? (dict.emptyDeadlines || 'Chưa có deadline nào trong tháng.') : (dict.emptyNotes || 'Chưa có ghi chú nào.')}</li>`;
         return;
       }
@@ -6718,7 +7485,8 @@
       // Sắp xếp ưu tiên:
       // 1. Ghi chú có Mức độ quan trọng cao HOẶC gần đến deadline (< 3 ngày) đưa lên ĐẦU DANH SÁCH.
       // 2. Khi bấm Tick chọn "Đã hoàn thành": tự động đổi chữ in nhạt, gạch ngang thân chữ và chuyển XUỐNG DƯỚI.
-      const sorted = monthObj[type].map((raw, idx) => ({ item: normalizeMonthTask(raw), originalIndex: idx })).sort((a, b) => {
+      // Fix BUG #3c: Lọc bỏ item.deleted nhưng vẫn giữ đúng originalIndex
+      const sorted = monthObj[type].map((raw, idx) => ({ item: normalizeMonthTask(raw), originalIndex: idx })).filter(({ item }) => !item.deleted).sort((a, b) => {
         if (a.item.done !== b.item.done) {
           return a.item.done ? 1 : -1;
         }
@@ -6931,6 +7699,7 @@
 
       if (!monthObj[type]) monthObj[type] = [];
 
+      // Fix BUG #3c: Gán id và updatedAt = Date.now()
       const taskObj = {
         id: (idx >= 0 && monthObj[type][idx] && monthObj[type][idx].id) ? monthObj[type][idx].id : ("task_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5)),
         title,
@@ -6938,7 +7707,8 @@
         dueDate,
         priority,
         status,
-        done
+        done,
+        updatedAt: Date.now()
       };
 
       if (idx >= 0 && idx < monthObj[type].length) {
@@ -6961,6 +7731,8 @@
       const item = normalizeMonthTask(monthObj[type][originalIndex]);
       item.done = !item.done;
       item.status = item.done ? 'done' : 'pending';
+      // Fix BUG #3c: Cập nhật updatedAt
+      item.updatedAt = Date.now();
       monthObj[type][originalIndex] = item;
 
       saveData();
@@ -6975,6 +7747,8 @@
       const item = normalizeMonthTask(monthObj[type][originalIndex]);
       item.status = newStatus;
       item.done = (newStatus === 'done');
+      // Fix BUG #3c: Cập nhật updatedAt
+      item.updatedAt = Date.now();
       monthObj[type][originalIndex] = item;
 
       saveData();
@@ -6993,7 +7767,13 @@
       });
       if (!confirmed) return;
 
-      monthObj[type].splice(originalIndex, 1);
+      // Fix BUG #3c: Xóa mềm phần tử trong monthObj[type]
+      const item = monthObj[type][originalIndex];
+      if (item) {
+        item.deleted = true;
+        item.deletedAt = Date.now();
+        item.updatedAt = Date.now();
+      }
       saveData();
       renderMonthTaskSection(type);
       showSuccessToast('🗑️ Đã xóa thành công!');
@@ -7032,7 +7812,9 @@
 
       const currentProj = getActiveProject();
 
+      // Fix BUG #3c: Bỏ qua đề tài có deleted === true
       appData.researchProjects.forEach((proj, idx) => {
+        if (proj.deleted) return;
         const btn = document.createElement('button');
         const isActive = idx === appData.activeProjectIndex;
         btn.className = `px-4 py-2.5 rounded-2xl font-black text-xs sm:text-sm whitespace-nowrap transition-all duration-200 shadow-sm flex items-center gap-2 ${isActive
@@ -7056,7 +7838,8 @@
       if (papersProjectTitleEl) papersProjectTitleEl.innerText = projTitle;
 
       // Update papers count badge on sub-tab
-      const currentPapers = getProjectPapers(currentProj);
+      // Fix BUG #3c: Bỏ qua bài báo có deleted === true
+      const currentPapers = getProjectPapers(currentProj).filter(p => !p.deleted);
       const papersBadge = document.getElementById('papers-badge-count');
       if (papersBadge) papersBadge.innerText = currentPapers.length;
 
@@ -7390,7 +8173,12 @@
       const currentLogs = scanResearchLogsFromDOM();
       if (currentLogs && currentLogs.length > 0) currentProj.logs = currentLogs;
       if (currentProj.logs && currentProj.logs[idx]) {
-        currentProj.logs.splice(idx, 1);
+        // Fix BUG #3c: Xóa mềm log nhật ký (soft delete / tombstone)
+        const log = currentProj.logs[idx];
+        log.deleted = true;
+        log.deletedAt = Date.now();
+        log.updatedAt = Date.now();
+        currentProj.updatedAt = Date.now();
         if (selectedLogIndex >= currentProj.logs.length) {
           selectedLogIndex = Math.max(0, currentProj.logs.length - 1);
         }
@@ -7438,21 +8226,24 @@
       const today = new Date();
       const todayStr = formatDateDDMMYYYY(today);
 
+      // Fix BUG #3c: Đảm bảo có id và updatedAt = Date.now()
       const newProj = {
-        id: 'proj_' + Date.now(),
+        id: 'proj_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
         title: title,
         papers: [],
         logs: [
           {
-            id: 'log_' + Date.now(),
+            id: 'log_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
             dateText: todayStr,
             tasks: '',
             progressStep: 0,
             notes: '',
             plan: '',
-            isSubRow: false
+            isSubRow: false,
+            updatedAt: Date.now()
           }
-        ]
+        ],
+        updatedAt: Date.now()
       };
 
       appData.researchProjects.push(newProj);
@@ -7497,17 +8288,22 @@
         isDestructive: true
       });
       if (confirmed) {
+        // Fix BUG #3c: Xóa mềm đề tài nghiên cứu (soft delete / tombstone)
         const deletedProj = appData.researchProjects[appData.activeProjectIndex];
-        if (deletedProj && deletedProj.id) {
-          try {
-            localStorage.removeItem('ees_papers_' + deletedProj.id);
-            localStorage.removeItem('ees_papers_init_' + deletedProj.id);
-          } catch (e) { }
+        if (deletedProj) {
+          deletedProj.deleted = true;
+          deletedProj.deletedAt = Date.now();
+          deletedProj.updatedAt = Date.now();
+          if (deletedProj.id) {
+            try {
+              localStorage.removeItem('ees_papers_' + deletedProj.id);
+              localStorage.removeItem('ees_papers_init_' + deletedProj.id);
+            } catch (e) { }
+          }
         }
-        appData.researchProjects.splice(appData.activeProjectIndex, 1);
-        if (appData.activeProjectIndex >= appData.researchProjects.length) {
-          appData.activeProjectIndex = Math.max(0, appData.researchProjects.length - 1);
-        }
+        const remainingIdx = appData.researchProjects.findIndex(p => !p.deleted);
+        appData.activeProjectIndex = remainingIdx !== -1 ? remainingIdx : 0;
+        selectedLogIndex = 0;
         saveData();
         renderResearchTab();
       }
@@ -7562,11 +8358,25 @@
     }
 
     function getActiveProject() {
+      // Fix BUG #3c: Bỏ qua đề tài đã bị xóa mềm
       if (!appData.researchProjects || appData.researchProjects.length === 0) {
-        appData.researchProjects = [{ id: "proj_1", title: "Mặc định", logs: [], papers: [] }];
+        appData.researchProjects = [{ id: "proj_1", title: "Mặc định", logs: [], papers: [], updatedAt: Date.now() }];
         appData.activeProjectIndex = 0;
       }
-      return appData.researchProjects[appData.activeProjectIndex] || appData.researchProjects[0];
+      const active = appData.researchProjects[appData.activeProjectIndex];
+      if (active && !active.deleted) return active;
+
+      const firstNonDeletedIdx = appData.researchProjects.findIndex(p => !p.deleted);
+      if (firstNonDeletedIdx !== -1) {
+        appData.activeProjectIndex = firstNonDeletedIdx;
+        return appData.researchProjects[firstNonDeletedIdx];
+      }
+
+      // Nếu tất cả đều bị xóa, tạo lại đề tài mặc định
+      const defaultProj = { id: 'proj_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7), title: "Mặc định", logs: [], papers: [], updatedAt: Date.now() };
+      appData.researchProjects.push(defaultProj);
+      appData.activeProjectIndex = appData.researchProjects.length - 1;
+      return defaultProj;
     }
 
     function getProjectPapers(proj) {
@@ -7684,7 +8494,8 @@
 
     function renderPapersRepository() {
       const proj = getActiveProject();
-      const papers = getProjectPapers(proj);
+      // Fix BUG #3c: Bỏ qua bài báo có deleted === true
+      const papers = getProjectPapers(proj).filter(p => !p.deleted);
       const projTitle = proj.title || "Tên đề tài";
 
       const titleEl = document.getElementById('papers-project-title');
@@ -7716,7 +8527,8 @@
 
     function filterPapersList() {
       const proj = getActiveProject();
-      const papers = getProjectPapers(proj);
+      // Fix BUG #3c: Bỏ qua bài báo có deleted === true
+      const papers = getProjectPapers(proj).filter(p => !p.deleted);
 
       const searchInput = document.getElementById('paper-search-input');
       const q = (searchInput ? searchInput.value : '').trim().toLowerCase();
@@ -8044,10 +8856,12 @@
           paper.year = year;
           paper.abstract = abstract;
           paper.findings = findings;
-          paper.updatedAt = new Date().toISOString().split('T')[0];
+          // Fix BUG #3c: Cập nhật updatedAt = Date.now()
+          paper.updatedAt = Date.now();
         }
         showSuccessToast(`✅ Đã cập nhật bài báo: "${title}"`);
       } else {
+        // Fix BUG #3c: Đảm bảo có id và updatedAt = Date.now()
         const newPaper = {
           id: 'paper_' + Date.now(),
           title: title,
@@ -8058,7 +8872,8 @@
           year: year,
           abstract: abstract,
           findings: findings,
-          createdAt: new Date().toISOString().split('T')[0]
+          createdAt: new Date().toISOString().split('T')[0],
+          updatedAt: Date.now()
         };
         papers.unshift(newPaper);
         showSuccessToast(`✨ Đã thêm bài báo mới: "${title}"`);
@@ -8086,8 +8901,14 @@
       });
 
       if (confirmed) {
-        const filtered = papers.filter(p => p.id !== paperId);
-        saveProjectPapers(proj, filtered);
+        // Fix BUG #3c: Xóa mềm bài báo (soft delete / tombstone)
+        if (paper) {
+          paper.deleted = true;
+          paper.deletedAt = Date.now();
+          paper.updatedAt = Date.now();
+        }
+        proj.updatedAt = Date.now();
+        saveProjectPapers(proj, papers);
         renderPapersRepository();
         showSuccessToast('🗑️ Đã xóa bài báo khỏi thư viện');
       }
@@ -8367,19 +9188,26 @@
         // ══════════════════════════════════════════════════
         // BƯỚC 2: Gọi Gemini AI → tổng hợp Abstract + Core Findings
         // ══════════════════════════════════════════════════
-        if (statusTextEl) statusTextEl.innerText = '🤖 Gemini AI đang tổng hợp Abstract & Core Findings (45s)...';
+        let geminiParsed = null;
+        // Fix BUG #9: Kiểm tra nếu GEMINI_API_KEY rỗng thì vô hiệu hóa tính năng gọi Gemini
+        if (!GEMINI_API_KEY) {
+          const lang = appData.lang || 'vi';
+          const dict = i18nDict[lang] || i18nDict['vi'];
+          showSuccessToast(dict.aiKeyMissing || "Tính năng AI chưa được cấu hình khóa API");
+        } else {
+          if (statusTextEl) statusTextEl.innerText = '🤖 Gemini AI đang tổng hợp Abstract & Core Findings (45s)...';
 
-        // Xây dựng prompt dựa trên dữ liệu có được
-        const titleForPrompt = finalTitle || rawInput.substring(0, 300);
-        const doiForPrompt = finalDoi || rawInput;
-        const extraContext = crossrefExtra.journal
-          ? `Tạp chí: ${crossrefExtra.journal} | Tác giả: ${crossrefExtra.authors} | Năm: ${crossrefExtra.year}`
-          : '';
-        const crossrefAbstractHint = crossrefExtra.abstract
-          ? `Abstract thô từ Crossref (dùng làm tham khảo, không dịch nguyên văn): ${crossrefExtra.abstract.substring(0, 600)}`
-          : '';
+          // Xây dựng prompt dựa trên dữ liệu có được
+          const titleForPrompt = finalTitle || rawInput.substring(0, 300);
+          const doiForPrompt = finalDoi || rawInput;
+          const extraContext = crossrefExtra.journal
+            ? `Tạp chí: ${crossrefExtra.journal} | Tác giả: ${crossrefExtra.authors} | Năm: ${crossrefExtra.year}`
+            : '';
+          const crossrefAbstractHint = crossrefExtra.abstract
+            ? `Abstract thô từ Crossref (dùng làm tham khảo, không dịch nguyên văn): ${crossrefExtra.abstract.substring(0, 600)}`
+            : '';
 
-        const geminiPrompt = `Dựa trên tiêu đề bài báo khoa học: '${titleForPrompt}' và mã DOI: '${doiForPrompt}', hãy đóng vai chuyên gia nghiên cứu hóa học/vật liệu điện hóa. Hãy tổng hợp:
+          const geminiPrompt = `Dựa trên tiêu đề bài báo khoa học: '${titleForPrompt}' và mã DOI: '${doiForPrompt}', hãy đóng vai chuyên gia nghiên cứu hóa học/vật liệu điện hóa. Hãy tổng hợp:
 1. Tóm tắt bài báo (Abstract): 2-3 câu về bối cảnh nghiên cứu, vật liệu chính và mục đích nghiên cứu bằng tiếng Việt.
 2. Phương pháp & Kết quả cốt lõi (Core Findings): Gạch đầu dòng các điểm nổi bật (vật liệu xúc tác, overpotential OER/HER, Tafel slope, hiệu suất, cơ chế hoạt động...).
 
@@ -8389,38 +9217,38 @@ ${crossrefAbstractHint}
 Trả về kết quả dưới dạng JSON thuần (không markdown, không backtick):
 {"abstract": "...", "core_findings": "• ...\n• ...\n• ..."}`;
 
-        let geminiParsed = null;
-        try {
-          const geminiRes = await fetchWithTimeout(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{ parts: [{ text: geminiPrompt }] }],
-                generationConfig: { temperature: 0.3, maxOutputTokens: 1024, response_mime_type: 'application/json' }
-              })
-            },
-            45000
-          );
+          try {
+            const geminiRes = await fetchWithTimeout(
+              `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: geminiPrompt }] }],
+                  generationConfig: { temperature: 0.3, maxOutputTokens: 1024, response_mime_type: 'application/json' }
+                })
+              },
+              45000
+            );
 
-          if (geminiRes && geminiRes.ok) {
-            const gJson = await geminiRes.json();
-            const rawText = (gJson?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+            if (geminiRes && geminiRes.ok) {
+              const gJson = await geminiRes.json();
+              const rawText = (gJson?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
 
-            // Parse JSON robust: 3 tầng
-            try {
-              const clean = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-              geminiParsed = JSON.parse(clean);
-            } catch (_) { }
+              // Parse JSON robust: 3 tầng
+              try {
+                const clean = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+                geminiParsed = JSON.parse(clean);
+              } catch (_) { }
 
-            if (!geminiParsed) {
-              const m = rawText.match(/\{[\s\S]*\}/);
-              if (m) { try { geminiParsed = JSON.parse(m[0]); } catch (_) { } }
+              if (!geminiParsed) {
+                const m = rawText.match(/\{[\s\S]*\}/);
+                if (m) { try { geminiParsed = JSON.parse(m[0]); } catch (_) { } }
+              }
             }
+          } catch (geminiErr) {
+            // Gemini thất bại → fallback bên dưới
           }
-        } catch (geminiErr) {
-          // Gemini thất bại → fallback bên dưới
         }
 
         // ── Điền Abstract + Core Findings (không bao giờ để trống) ──
@@ -8521,25 +9349,31 @@ Trả về kết quả dưới dạng JSON thuần (không markdown, không back
         // --- 2. DỰ PHÒNG: GEMINI AI TẠO CITATION ---
         if (!citationText) {
           const lang = appData.lang || 'vi';
-          const promptText = format === 'bibtex'
-            ? `Tạo một mục BibTeX chuẩn (@article hoặc loại phù hợp) cho bài báo sau. Chỉ trả về chuỗi BibTeX thuần, không giải thích, không markdown.\n\nTiêu đề: ${paper.title || 'Unknown'}\nDOI: ${paper.doi || 'N/A'}\nThông tin khác: ${paper.abstract ? paper.abstract.substring(0, 200) : ''}`
-            : `Tạo một trích dẫn APA 7th edition chuẩn cho bài báo sau. Chỉ trả về chuỗi trích dẫn thuần, không giải thích, không markdown.\n\nTiêu đề: ${paper.title || 'Unknown'}\nDOI: ${paper.doi || 'N/A'}\nThông tin khác: ${paper.abstract ? paper.abstract.substring(0, 200) : ''}`;
+          const dict = i18nDict[lang] || i18nDict['vi'];
+          // Fix BUG #9: Kiểm tra nếu GEMINI_API_KEY rỗng
+          if (!GEMINI_API_KEY) {
+            showSuccessToast(dict.aiKeyMissing || "Tính năng AI chưa được cấu hình khóa API");
+          } else {
+            const promptText = format === 'bibtex'
+              ? `Tạo một mục BibTeX chuẩn (@article hoặc loại phù hợp) cho bài báo sau. Chỉ trả về chuỗi BibTeX thuần, không giải thích, không markdown.\n\nTiêu đề: ${paper.title || 'Unknown'}\nDOI: ${paper.doi || 'N/A'}\nThông tin khác: ${paper.abstract ? paper.abstract.substring(0, 200) : ''}`
+              : `Tạo một trích dẫn APA 7th edition chuẩn cho bài báo sau. Chỉ trả về chuỗi trích dẫn thuần, không giải thích, không markdown.\n\nTiêu đề: ${paper.title || 'Unknown'}\nDOI: ${paper.doi || 'N/A'}\nThông tin khác: ${paper.abstract ? paper.abstract.substring(0, 200) : ''}`;
 
-          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
-          const geminiRes = await fetch(geminiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: promptText }] }],
-              generationConfig: { temperature: 0.1, maxOutputTokens: 512 }
-            }),
-            signal: AbortSignal.timeout(20000)
-          });
-          if (geminiRes.ok) {
-            const geminiJson = await geminiRes.json();
-            const raw = (geminiJson?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
-            // Làm sạch markdown nếu Gemini trả về trong code block
-            citationText = raw.replace(/^```[a-z]*\s*/i, '').replace(/\s*```$/i, '').trim();
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
+            const geminiRes = await fetch(geminiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: promptText }] }],
+                generationConfig: { temperature: 0.1, maxOutputTokens: 512 }
+              }),
+              signal: AbortSignal.timeout(20000)
+            });
+            if (geminiRes.ok) {
+              const geminiJson = await geminiRes.json();
+              const raw = (geminiJson?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+              // Làm sạch markdown nếu Gemini trả về trong code block
+              citationText = raw.replace(/^```[a-z]*\s*/i, '').replace(/\s*```$/i, '').trim();
+            }
           }
         }
 
@@ -8783,6 +9617,14 @@ Trả về kết quả dưới dạng JSON thuần (không markdown, không back
 
     // --- GEMINI AI EXPORT ASSISTANT ---
     async function callGeminiDailyReportAssistant(rawData) {
+      // Fix BUG #9: Kiểm tra nếu GEMINI_API_KEY rỗng thì dừng và thông báo thân thiện
+      if (!GEMINI_API_KEY) {
+        const lang = appData.lang || 'vi';
+        const dict = i18nDict[lang] || i18nDict['vi'];
+        const msg = dict.aiKeyMissing || "Tính năng AI chưa được cấu hình khóa API";
+        if (typeof showSuccessToast === 'function') showSuccessToast(`⚠️ ${msg}`);
+        throw new Error(msg);
+      }
       const prompt = `You are a Senior Academic Journal Editor. Transform the following raw daily lab notes into professional, publication-grade Academic English.
 
 STRICT RULES:
@@ -9199,8 +10041,9 @@ Raw daily lab notes:
 
       if (!appData.globalCourses) appData.globalCourses = [];
 
+      // Fix BUG #3c: Đảm bảo có id và updatedAt = Date.now()
       const newCourse = {
-        id: 'course_' + Date.now(),
+        id: 'course_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
         name,
         room: room || (dict.defaultUndetermined || 'Chưa xác định'),
         dows,
@@ -9210,7 +10053,8 @@ Raw daily lab notes:
         startDate,
         endDate: endDate || '',
         weeks: isNaN(weeks) ? 16 : weeks,
-        isDefault: false
+        isDefault: false,
+        updatedAt: Date.now()
       };
 
       appData.globalCourses.push(newCourse);
@@ -9269,11 +10113,15 @@ Raw daily lab notes:
       list.innerHTML = '';
       const lang = appData.lang || 'vi';
       const dict = i18nDict[lang] || i18nDict['vi'];
-      if (tasks.length === 0) {
+
+      // Fix BUG #3c: Bỏ qua task bị xóa mềm
+      const activeTasks = tasks.filter(t => !t.deleted);
+      if (activeTasks.length === 0) {
         list.innerHTML = `<li class="text-sm text-slate-400 italic">${dict.emptyWeekTasks || 'Chưa có task nào cho tuần này.'}</li>`;
         return;
       }
       tasks.forEach((task, idx) => {
+        if (task.deleted) return;
         const li = document.createElement('li');
         li.className = 'flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700';
         li.innerHTML = `
@@ -9290,6 +10138,8 @@ Raw daily lab notes:
       if (!appData.weekTasks) appData.weekTasks = {};
       if (!appData.weekTasks[activeWeekKeyForModal]) appData.weekTasks[activeWeekKeyForModal] = [];
       appData.weekTasks[activeWeekKeyForModal][idx].done = !appData.weekTasks[activeWeekKeyForModal][idx].done;
+      // Fix BUG #3c: Cập nhật updatedAt
+      appData.weekTasks[activeWeekKeyForModal][idx].updatedAt = Date.now();
       saveData();
       renderWeekTaskList();
       renderWeeksContainer();
@@ -9299,7 +10149,13 @@ Raw daily lab notes:
       if (!activeWeekKeyForModal) return;
       if (!appData.weekTasks) appData.weekTasks = {};
       if (!appData.weekTasks[activeWeekKeyForModal]) return;
-      appData.weekTasks[activeWeekKeyForModal].splice(idx, 1);
+      // Fix BUG #3c: Xóa mềm weekTask (soft delete / tombstone)
+      const task = appData.weekTasks[activeWeekKeyForModal][idx];
+      if (task) {
+        task.deleted = true;
+        task.deletedAt = Date.now();
+        task.updatedAt = Date.now();
+      }
       saveData();
       renderWeekTaskList();
       renderWeeksContainer();
@@ -9317,7 +10173,13 @@ Raw daily lab notes:
       if (text && text.trim() && activeWeekKeyForModal) {
         if (!appData.weekTasks) appData.weekTasks = {};
         if (!appData.weekTasks[activeWeekKeyForModal]) appData.weekTasks[activeWeekKeyForModal] = [];
-        appData.weekTasks[activeWeekKeyForModal].push({ text: text.trim(), done: false });
+        // Fix BUG #3c: Đảm bảo có id và updatedAt = Date.now()
+        appData.weekTasks[activeWeekKeyForModal].push({
+          id: 'wt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+          text: text.trim(),
+          done: false,
+          updatedAt: Date.now()
+        });
         saveData();
         renderWeekTaskList();
         renderWeeksContainer();
@@ -9444,10 +10306,10 @@ Raw daily lab notes:
       const weekStartStr = dateToStr(weekStart);
       const weekEndStr = dateToStr(weekEnd);
 
-      // Tự động điền lịch học lấy từ danh sách "Môn Học Đã Thêm" (appData.globalCourses)
-      const coursesList = (appData.globalCourses && appData.globalCourses.length > 0)
+      // Fix BUG #3c: Bỏ qua môn học có deleted === true
+      const coursesList = ((appData.globalCourses && appData.globalCourses.length > 0)
         ? appData.globalCourses
-        : (appData.courses || []);
+        : (appData.courses || [])).filter(c => !c.deleted);
 
       coursesList.forEach(c => {
         const inRange = (!c.startDate || weekEndStr >= c.startDate) && (!c.endDate || weekStartStr <= c.endDate);
@@ -9561,6 +10423,13 @@ Raw daily lab notes:
 
     // --- INITIALIZATION (ĐẢM BẢO CHẠY NGAY CẢ KHI DOM ĐÃ READY HOẶC CHƯA) ---
     function initApp() {
+      // Fix BUG #3c: Dọn rác các phần tử xóa mềm cũ hơn 30 ngày ngay khi khởi động
+      try {
+        purgeOldTombstones();
+      } catch (e) {
+        console.warn('purgeOldTombstones error:', e);
+      }
+
       // Khôi phục giao diện người dùng nếu đã có phiên trong localStorage để không bị giật/đăng xuất khi F5
       try {
         const savedUserStr = localStorage.getItem('loggedInUser');
@@ -9671,10 +10540,14 @@ Raw daily lab notes:
       }
     }
 
-    // Kích hoạt ngay lập tức nếu DOM đã sẵn sàng, hoặc lắng nghe DOMContentLoaded
+    // Fix BUG #8: Gọi checkEnvironment() trong DOMContentLoaded (hoặc ngay lập tức nếu DOM đã sẵn sàng)
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initApp);
+      document.addEventListener('DOMContentLoaded', () => {
+        checkEnvironment();
+        initApp();
+      });
     } else {
+      checkEnvironment();
       initApp();
     }
 
@@ -9704,6 +10577,8 @@ Raw daily lab notes:
 
       container.innerHTML = '';
       appData.globalCourses.forEach((c, idx) => {
+        // Fix BUG #3c: Bỏ qua môn học đã bị xóa mềm
+        if (c.deleted) return;
         const dows = c.dows || [c.dow];
         const dowBadges = dows.map(d => `<span class="text-[10px] font-black bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded-md">${dayLabels[d] || d}</span>`).join('');
         const timeStr = (c.start && c.start !== '--:--') ? `${c.start} – ${c.end}` : (dict.untimedCourse || 'Chưa đặt giờ');
@@ -9752,7 +10627,14 @@ Raw daily lab notes:
         isDestructive: true
       });
       if (!confirmed) return;
-      appData.globalCourses.splice(idx, 1);
+
+      // Fix BUG #3c: Xóa mềm môn học (soft delete / tombstone)
+      const c = appData.globalCourses[idx];
+      if (c) {
+        c.deleted = true;
+        c.deletedAt = Date.now();
+        c.updatedAt = Date.now();
+      }
       saveData();
       renderCoursesManagement();
       renderWeeksContainer();
@@ -9831,6 +10713,8 @@ Raw daily lab notes:
       c.endDate = document.getElementById('edit-course-end-date').value;
       c.weeks = parseInt(document.getElementById('edit-course-weeks').value) || 16;
       c.isDefault = false; // sau khi sửa, không còn là mặc định
+      // Fix BUG #3c: Cập nhật updatedAt
+      c.updatedAt = Date.now();
 
       saveData();
       closeEditCourseModal();
@@ -9946,7 +10830,7 @@ Raw daily lab notes:
         courses = [...appData.courses];
       }
 
-      // (Đã loại bỏ đọc từ localStorage để đồng bộ 100% với Firestore)
+      // Fix BUG #1: (courses đã có trong appData đồng bộ từ localStorage/Firestore)
 
       // 3. Quét thông tin từ DOM nếu localStorage/in-memory rỗng (DOM Fallback)
       if (!courses.length) {
@@ -10300,31 +11184,38 @@ Hãy trả về duy nhất chuỗi JSON hợp lệ theo định dạng sau (khô
 DỮ LIỆU NHẬT KÝ ĐÃ CHỌN:\n${logSummary}`;
 
       let aiData = null;
-      try {
-        const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: {
-                response_mime_type: "application/json",
-                temperature: 0.3,
-                maxOutputTokens: 2048
-              }
-            })
-          }
-        );
+      // Fix BUG #9: Kiểm tra nếu GEMINI_API_KEY rỗng
+      if (!GEMINI_API_KEY) {
+        const lang = appData.lang || 'vi';
+        const dict = i18nDict[lang] || i18nDict['vi'];
+        if (typeof showSuccessToast === 'function') showSuccessToast(`⚠️ ${dict.aiKeyMissing || "Tính năng AI chưa được cấu hình khóa API"}`);
+      } else {
+        try {
+          const res = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                  response_mime_type: "application/json",
+                  temperature: 0.3,
+                  maxOutputTokens: 2048
+                }
+              })
+            }
+          );
 
-        if (res.ok) {
-          const rawRes = await res.json();
-          let jsonStr = rawRes?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-          jsonStr = jsonStr.replace(/```json/gi, '').replace(/```/g, '').trim();
-          aiData = JSON.parse(jsonStr);
+          if (res.ok) {
+            const rawRes = await res.json();
+            let jsonStr = rawRes?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+            jsonStr = jsonStr.replace(/```json/gi, '').replace(/```/g, '').trim();
+            aiData = JSON.parse(jsonStr);
+          }
+        } catch (e) {
+          console.warn('Lỗi gọi Gemini cho Word, sử dụng fallback cục bộ', e);
         }
-      } catch (e) {
-        console.warn('Lỗi gọi Gemini cho Word, sử dụng fallback cục bộ', e);
       }
 
       if (!aiData) {
@@ -10795,31 +11686,38 @@ Return ONLY valid JSON (no markdown formatting, or clean json block) matching th
 }`;
 
         let aiData = null;
-        try {
-          const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{ parts: [{ text: aiPrompt }] }],
-                generationConfig: {
-                  response_mime_type: "application/json",
-                  temperature: 0.2,
-                  maxOutputTokens: 4096
-                }
-              })
-            }
-          );
+        // Fix BUG #9: Kiểm tra nếu GEMINI_API_KEY rỗng
+        if (!GEMINI_API_KEY) {
+          const lang = appData.lang || 'vi';
+          const dict = i18nDict[lang] || i18nDict['vi'];
+          if (typeof showSuccessToast === 'function') showSuccessToast(`⚠️ ${dict.aiKeyMissing || "Tính năng AI chưa được cấu hình khóa API"}`);
+        } else {
+          try {
+            const res = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: aiPrompt }] }],
+                  generationConfig: {
+                    response_mime_type: "application/json",
+                    temperature: 0.2,
+                    maxOutputTokens: 4096
+                  }
+                })
+              }
+            );
 
-          if (res.ok) {
-            const rawRes = await res.json();
-            let jsonStr = rawRes?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-            jsonStr = jsonStr.replace(/```json/gi, '').replace(/```/g, '').trim();
-            aiData = JSON.parse(jsonStr);
+            if (res.ok) {
+              const rawRes = await res.json();
+              let jsonStr = rawRes?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+              jsonStr = jsonStr.replace(/```json/gi, '').replace(/```/g, '').trim();
+              aiData = JSON.parse(jsonStr);
+            }
+          } catch (callErr) {
+            console.warn('Lỗi gọi Gemini AI, sử dụng fallback học thuật chuẩn cao:', callErr);
           }
-        } catch (callErr) {
-          console.warn('Lỗi gọi Gemini AI, sử dụng fallback học thuật chuẩn cao:', callErr);
         }
 
         if (!aiData || !aiData.section1_authors) {
@@ -11254,6 +12152,13 @@ Return ONLY valid JSON (no markdown formatting, or clean json block) matching th
     // --- 3. AI POLISH GHI CHÚ → ACADEMIC ENGLISH ---
     // ==========================================
     async function aiPolishNote(lIdx, btnEl) {
+      // Fix BUG #9: Kiểm tra nếu GEMINI_API_KEY rỗng thì vô hiệu hóa tính năng và hiện thông báo thân thiện
+      if (!GEMINI_API_KEY) {
+        const lang = appData.lang || 'vi';
+        const dict = i18nDict[lang] || i18nDict['vi'];
+        showSuccessToast(dict.aiKeyMissing || "Tính năng AI chưa được cấu hình khóa API");
+        return;
+      }
       const proj = getActiveProject();
       if (!proj || !proj.logs || !proj.logs[lIdx]) return;
 
@@ -11363,15 +12268,13 @@ Original note:
             if (user) {
               console.log('onAuthStateChanged: Người dùng đã xác thực thành công:', user.email, user.uid);
 
-              // 1. XÓA SẠCH TOÀN BỘ DỮ LIỆU CŨ/MẪU TRÊN DOM TRƯỚC KHI NẠP DỮ LIỆU MỚI
-              clearUserDataUI(true);
+              // Fix BUG #2: Bỏ clearUserDataUI(true), việc nạp dữ liệu để applyFirestoreDataToApp đảm nhiệm
 
               // 2. Cập nhật trạng thái đăng nhập trên navbar
               await updateUIForLoggedInUser(user);
 
-              // 3. ÉP BUỘC FIRESTORE LÀM NGUỒN DỮ LIỆU DUY NHẤT (Single Source of Truth)
-              // Kích hoạt lắng nghe onSnapshot real-time trên users/{user.uid}
-              attachFirestoreRealtimeListener(user);
+              // Fix BUG #2: Thống nhất một đường khởi tạo dữ liệu duy nhất qua loadUserDataFromFirestore
+              await loadUserDataFromFirestore(user);
 
               // 4. Tự động lưu hồ sơ nếu người dùng đã nhập thông tin trước khi đăng nhập
               if (typeof checkAndApplyPendingProfileSave === 'function') {
@@ -11384,12 +12287,19 @@ Original note:
                 try { _firestoreUnsubscribe(); } catch (e) { }
                 _firestoreUnsubscribe = null;
               }
-              // Khi đăng xuất (signOut): Gọi hàm clearUserDataUI(true) để xóa sạch dữ liệu cá nhân trên DOM lập tức
-              clearUserDataUI(true);
-              updateUIForLoggedOutUser();
+              // Fix BUG #2: Nếu là callback khởi tạo đầu tiên, giữ nguyên appData từ loadLocal() và không gọi clearUserDataUI
+              if (!hasResolvedInitialAuth) {
+                updateUIForLoggedOutUser();
+              } else {
+                clearUserDataUI(true);
+                updateUIForLoggedOutUser();
+              }
             }
           } catch (generalAuthErr) {
             console.error('onAuthStateChanged general error:', generalAuthErr);
+          } finally {
+            // Fix BUG #2: Đặt hasResolvedInitialAuth = true ở cuối callback onAuthStateChanged
+            hasResolvedInitialAuth = true;
           }
         });
       } else {
@@ -11401,6 +12311,120 @@ Original note:
       }
     }
     window.initAuthListener = initAuthListener;
+
+    // Fix VIỆC D: Hàm self-test để debug đồng bộ & môi trường
+    async function runSyncSelfTest() {
+      console.log("%c=== [EESL TRACKER] RUN SYNC SELF-TEST ===", "color: #3b82f6; font-weight: bold; font-size: 14px;");
+
+      // 1. Environment & Network
+      const envInfo = {
+        protocol: window.location.protocol,
+        href: window.location.href,
+        cookieEnabled: navigator.cookieEnabled,
+        onLine: navigator.onLine
+      };
+
+      // 2. LocalStorage test & size
+      let storageTest = false;
+      try {
+        const testKey = '__eesl_selftest__';
+        localStorage.setItem(testKey, 'ok');
+        storageTest = localStorage.getItem(testKey) === 'ok';
+        localStorage.removeItem(testKey);
+      } catch (e) {
+        storageTest = false;
+      }
+      const rawStorage = localStorage.getItem(STORAGE_KEY) || '';
+      const storageInfo = {
+        writable: storageTest ? 'OK (Writable/Readable)' : 'FAILED (Read/Write blocked)',
+        sizeCharacters: rawStorage.length,
+        sizeBytesApprox: new Blob([rawStorage]).size
+      };
+
+      // 3. Client ID & Auth
+      const currentClientId = typeof getClientId === 'function' ? getClientId() : (localStorage.getItem('EESL_CLIENT_ID') || 'N/A');
+      const currentUser = (typeof auth !== 'undefined' && auth) ? auth.currentUser : null;
+      const authInfo = {
+        clientId: currentClientId,
+        userEmail: currentUser ? currentUser.email : 'null (Chưa đăng nhập)',
+        userUid: currentUser ? currentUser.uid : 'null'
+      };
+
+      // 4. Firestore Document users/{uid}
+      let firestoreDocResult = {
+        tested: false,
+        exists: false,
+        lastWriteBy: 'N/A',
+        updatedAt: 'N/A',
+        error: null
+      };
+
+      if (currentUser && currentUser.uid && typeof db !== 'undefined' && db) {
+        try {
+          firestoreDocResult.tested = true;
+          const snap = await getDocRef(db, 'users', currentUser.uid).get();
+          firestoreDocResult.exists = snap.exists;
+          if (snap.exists) {
+            const data = snap.data() || {};
+            firestoreDocResult.lastWriteBy = data.lastWriteBy || 'None';
+            firestoreDocResult.updatedAt = data.updatedAt
+              ? (data.updatedAt.toDate ? data.updatedAt.toDate().toISOString() : data.updatedAt)
+              : 'None';
+          }
+        } catch (err) {
+          firestoreDocResult.error = err.message || String(err);
+        }
+      } else {
+        firestoreDocResult.error = 'Không có user đăng nhập hoặc db chưa khởi tạo';
+      }
+
+      // 5. Sync Badge & Flags
+      const badgeText = document.getElementById('cloud-sync-text')?.textContent?.trim() || 'N/A';
+      const syncFlags = {
+        badgeText: badgeText,
+        _pendingCloudSync: typeof _pendingCloudSync !== 'undefined' ? _pendingCloudSync : false,
+        _isUserEditing: typeof _isUserEditing !== 'undefined' ? _isUserEditing : false,
+        _isApplyingRemote: typeof _isApplyingRemote !== 'undefined' ? _isApplyingRemote : false
+      };
+
+      // 6. Counts of undeleted items
+      const undeletedCounts = {
+        quickDeadlines: (Array.isArray(appData?.quickDeadlines) ? appData.quickDeadlines.filter(item => !item.deleted).length : 0),
+        personalTodos: (Array.isArray(appData?.personalTodos) ? appData.personalTodos.filter(item => !item.deleted).length : 0),
+        researchProjects: (Array.isArray(appData?.researchProjects) ? appData.researchProjects.filter(item => !item.deleted).length : 0)
+      };
+
+      // Output to console
+      console.log("%c[1] Environment & Network:", "font-weight: bold; color: #10b981;");
+      console.table(envInfo);
+
+      console.log("%c[2] LocalStorage Status (Key: " + STORAGE_KEY + "):", "font-weight: bold; color: #10b981;");
+      console.table(storageInfo);
+
+      console.log("%c[3] Client & Auth State:", "font-weight: bold; color: #10b981;");
+      console.table(authInfo);
+
+      console.log("%c[4] Firestore Document (users/" + (currentUser?.uid || '{uid}') + "):", "font-weight: bold; color: #10b981;");
+      console.table(firestoreDocResult);
+
+      console.log("%c[5] Sync Badge & Flags:", "font-weight: bold; color: #10b981;");
+      console.table(syncFlags);
+
+      console.log("%c[6] Undeleted Items Count:", "font-weight: bold; color: #10b981;");
+      console.table(undeletedCounts);
+
+      console.log("%c=== [EESL TRACKER] SELF-TEST COMPLETE ===", "color: #3b82f6; font-weight: bold; font-size: 14px;");
+
+      return {
+        envInfo,
+        storageInfo,
+        authInfo,
+        firestoreDocResult,
+        syncFlags,
+        undeletedCounts
+      };
+    }
+    window.runSyncSelfTest = runSyncSelfTest;
 
   </script>
 </body>
