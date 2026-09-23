@@ -2338,6 +2338,30 @@
         </div>
       </div>
 
+      <!-- Fix AI-PROXY: Dropdown chọn model AI -->
+      <div
+        class="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 bg-indigo-50/60 dark:bg-indigo-950/30 rounded-2xl border border-indigo-200/80 dark:border-indigo-800/50 flex-shrink-0">
+        <div class="flex items-center gap-2">
+          <label for="select-gemini-model"
+            class="text-xs font-bold text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5"
+            data-i18n="lblAiModel">
+            <i class="fa-solid fa-brain text-indigo-600 dark:text-indigo-400 text-xs"></i>
+            <span>Mô hình AI:</span>
+          </label>
+          <select id="select-gemini-model" onchange="changeGeminiModel(this.value)"
+            class="text-xs font-extrabold py-1.5 px-3 rounded-xl border border-indigo-300 dark:border-indigo-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm">
+            <option value="gemini-3.8-flash" data-i18n="optModelQuality">✨ Chất lượng cao (gemini-3.8-flash)</option>
+            <option value="gemini-3.5-flash" data-i18n="optModelFast">⚡ Nhanh &amp; Ổn định (gemini-3.5-flash)</option>
+            <option value="gemini-3.5-flash-lite" data-i18n="optModelCheap">🍃 Siêu nhẹ / Tiết kiệm
+              (gemini-3.5-flash-lite)</option>
+          </select>
+        </div>
+        <div class="text-[11px] font-semibold text-indigo-600 dark:text-indigo-300 flex items-center gap-1">
+          <i class="fa-solid fa-shield-halved text-[10px]"></i>
+          <span data-i18n="lblCloudflareProxy">Bảo mật qua Cloudflare Worker</span>
+        </div>
+      </div>
+
       <!-- Scrollable Days List with Checkboxes -->
       <div id="weekly-days-list" class="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[160px] max-h-[340px]">
         <!-- Populated dynamically by JS -->
@@ -2479,7 +2503,7 @@
     // ====================================================
     // For Firebase JS SDK v7.20.0 and later, measurementId is optional
     const firebaseConfig = {
-      apiKey: "AIzaSyA4lRq30I7H3k5qFTwRb3HWVhRFNsR0XWY",
+      apiKey: "AIzaSyAnk_g41gmZCzHmQlyAIyMB8k40QXCbiCc",
       authDomain: "trunghp1302.firebaseapp.com",
       projectId: "trunghp1302",
       storageBucket: "trunghp1302.firebasestorage.app",
@@ -2487,9 +2511,136 @@
       appId: "1:434901953464:web:dc0f96ea2846693d0bfd4d",
       measurementId: "G-LTYSJFFLQ6"
     };
-    // Fix BUG #9: Khóa API cũ đã bị lộ trong source HTML nên PHẢI revoke và tạo khóa mới tại Google AI Studio (https://aistudio.google.com/).
-    // GIẢI PHÁP LÂU DÀI: Cần proxy các request AI qua Cloud Function / Backend server có xác thực, KHÔNG để API key ở phía client.
-    const GEMINI_API_KEY = window.__GEMINI_KEY__ || "";
+    // Fix AI-PROXY: Cấu hình Cloudflare Worker Proxy cho Gemini API (không lộ khóa API phía client)
+    const AI_PROXY_URL = 'https://trung.lethanhtrunghp1302.workers.dev';
+    const GEMINI_MODELS = { quality: 'gemini-3.8-flash', fast: 'gemini-3.5-flash', cheap: 'gemini-3.5-flash-lite' };
+    let GEMINI_MODEL = localStorage.getItem('EESL_GEMINI_MODEL') || GEMINI_MODELS.quality;
+
+    // Fix AI-PROXY: Hàm đổi model và lưu vào localStorage
+    function changeGeminiModel(modelName) {
+      GEMINI_MODEL = modelName;
+      localStorage.setItem('EESL_GEMINI_MODEL', modelName);
+      console.log('[AI-PROXY] Đã chọn model Gemini:', modelName);
+    }
+    window.changeGeminiModel = changeGeminiModel;
+
+    // Fix AI-PROXY: Hàm dùng chung gọi Gemini API qua Cloudflare Worker Proxy
+    async function callGemini(body, model = GEMINI_MODEL) {
+      const lang = (typeof appData !== 'undefined' && appData?.lang) || 'vi';
+      const dict = (typeof i18nDict !== 'undefined' && (i18nDict[lang] || i18nDict['vi'])) || {};
+
+      // Nếu AI_PROXY_URL rỗng, vô hiệu hóa các tính năng AI và hiện thông báo tiếng Việt thân thiện
+      if (!AI_PROXY_URL || !AI_PROXY_URL.trim()) {
+        const msg = dict.aiProxyMissing || "Tính năng AI chưa được kích hoạt (chưa cấu hình AI Proxy URL).";
+        if (typeof showSuccessToast === 'function') showSuccessToast(`⚠️ ${msg}`);
+        throw new Error(msg);
+      }
+
+      // Danh sách model dự phòng theo thứ tự nếu gặp 404 hoặc unsupported
+      const fallbackModels = [model];
+      if (model !== GEMINI_MODELS.fast) fallbackModels.push(GEMINI_MODELS.fast);
+      if (model !== GEMINI_MODELS.cheap) fallbackModels.push(GEMINI_MODELS.cheap);
+
+      const retryDelays = [2000, 5000]; // Thử lại tối đa 2 lần với độ trễ 2s rồi 5s
+      let lastError = null;
+
+      for (let mIdx = 0; mIdx < fallbackModels.length; mIdx++) {
+        const currentModel = fallbackModels[mIdx];
+        let shouldTryNextModel = false;
+
+        for (let attempt = 0; attempt <= retryDelays.length; attempt++) {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 90000); // Timeout 90 giây bằng AbortController
+
+          try {
+            const url = `${AI_PROXY_URL}?model=${encodeURIComponent(currentModel)}`;
+            const response = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: typeof body === 'string' ? body : JSON.stringify(body),
+              signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            // Nếu nhận HTTP 503 hoặc 429 (UNAVAILABLE / quá tải), tự thử lại tối đa 2 lần với độ trễ 2s rồi 5s
+            if ((response.status === 503 || response.status === 429) && attempt < retryDelays.length) {
+              const delay = retryDelays[attempt];
+              const retryMsg = dict.aiOverloadedRetry || "AI đang quá tải, đang thử lại...";
+              if (typeof showSuccessToast === 'function') showSuccessToast(`⏳ ${retryMsg} (${attempt + 1}/${retryDelays.length})`);
+              await new Promise(r => setTimeout(r, delay));
+              continue;
+            }
+
+            // Nếu nhận HTTP 404 hoặc lỗi chứa not found / is not supported, tự hạ cấp model
+            if (!response.ok) {
+              const errText = await response.text();
+              let errMsg = errText;
+              try {
+                const errObj = JSON.parse(errText);
+                if (errObj?.error?.message) errMsg = errObj.error.message;
+              } catch (_) { }
+
+              const isNotFoundOrUnsupported = response.status === 404 ||
+                /not\s+found|is\s+not\s+supported/i.test(errMsg);
+
+              if (isNotFoundOrUnsupported && mIdx < fallbackModels.length - 1) {
+                console.warn(`[AI-PROXY] Model ${currentModel} không hỗ trợ (HTTP ${response.status}: ${errMsg}), đang tự hạ cấp model...`);
+                shouldTryNextModel = true;
+                break; // Chuyển sang model tiếp theo trong fallbackModels
+              }
+
+              const fullErrMsg = `HTTP ${response.status}: ${errMsg}`;
+              lastError = new Error(fullErrMsg);
+              const userErrMsg = `${dict.aiCallFailed || 'Lỗi gọi AI'} (${fullErrMsg})`;
+              if (typeof showSuccessToast === 'function') showSuccessToast(`❌ ${userErrMsg}`);
+              throw lastError;
+            }
+
+            const data = await response.json();
+            if (mIdx > 0) {
+              console.log(`✅ [AI-PROXY] Gọi thành công sau khi hạ cấp sang model: ${currentModel}`);
+            }
+            return data;
+
+          } catch (err) {
+            clearTimeout(timeoutId);
+
+            if (err.name === 'AbortError') {
+              const timeoutMsg = dict.aiTimeout || "Yêu cầu AI đã hết thời gian chờ (90s). Vui lòng thử lại sau.";
+              if (typeof showSuccessToast === 'function') showSuccessToast(`⏱️ ${timeoutMsg}`);
+              throw new Error(timeoutMsg);
+            }
+
+            if (shouldTryNextModel) break;
+
+            lastError = err;
+            if (/not\s+found|is\s+not\s+supported/i.test(err.message) && mIdx < fallbackModels.length - 1) {
+              console.warn(`[AI-PROXY] Lỗi model ${currentModel}: ${err.message}, chuyển sang model tiếp theo...`);
+              shouldTryNextModel = true;
+              break;
+            }
+
+            if (attempt < retryDelays.length && (err.message?.includes('503') || err.message?.includes('429'))) {
+              const delay = retryDelays[attempt];
+              const retryMsg = dict.aiOverloadedRetry || "AI đang quá tải, đang thử lại...";
+              if (typeof showSuccessToast === 'function') showSuccessToast(`⏳ ${retryMsg}`);
+              await new Promise(r => setTimeout(r, delay));
+              continue;
+            }
+
+            const errMsg = err.message || 'Lỗi không xác định';
+            if (typeof showSuccessToast === 'function' && !err.message?.includes(dict.aiCallFailed || 'Lỗi gọi AI')) {
+              showSuccessToast(`❌ ${dict.aiCallFailed || 'Lỗi kết nối AI'}: ${errMsg}`);
+            }
+            throw err;
+          }
+        }
+      }
+
+      throw lastError || new Error("Không thể hoàn thành yêu cầu tới Gemini AI qua proxy.");
+    }
+    window.callGemini = callGemini;
 
     let auth = null;
     let db = null;
@@ -2967,9 +3118,18 @@
         btnExportPptx: "📊 Xuất AI PowerPoint (.pptx)",
         weeklyNoSelection: "⚠️ Vui lòng chọn ít nhất 1 ngày để xuất báo cáo!",
         generatingPptxSpin: "🤖 Gemini AI đang phân tích bài báo & tạo slide .pptx...",
-        toastAiAnalyzingPptx: "🤖 Gemini AI (gemini-3.6-flash) đang phân tích bài báo & tổng hợp slide thuyết trình...",
+        toastAiAnalyzingPptx: "🤖 Gemini AI đang phân tích bài báo & tổng hợp slide thuyết trình...",
         toastPptxSuccess: "📊 Đã tạo và tải xuống bài thuyết trình PowerPoint (.pptx) thành công!",
         toastDocxSuccess: "📄 Đã tạo và tải xuống báo cáo tuần Word (.doc) thành công!",
+        lblAiModel: "Mô hình AI:",
+        optModelQuality: "✨ Chất lượng cao (gemini-3.8-flash)",
+        optModelFast: "⚡ Nhanh & Ổn định (gemini-3.5-flash)",
+        optModelCheap: "🍃 Siêu nhẹ / Tiết kiệm (gemini-3.5-flash-lite)",
+        lblCloudflareProxy: "Bảo mật qua Cloudflare Worker",
+        aiProxyMissing: "Tính năng AI chưa được kích hoạt (chưa cấu hình AI Proxy URL).",
+        aiOverloadedRetry: "AI đang quá tải, đang thử lại...",
+        aiCallFailed: "Lỗi kết nối AI",
+        aiTimeout: "Yêu cầu AI đã hết thời gian chờ (90s). Vui lòng thử lại sau.",
         quickDeadlinesTitle: "Ghi Chú & Deadline Quan Trọng",
         btnAddDeadline: "Thêm Deadline",
         emptyQuickDeadlines: "Chưa có deadline nào",
@@ -3342,9 +3502,18 @@
         btnExportPptx: "📊 Export AI PowerPoint (.pptx)",
         weeklyNoSelection: "⚠️ Please select at least one day to generate report!",
         generatingPptxSpin: "🤖 Gemini AI is analyzing papers & building .pptx slides...",
-        toastAiAnalyzingPptx: "🤖 Gemini AI (gemini-3.6-flash) is analyzing literature & drafting slides...",
+        toastAiAnalyzingPptx: "🤖 Gemini AI is analyzing literature & drafting slides...",
         toastPptxSuccess: "📊 PowerPoint presentation (.pptx) generated & downloaded successfully!",
         toastDocxSuccess: "📄 Weekly Word report (.doc) generated & downloaded successfully!",
+        lblAiModel: "AI Model:",
+        optModelQuality: "✨ High Quality (gemini-3.8-flash)",
+        optModelFast: "⚡ Fast & Stable (gemini-3.5-flash)",
+        optModelCheap: "🍃 Lightweight (gemini-3.5-flash-lite)",
+        lblCloudflareProxy: "Secured by Cloudflare Worker",
+        aiProxyMissing: "AI features are unavailable (AI Proxy URL is not configured).",
+        aiOverloadedRetry: "AI service is overloaded, retrying...",
+        aiCallFailed: "AI request failed",
+        aiTimeout: "AI request timed out (90s). Please try again later.",
         quickDeadlinesTitle: "Important Notes & Deadlines",
         btnAddDeadline: "Add Deadline",
         emptyQuickDeadlines: "No deadlines yet",
@@ -3717,9 +3886,18 @@
         btnExportPptx: "📊 AI PowerPoint 내보내기 (.pptx)",
         weeklyNoSelection: "⚠️ 보고서를 생성할 날짜를 하나 이상 선택해주세요!",
         generatingPptxSpin: "🤖 Gemini AI가 논문 분석 및 .pptx 슬라이드 생성 중...",
-        toastAiAnalyzingPptx: "🤖 Gemini AI(gemini-3.6-flash)가 논문 분석 및 프레젠테이션 작성 중...",
+        toastAiAnalyzingPptx: "🤖 Gemini AI가 논문 분석 및 프레젠테이션 작성 중...",
         toastPptxSuccess: "📊 PowerPoint 발표 자료(.pptx)가 성공적으로 생성되었습니다!",
         toastDocxSuccess: "📄 주간 Word 보고서(.doc)가 성공적으로 생성되었습니다!",
+        lblAiModel: "AI 모델:",
+        optModelQuality: "✨ 고품질 (gemini-3.8-flash)",
+        optModelFast: "⚡ 빠르고 안정적 (gemini-3.5-flash)",
+        optModelCheap: "🍃 경량 / 절약형 (gemini-3.5-flash-lite)",
+        lblCloudflareProxy: "Cloudflare Worker로 안전하게 보호됨",
+        aiProxyMissing: "AI 기능을 사용할 수 없습니다 (AI Proxy URL이 설정되지 않음).",
+        aiOverloadedRetry: "AI 서비스 과부하로 재시도 중...",
+        aiCallFailed: "AI 요청 실패",
+        aiTimeout: "AI 요청 시간이 초과되었습니다 (90초). 나중에 다시 시도하세요.",
         quickDeadlinesTitle: "중요 메모 및 마감일",
         btnAddDeadline: "마감일 추가",
         emptyQuickDeadlines: "등록된 마감일이 없습니다",
@@ -4081,6 +4259,45 @@
         }
       }
     }
+
+    // Fix BUG #10: Hàm dọn trùng nhật ký nghiên cứu đã bị nhân bản
+    function dedupeResearchLogs() {
+      if (!appData || !Array.isArray(appData.researchProjects)) return;
+      appData.researchProjects.forEach(proj => {
+        if (!proj || !Array.isArray(proj.logs)) return;
+        const seenIds = new Set();
+        const seenContentKeys = new Set();
+        const deduped = [];
+
+        proj.logs.forEach(log => {
+          if (!log) return;
+          const cKey = `${log.dateText || ''}|||${(log.tasks || '').trim()}|||${log.progressStep || 0}|||${(log.notes || '').trim()}|||${(log.plan || '').trim()}|||${!!log.isSubRow}|||${!!log.deleted}`;
+
+          if (log.id) {
+            if (seenIds.has(log.id)) {
+              return; // Trùng id -> loại bỏ
+            }
+            seenIds.add(log.id);
+            seenContentKeys.add(cKey);
+            deduped.push(log);
+          } else {
+            // Không có id: loại nếu trùng hoàn toàn nội dung với một phần tử khác
+            if (seenContentKeys.has(cKey)) {
+              return; // Trùng hoàn toàn nội dung -> loại bỏ
+            }
+            seenContentKeys.add(cKey);
+            // Gán id mới cho phần tử giữ lại
+            log.id = 'log_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+            if (!log.updatedAt) log.updatedAt = Date.now();
+            seenIds.add(log.id);
+            deduped.push(log);
+          }
+        });
+
+        proj.logs = deduped;
+      });
+    }
+    window.dedupeResearchLogs = dedupeResearchLogs;
 
     let isAuthLoading = true;
     // Fix BUG #2: Biến cờ theo dõi lần gọi onAuthStateChanged đầu tiên
@@ -4651,12 +4868,15 @@
       });
       if (!confirmed) return;
 
-      // Fix BUG #3c: Xóa mềm (soft delete / tombstone)
+      // Fix BUG #3c & BUG #11: Xóa mềm (soft delete / tombstone) và gỡ DOM ngay
       if (d) {
         d.deleted = true;
         d.deletedAt = Date.now();
         d.updatedAt = Date.now();
+        appData.updatedAtLocal = Date.now();
       }
+      const el = document.querySelector(`div[data-deadline-id="${id}"]`);
+      if (el) el.remove();
       saveData();
       renderQuickDeadlines();
       showSuccessToast('🗑️ Đã xóa deadline');
@@ -4782,7 +5002,7 @@
             : 'text-slate-900 dark:text-slate-100 font-extrabold');
 
         return `
-          <div class="group flex flex-wrap md:flex-nowrap items-center justify-between gap-3 p-3.5 rounded-2xl border-2 shadow-sm hover:shadow-md transition-all duration-200 ${themeClasses} ${d.done ? 'opacity-70' : ''}" ${customStyle}>
+          <div data-deadline-id="${d.id}" class="group flex flex-wrap md:flex-nowrap items-center justify-between gap-3 p-3.5 rounded-2xl border-2 shadow-sm hover:shadow-md transition-all duration-200 ${themeClasses} ${d.done ? 'opacity-70' : ''}" ${customStyle}>
             
             <!-- 1. Checkbox + Date/Time -->
             <div class="flex items-center gap-2.5 flex-shrink-0">
@@ -4927,12 +5147,15 @@
       });
       if (!confirmed) return;
 
-      // Fix BUG #3c: Xóa mềm (soft delete / tombstone)
+      // Fix BUG #3c & BUG #11: Xóa mềm (soft delete / tombstone) và gỡ DOM ngay
       if (t) {
         t.deleted = true;
         t.deletedAt = Date.now();
         t.updatedAt = Date.now();
+        appData.updatedAtLocal = Date.now();
       }
+      const el = document.getElementById(`ptodo-${id}`);
+      if (el) el.remove();
       saveData();
       renderPersonalTodos();
     }
@@ -4988,7 +5211,7 @@
         const tagClr = tagColors[t.tag] || tagColors.personal;
         return `
           <div class="group flex items-center gap-3 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/60 hover:border-violet-300 dark:hover:border-violet-600/50 ${t.done ? 'ptodo-done bg-slate-50/80 dark:bg-slate-800/40' : 'bg-white dark:bg-slate-800/70'} transition shadow-sm" id="ptodo-${t.id}">
-            <button onclick="togglePersonalTodoDone('${t.id}')"
+            <button type="button" onclick="togglePersonalTodoDone('${t.id}')"
               class="flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition ${t.done
             ? 'bg-violet-500 border-violet-500 text-white'
             : 'border-slate-400 dark:border-slate-500 hover:border-violet-500'
@@ -4997,7 +5220,7 @@
             </button>
             <span class="flex-1 text-sm ptodo-text ${t.done ? 'text-slate-400' : 'text-slate-800 dark:text-slate-100'} font-medium leading-tight">${t.text}</span>
             <span class="flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full ${tagClr}">${tagMeta.emoji} ${tagMeta.label}</span>
-            <button onclick="deletePersonalTodo('${t.id}')"
+            <button type="button" onclick="event.stopPropagation(); deletePersonalTodo('${t.id}')"
               class="flex-shrink-0 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 text-xs transition p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30">
               <i class="fa-solid fa-trash-can"></i>
             </button>
@@ -5280,6 +5503,17 @@
         const mergedGlobalCourses = mergeById(localData.globalCourses, remoteData.globalCourses);
         const mergedCourses = mergeById(localData.courses, remoteData.courses);
 
+        // Fix BUG #10: Áp dụng mergeById cho mảng logs và papers bên trong từng phần tử của researchProjects
+        if (Array.isArray(mergedResearchProjects)) {
+          mergedResearchProjects.forEach(proj => {
+            if (!proj || !proj.id) return;
+            const lProj = Array.isArray(localData.researchProjects) ? localData.researchProjects.find(p => p && p.id === proj.id) : null;
+            const rProj = Array.isArray(remoteData.researchProjects) ? remoteData.researchProjects.find(p => p && p.id === proj.id) : null;
+            proj.logs = mergeById((lProj && lProj.logs) || [], (rProj && rProj.logs) || []);
+            proj.papers = mergeById((lProj && lProj.papers) || [], (rProj && rProj.papers) || []);
+          });
+        }
+
         // Fix BUG #3c: Với months, dayData, weekTasks: áp dụng merge và soft delete
         const cleanBase = getCleanAppData();
         const newAppData = deepMerge(cleanBase, remoteData);
@@ -5497,13 +5731,14 @@
               appData.quickDeadlines = mergeById(appData.quickDeadlines, localSnapshot.quickDeadlines);
               appData.personalTodos = mergeById(appData.personalTodos, localSnapshot.personalTodos);
               appData.researchProjects = mergeById(appData.researchProjects, localSnapshot.researchProjects);
-              if (Array.isArray(localSnapshot.researchProjects)) {
-                localSnapshot.researchProjects.forEach(locProj => {
-                  if (!locProj || !locProj.id) return;
-                  const targetProj = appData.researchProjects.find(p => p && p.id === locProj.id);
-                  if (targetProj && targetProj !== locProj) {
-                    targetProj.logs = mergeById(targetProj.logs, locProj.logs);
-                    targetProj.papers = mergeById(targetProj.papers, locProj.papers);
+              // Fix BUG #10: Áp dụng mergeById cho mảng logs và papers trong từng project
+              if (Array.isArray(appData.researchProjects)) {
+                appData.researchProjects.forEach(targetProj => {
+                  if (!targetProj || !targetProj.id) return;
+                  const locProj = Array.isArray(localSnapshot.researchProjects) ? localSnapshot.researchProjects.find(p => p && p.id === targetProj.id) : null;
+                  if (locProj) {
+                    targetProj.logs = mergeById(targetProj.logs || [], locProj.logs || []);
+                    targetProj.papers = mergeById(targetProj.papers || [], locProj.papers || []);
                   }
                 });
               }
@@ -6271,24 +6506,39 @@
     window.addNotePrompt = addNotePrompt;
     window.updateHeaderProfileUI = updateHeaderProfileUI;
     // --- AUTO-SAVE & QUÉT DỮ LIỆU TRỰC TIẾP TỪ DOM BẢNG NHẬT KÝ ---
+    // Fix BUG #11: scanResearchLogsFromDOM giữ lại toàn bộ tombstone và quét đúng các hàng đang hiển thị
     function scanResearchLogsFromDOM() {
-      const tbody = document.getElementById('research-table-body');
-      if (!tbody || typeof tbody.querySelectorAll !== 'function') return null;
-
-      const rows = tbody.querySelectorAll('tr');
-      if (!rows || rows.length === 0) return null;
-
-      // Nếu là hàng thông báo trạng thái trống thì trả về mảng rỗng
-      if (rows.length === 1 && rows[0].querySelector('td[colspan]')) {
-        return [];
-      }
-
-      const logs = [];
-      const currentProj = (appData.researchProjects && appData.researchProjects[appData.activeProjectIndex])
+      const project = (appData.researchProjects && appData.researchProjects[appData.activeProjectIndex])
         ? appData.researchProjects[appData.activeProjectIndex]
         : null;
+      if (!project) return null;
 
-      rows.forEach((tr, index) => {
+      const cu = project.logs || [];
+
+      // Giữ nguyên toàn bộ tombstone, chúng không có mặt trong DOM
+      const tombstones = cu.filter(l => l && l.deleted);
+
+      const tbody = document.getElementById('research-table-body');
+      if (!tbody || typeof tbody.querySelectorAll !== 'function') return project.logs;
+
+      const domRows = document.querySelectorAll('#research-table-body tr[data-log-id]');
+      // Nếu không có hàng nào có data-log-id:
+      // Nếu là hàng thông báo trống (td[colspan]), toàn bộ log đang sống đã bị xóa -> chỉ còn tombstones
+      if (domRows.length === 0) {
+        if (tbody.querySelector('td[colspan]')) {
+          project.logs = [...tombstones];
+          return project.logs;
+        }
+        // Nếu tbody chưa render (ví dụ khi mới mở trang), không ghi đè mất logs
+        return project.logs;
+      }
+
+      const tuDOM = [];
+      domRows.forEach(tr => {
+        const id = tr.getAttribute('data-log-id') || tr.dataset.logId;
+        if (!id) return;
+        const goc = cu.find(l => l && l.id === id) || {};
+
         // 1. Ô Ngày (input text)
         const dateInput = tr.querySelector('input[type="text"]') || tr.querySelector('input');
         const dateVal = dateInput ? dateInput.value.trim() : '';
@@ -6330,30 +6580,44 @@
           planVal = (typeof planEl.value !== 'undefined') ? planEl.value : (planEl.innerText || planEl.textContent || '');
         }
 
-        const logIdx = parseInt(tr.dataset.logIdx);
-        const existingLog = (!isNaN(logIdx) && currentProj && currentProj.logs && currentProj.logs[logIdx])
-          ? currentProj.logs[logIdx]
-          : ((currentProj && currentProj.logs && currentProj.logs[index]) ? currentProj.logs[index] : {});
+        const finalDate = dateVal || goc.dateText || formatDateDDMMYYYY(new Date());
+        const finalTasks = tasksVal.trim();
+        const finalNotes = notesVal.trim();
+        const finalPlan = planVal.trim();
 
-        logs.push({
-          id: existingLog.id || ('log_' + Date.now() + '_' + index),
-          dateText: dateVal || existingLog.dateText || formatDateDDMMYYYY(new Date()),
-          tasks: tasksVal.trim(),
+        let hasChanged = false;
+        if (!goc.id) {
+          hasChanged = true;
+        } else {
+          if (
+            (goc.dateText || '') !== finalDate ||
+            (goc.tasks || '').trim() !== finalTasks ||
+            (goc.progressStep || 0) !== progressStep ||
+            (goc.notes || '').trim() !== finalNotes ||
+            (goc.plan || '').trim() !== finalPlan ||
+            !!goc.isSubRow !== isSubRow
+          ) {
+            hasChanged = true;
+          }
+        }
+
+        const updatedTime = hasChanged ? Date.now() : (goc.updatedAt || Date.now());
+
+        tuDOM.push({
+          ...goc,
+          id,
+          dateText: finalDate,
+          tasks: finalTasks,
           progressStep: progressStep,
-          notes: notesVal.trim(),
-          plan: planVal.trim(),
+          notes: finalNotes,
+          plan: finalPlan,
           isSubRow: isSubRow,
-          updatedAt: existingLog.updatedAt || Date.now()
+          updatedAt: updatedTime
         });
       });
 
-      // Fix BUG #3c: Giữ lại các logs đã bị xóa mềm trong project
-      if (currentProj && Array.isArray(currentProj.logs)) {
-        const deletedLogs = currentProj.logs.filter(l => l && l.deleted);
-        deletedLogs.forEach(dl => logs.push(dl));
-      }
-
-      return logs;
+      project.logs = [...tuDOM, ...tombstones];
+      return project.logs;
     }
     window.scanResearchLogsFromDOM = scanResearchLogsFromDOM;
 
@@ -7851,7 +8115,9 @@
 
       tbody.innerHTML = '';
 
-      if (!currentProj.logs || currentProj.logs.length === 0) {
+      // Fix BUG #10: Lọc bỏ các dòng đã xóa mềm khi kiểm tra rỗng và render
+      const activeLogs = (currentProj.logs || []).filter(l => l && !l.deleted);
+      if (activeLogs.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center"><div class="inner-panel max-w-md mx-auto text-slate-600 dark:text-slate-400 font-bold">${dict.emptyResearchLogs || 'Chưa có dữ liệu nhật ký nghiên cứu.'}</div></td></tr>`;
         return;
       }
@@ -7862,7 +8128,21 @@
         dict.switchLabel2 || '100% — Đã hoàn thành!'
       ];
 
-      currentProj.logs.forEach((log, lIdx) => {
+      // Fix BUG #11: Lọc tombstone ở MỌI chỗ đọc logs để hiển thị hoặc đếm
+      const logsHienThi = (currentProj.logs || []).filter(l => l && !l.deleted); // Fix BUG #11
+      if (logsHienThi.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center"><div class="inner-panel max-w-md mx-auto text-slate-600 dark:text-slate-400 font-bold">${dict.emptyResearchLogs || 'Chưa có dữ liệu nhật ký nghiên cứu.'}</div></td></tr>`;
+        return;
+      }
+
+
+      logsHienThi.forEach((log, lIdx) => {
+        // Fix BUG #10: Đảm bảo log luôn có id bền vững
+        if (!log.id) {
+          log.id = 'log_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+          if (!log.updatedAt) log.updatedAt = Date.now();
+        }
+
         const tr = document.createElement('tr');
         const isSelected = (lIdx === selectedLogIndex);
         const isSubRow = !!log.isSubRow;
@@ -7871,6 +8151,9 @@
           ? 'bg-emerald-50/80 dark:bg-emerald-950/40 ring-2 ring-skkuGreen'
           : (isSubRow ? 'bg-amber-50/20 dark:bg-amber-950/10 hover:bg-slate-50 dark:hover:bg-slate-800/50' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50')
           }`;
+        // Fix BUG #11: Mỗi <tr> phải có data-log-id
+        tr.dataset.logId = log.id;
+        tr.setAttribute('data-log-id', log.id);
         tr.dataset.logIdx = lIdx;
         tr.dataset.isSubrow = isSubRow ? "true" : "false";
         tr.draggable = true;
@@ -7910,7 +8193,7 @@
           </td>
           <td class="p-2 border-r border-slate-200 dark:border-slate-800 relative group/notecell">
             <div contenteditable="true" class="research-cell" data-field="notes" data-idx="${lIdx}" data-placeholder="${dict.placeholderNotes || 'Ghi chú/Kết quả...'}" onfocus="selectResearchRow(${lIdx})" onblur="updateResearchLogCell(${lIdx},'notes',this)" onkeyup="autoLinkCell(this)">${(log.notes && log.notes.trim()) ? cellContentWithLinks(log.notes) : ''}</div>
-            <button onclick="event.stopPropagation(); aiPolishNote(${lIdx}, this)"
+            <button type="button" onclick="event.stopPropagation(); aiPolishNote(${lIdx}, this)"
               class="absolute top-1 right-1 opacity-40 hover:opacity-100 group-hover/notecell:opacity-100 transition-opacity w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/70 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800 flex items-center justify-center text-[12px] shadow-sm cursor-pointer"
               title="✨ AI Polish: Sửa lỗi ngữ pháp & nâng cấp lên chuẩn Academic English">
               ✨
@@ -7920,7 +8203,7 @@
             <div contenteditable="true" class="research-cell" data-field="plan" data-idx="${lIdx}" data-placeholder="${dict.placeholderPlan || 'Kế hoạch ngày mai...'}" onfocus="selectResearchRow(${lIdx})" onblur="updateResearchLogCell(${lIdx},'plan',this)" onkeyup="autoLinkCell(this)">${(log.plan && log.plan.trim()) ? cellContentWithLinks(log.plan) : ''}</div>
           </td>
           <td class="p-3 text-center">
-            <button onclick="event.stopPropagation(); deleteResearchRow(${lIdx})" class="text-red-500 hover:text-red-700 p-1" title="${dict.colDelete || 'Xóa'}">
+            <button type="button" onclick="event.stopPropagation(); deleteResearchRow('${log.id}')" class="text-red-500 hover:text-red-700 p-1" title="${dict.colDelete || 'Xóa'}">
               <i class="fa-solid fa-trash"></i>
             </button>
           </td>
@@ -7946,8 +8229,10 @@
 
     // --- DRAG AND DROP ROW REORDER ---
     let dragSrcIdx = null;
+    let dragSrcId = null;
     function onRowDragStart(e) {
       dragSrcIdx = parseInt(this.dataset.logIdx);
+      dragSrcId = this.dataset.logId || this.getAttribute('data-log-id');
       this.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
     }
@@ -7960,12 +8245,19 @@
     function onRowDrop(e) {
       e.preventDefault();
       const targetIdx = parseInt(this.dataset.logIdx);
-      if (dragSrcIdx === null || dragSrcIdx === targetIdx) return;
+      const targetId = this.dataset.logId || this.getAttribute('data-log-id');
+      if ((!dragSrcId && dragSrcIdx === null) || (dragSrcId && dragSrcId === targetId)) return;
       const currentProj = appData.researchProjects[appData.activeProjectIndex];
       if (!currentProj || !currentProj.logs) return;
-      const [moved] = currentProj.logs.splice(dragSrcIdx, 1);
-      currentProj.logs.splice(targetIdx, 0, moved);
+
+      const fromIdx = dragSrcId ? currentProj.logs.findIndex(l => l && l.id === dragSrcId) : dragSrcIdx;
+      const toIdx = targetId ? currentProj.logs.findIndex(l => l && l.id === targetId) : targetIdx;
+      if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return;
+
+      const [moved] = currentProj.logs.splice(fromIdx, 1);
+      currentProj.logs.splice(toIdx, 0, moved);
       dragSrcIdx = null;
+      dragSrcId = null;
       saveData();
       renderResearchTab();
     }
@@ -8002,8 +8294,14 @@
     function updateResearchLogCell(idx, field, el) {
       const text = el.innerText;
       const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (currentProj && currentProj.logs[idx]) {
-        currentProj.logs[idx][field] = (text && text.trim()) ? text.trim() : '';
+      if (currentProj && Array.isArray(currentProj.logs)) {
+        const tr = el.closest('tr');
+        const logId = tr?.getAttribute('data-log-id') || tr?.dataset?.logId;
+        const log = (logId ? currentProj.logs.find(l => l && l.id === logId) : null) || currentProj.logs[idx];
+        if (log) {
+          log[field] = (text && text.trim()) ? text.trim() : '';
+          log.updatedAt = Date.now();
+        }
       }
       // Re-render with links or empty for placeholder
       if (!text || !text.trim()) {
@@ -8017,12 +8315,17 @@
 
     function updateResearchLogDate(idx, val, tr) {
       const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (currentProj && currentProj.logs[idx]) {
-        currentProj.logs[idx].dateText = val.trim();
-        const badge = tr.querySelector('.weekday-badge');
-        const lang = appData.lang || 'vi';
-        if (badge) {
-          badge.textContent = getWeekdayLabel(val, lang);
+      if (currentProj && Array.isArray(currentProj.logs)) {
+        const logId = tr?.getAttribute('data-log-id') || tr?.dataset?.logId;
+        const log = (logId ? currentProj.logs.find(l => l && l.id === logId) : null) || currentProj.logs[idx];
+        if (log) {
+          log.dateText = val.trim();
+          log.updatedAt = Date.now();
+          const badge = tr.querySelector('.weekday-badge');
+          const lang = appData.lang || 'vi';
+          if (badge) {
+            badge.textContent = getWeekdayLabel(val, lang);
+          }
         }
       }
       // Debounce lưu tự động khi đang gõ ngày
@@ -8052,15 +8355,21 @@
       labelEl.textContent = labels[nextState];
       // Save: map 0->0, 1->2, 2->4
       const stepMap = [0, 2, 4];
-      updateResearchLog(idx, 'progressStep', stepMap[nextState]);
+      const tr = trackEl.closest('tr');
+      const logId = tr?.getAttribute('data-log-id') || tr?.dataset?.logId;
+      updateResearchLog(logId || idx, 'progressStep', stepMap[nextState]);
       triggerAutoSaveResearchLogs(true);
     }
 
-    function updateResearchLog(idx, field, val) {
+    function updateResearchLog(idOrIdx, field, val) {
       const currentProj = appData.researchProjects[appData.activeProjectIndex];
-      if (currentProj && currentProj.logs[idx]) {
-        currentProj.logs[idx][field] = val;
-        triggerAutoSaveResearchLogs(true);
+      if (currentProj && Array.isArray(currentProj.logs)) {
+        const log = (typeof idOrIdx === 'string' ? currentProj.logs.find(l => l && l.id === idOrIdx) : null) || currentProj.logs[idOrIdx];
+        if (log) {
+          log[field] = val;
+          log.updatedAt = Date.now();
+          triggerAutoSaveResearchLogs(true);
+        }
       }
     }
 
@@ -8074,37 +8383,47 @@
       if (currentLogs && currentLogs.length > 0) currentProj.logs = currentLogs;
       if (!currentProj.logs) currentProj.logs = [];
 
-      if (currentProj.logs.length === 0) {
+      const logsHienThi = (currentProj.logs || []).filter(l => !l.deleted); // Fix BUG #11
+
+      // Fix BUG #10 & BUG #11: Gán id bền vững và updatedAt cho hàng mới
+      if (logsHienThi.length === 0) {
         const today = new Date();
         currentProj.logs.push({
-          id: 'log_' + Date.now(),
+          id: 'log_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7), // Fix BUG #10
           dateText: formatDateDDMMYYYY(today),
           tasks: '',
           progressStep: 0,
           notes: '',
           plan: '',
-          isSubRow: false
+          isSubRow: false,
+          updatedAt: Date.now() // Fix BUG #10
         });
         selectedLogIndex = 0;
       } else {
-        const targetIdx = (selectedLogIndex >= 0 && selectedLogIndex < currentProj.logs.length)
+        const targetIdx = (selectedLogIndex >= 0 && selectedLogIndex < logsHienThi.length)
           ? selectedLogIndex
           : 0;
-        const parentLog = currentProj.logs[targetIdx];
+        const parentLog = logsHienThi[targetIdx];
         const parentDate = extractCleanDate(parentLog?.dateText) || formatDateDDMMYYYY(new Date());
 
         const newSubRow = {
-          id: 'log_' + Date.now(),
+          id: 'log_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7), // Fix BUG #10
           dateText: parentDate,
           tasks: '',
           progressStep: 0,
           notes: '',
           plan: '',
-          isSubRow: true
+          isSubRow: true,
+          updatedAt: Date.now() // Fix BUG #10
         };
 
-        // Chèn ngay bên dưới hàng đang chọn
-        currentProj.logs.splice(targetIdx + 1, 0, newSubRow);
+        // Chèn ngay bên dưới hàng đang chọn trong mảng logs
+        const insertIdx = currentProj.logs.findIndex(l => l && l.id === parentLog.id);
+        if (insertIdx !== -1) {
+          currentProj.logs.splice(insertIdx + 1, 0, newSubRow);
+        } else {
+          currentProj.logs.push(newSubRow);
+        }
         selectedLogIndex = targetIdx + 1;
       }
 
@@ -8112,8 +8431,8 @@
       renderResearchTab();
       attachResearchTableEventListeners();
 
-      // 3. Tự động lưu ngay cấu trúc mới lên Firestore
-      saveUserData();
+      // 3. Tự động lưu ngay cấu trúc mới
+      saveData();
     }
     window.addResearchRow = addResearchRow;
 
@@ -8127,12 +8446,14 @@
       if (currentLogs && currentLogs.length > 0) currentProj.logs = currentLogs;
       if (!currentProj.logs) currentProj.logs = [];
 
+      const logsHienThi = (currentProj.logs || []).filter(l => !l.deleted); // Fix BUG #11
+
       let baseDate = null;
-      if (currentProj.logs.length > 0) {
-        const refIdx = (selectedLogIndex >= 0 && selectedLogIndex < currentProj.logs.length)
+      if (logsHienThi.length > 0) {
+        const refIdx = (selectedLogIndex >= 0 && selectedLogIndex < logsHienThi.length)
           ? selectedLogIndex
           : 0;
-        const refLog = currentProj.logs[refIdx];
+        const refLog = logsHienThi[refIdx];
         if (refLog && refLog.dateText) {
           baseDate = parseDateObject(refLog.dateText);
         }
@@ -8145,15 +8466,16 @@
       nextDate.setDate(nextDate.getDate() + 1);
       const nextDateStr = formatDateDDMMYYYY(nextDate);
 
-      // Chèn lên trên cùng của bảng (index 0)
+      // Fix BUG #10 & BUG #11: Chèn lên trên cùng của bảng (index 0) với id bền vững và updatedAt
       currentProj.logs.unshift({
-        id: 'log_' + Date.now(),
+        id: 'log_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7), // Fix BUG #10
         dateText: nextDateStr,
         tasks: '',
         progressStep: 0,
         notes: '',
         plan: '',
-        isSubRow: false
+        isSubRow: false,
+        updatedAt: Date.now() // Fix BUG #10
       });
 
       selectedLogIndex = 0;
@@ -8162,32 +8484,41 @@
       renderResearchTab();
       attachResearchTableEventListeners();
 
-      // 3. Tự động lưu ngay cấu trúc mới lên Firestore
-      saveUserData();
+      // 3. Tự động lưu ngay cấu trúc mới
+      saveData();
     }
     window.addResearchRowNextDay = addResearchRowNextDay;
 
-    function deleteResearchRow(idx) {
-      const currentProj = getActiveProject();
-      if (!currentProj) return;
-      const currentLogs = scanResearchLogsFromDOM();
-      if (currentLogs && currentLogs.length > 0) currentProj.logs = currentLogs;
-      if (currentProj.logs && currentProj.logs[idx]) {
-        // Fix BUG #3c: Xóa mềm log nhật ký (soft delete / tombstone)
-        const log = currentProj.logs[idx];
-        log.deleted = true;
-        log.deletedAt = Date.now();
-        log.updatedAt = Date.now();
-        currentProj.updatedAt = Date.now();
-        if (selectedLogIndex >= currentProj.logs.length) {
-          selectedLogIndex = Math.max(0, currentProj.logs.length - 1);
-        }
-        renderResearchTab();
-        attachResearchTableEventListeners();
-        saveUserData();
-      }
+    // Fix BUG #11: deleteResearchRow(id) phải cập nhật giao diện ngay lập tức theo đúng 4 việc
+    function deleteResearchRow(id) {
+      const project = (appData.researchProjects && appData.researchProjects[appData.activeProjectIndex])
+        ? appData.researchProjects[appData.activeProjectIndex]
+        : null;
+      if (!project || !Array.isArray(project.logs)) return;
+
+      const item = project.logs.find(l => l && l.id === id);
+      if (!item) { console.warn('Fix BUG #11: không tìm thấy dòng', id); return; }
+      if (item.deleted) return; // đã xóa rồi, không làm gì
+
+      // 1. Đánh dấu tombstone
+      item.deleted = true;
+      item.deletedAt = Date.now();
+      item.updatedAt = Date.now();
+      project.updatedAt = Date.now();
+      appData.updatedAtLocal = Date.now();
+
+      // 2. Gỡ hàng khỏi DOM ngay để phản hồi tức thì
+      const tr = document.querySelector(`tr[data-log-id="${id}"]`);
+      if (tr) tr.remove();
+
+      // 3. Lưu (localStorage + Firestore nếu đã đăng nhập)
+      saveData();
+
+      // 4. Vẽ lại bảng để số thứ tự, thống kê, tiến độ khớp lại
+      renderResearchTab();
     }
     window.deleteResearchRow = deleteResearchRow;
+    window.renderResearchLogs = renderResearchTab;
 
     function openAddTopicModal() {
       const modal = document.getElementById('add-topic-modal');
@@ -8586,6 +8917,8 @@
       filtered.forEach(p => {
         const card = document.createElement('div');
         card.className = "modern-card p-5 hover:shadow-lg hover:-translate-y-1 flex flex-col justify-between group";
+        card.setAttribute('data-paper-id', p.id);
+        card.dataset.paperId = p.id;
 
         const paperUrl = formatPaperUrl(p.doi);
         const hasDoi = !!p.doi;
@@ -8599,12 +8932,12 @@
                 ${getPaperStatusBadge(p.status || 'to_read', p.id)}
               </div>
               <div class="flex items-center gap-1 opacity-90 group-hover:opacity-100">
-                <button onclick="openEditPaperModal('${p.id}')"
+                <button type="button" onclick="event.stopPropagation(); openEditPaperModal('${p.id}')"
                   class="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800 transition"
                   title="Sửa bài báo">
                   <i class="fa-solid fa-pen-to-square"></i>
                 </button>
-                <button onclick="deletePaper('${p.id}')"
+                <button type="button" onclick="event.stopPropagation(); deletePaper('${p.id}')"
                   class="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-slate-800 transition"
                   title="Xóa bài báo">
                   <i class="fa-solid fa-trash-can"></i>
@@ -8901,13 +9234,18 @@
       });
 
       if (confirmed) {
-        // Fix BUG #3c: Xóa mềm bài báo (soft delete / tombstone)
+        // Fix BUG #3c & BUG #11: Xóa mềm bài báo (soft delete / tombstone) và cập nhật DOM ngay
         if (paper) {
           paper.deleted = true;
           paper.deletedAt = Date.now();
           paper.updatedAt = Date.now();
         }
         proj.updatedAt = Date.now();
+        appData.updatedAtLocal = Date.now();
+
+        const card = document.querySelector(`[data-paper-id="${paperId}"]`);
+        if (card) card.remove();
+
         saveProjectPapers(proj, papers);
         renderPapersRepository();
         showSuccessToast('🗑️ Đã xóa bài báo khỏi thư viện');
@@ -9189,66 +9527,63 @@
         // BƯỚC 2: Gọi Gemini AI → tổng hợp Abstract + Core Findings
         // ══════════════════════════════════════════════════
         let geminiParsed = null;
-        // Fix BUG #9: Kiểm tra nếu GEMINI_API_KEY rỗng thì vô hiệu hóa tính năng gọi Gemini
-        if (!GEMINI_API_KEY) {
-          const lang = appData.lang || 'vi';
-          const dict = i18nDict[lang] || i18nDict['vi'];
-          showSuccessToast(dict.aiKeyMissing || "Tính năng AI chưa được cấu hình khóa API");
-        } else {
-          if (statusTextEl) statusTextEl.innerText = '🤖 Gemini AI đang tổng hợp Abstract & Core Findings (45s)...';
+        // Fix AI-PROXY: Gọi Gemini qua Cloudflare Worker Proxy
+        if (statusTextEl) statusTextEl.innerText = '🤖 Gemini AI đang tổng hợp Abstract & Core Findings...';
 
-          // Xây dựng prompt dựa trên dữ liệu có được
-          const titleForPrompt = finalTitle || rawInput.substring(0, 300);
-          const doiForPrompt = finalDoi || rawInput;
-          const extraContext = crossrefExtra.journal
-            ? `Tạp chí: ${crossrefExtra.journal} | Tác giả: ${crossrefExtra.authors} | Năm: ${crossrefExtra.year}`
-            : '';
-          const crossrefAbstractHint = crossrefExtra.abstract
-            ? `Abstract thô từ Crossref (dùng làm tham khảo, không dịch nguyên văn): ${crossrefExtra.abstract.substring(0, 600)}`
-            : '';
+        // Xây dựng prompt dựa trên dữ liệu có được
+        const titleForPrompt = finalTitle || rawInput.substring(0, 300);
+        const doiForPrompt = finalDoi || rawInput;
+        const extraContext = crossrefExtra.journal
+          ? `Tạp chí: ${crossrefExtra.journal} | Tác giả: ${crossrefExtra.authors} | Năm: ${crossrefExtra.year}`
+          : '';
+        const crossrefAbstractHint = crossrefExtra.abstract
+          ? `Abstract thô từ Crossref (dùng làm tham khảo, không dịch nguyên văn): ${crossrefExtra.abstract.substring(0, 600)}`
+          : '';
 
-          const geminiPrompt = `Dựa trên tiêu đề bài báo khoa học: '${titleForPrompt}' và mã DOI: '${doiForPrompt}', hãy đóng vai chuyên gia nghiên cứu hóa học/vật liệu điện hóa. Hãy tổng hợp:
+        const geminiPrompt = `Dựa trên tiêu đề bài báo khoa học: '${titleForPrompt}' và mã DOI: '${doiForPrompt}', hãy đóng vai chuyên gia nghiên cứu hóa học/vật liệu điện hóa. Hãy tổng hợp:
 1. Tóm tắt bài báo (Abstract): 2-3 câu về bối cảnh nghiên cứu, vật liệu chính và mục đích nghiên cứu bằng tiếng Việt.
 2. Phương pháp & Kết quả cốt lõi (Core Findings): Gạch đầu dòng các điểm nổi bật (vật liệu xúc tác, overpotential OER/HER, Tafel slope, hiệu suất, cơ chế hoạt động...).
 
 ${extraContext}
 ${crossrefAbstractHint}
 
-Trả về kết quả dưới dạng JSON thuần (không markdown, không backtick):
+CHỈ DẪN BẮT BUỘC:
+- Chỉ được dùng thông tin có trong tiêu đề, mã DOI và dữ liệu cung cấp ở trên, không suy diễn hay thêm nội dung không có; field nào không có dữ liệu thì để chuỗi rỗng.
+- Trả về kết quả dưới dạng JSON:
 {"abstract": "...", "core_findings": "• ...\n• ...\n• ..."}`;
 
-          try {
-            const geminiRes = await fetchWithTimeout(
-              `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`,
-              {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  contents: [{ parts: [{ text: geminiPrompt }] }],
-                  generationConfig: { temperature: 0.3, maxOutputTokens: 1024, response_mime_type: 'application/json' }
-                })
-              },
-              45000
-            );
-
-            if (geminiRes && geminiRes.ok) {
-              const gJson = await geminiRes.json();
-              const rawText = (gJson?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
-
-              // Parse JSON robust: 3 tầng
-              try {
-                const clean = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-                geminiParsed = JSON.parse(clean);
-              } catch (_) { }
-
-              if (!geminiParsed) {
-                const m = rawText.match(/\{[\s\S]*\}/);
-                if (m) { try { geminiParsed = JSON.parse(m[0]); } catch (_) { } }
+        try {
+          const gJson = await callGemini({
+            contents: [{ parts: [{ text: geminiPrompt }] }],
+            generationConfig: {
+              temperature: 0.2,
+              maxOutputTokens: 1024,
+              responseMimeType: 'application/json',
+              responseSchema: {
+                type: "OBJECT",
+                properties: {
+                  abstract: { type: "STRING" },
+                  core_findings: { type: "STRING" }
+                },
+                required: ["abstract", "core_findings"]
               }
             }
-          } catch (geminiErr) {
-            // Gemini thất bại → fallback bên dưới
+          });
+
+          const rawText = (gJson?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+
+          // Parse JSON robust: 3 tầng
+          try {
+            const clean = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+            geminiParsed = JSON.parse(clean);
+          } catch (_) { }
+
+          if (!geminiParsed) {
+            const m = rawText.match(/\{[\s\S]*\}/);
+            if (m) { try { geminiParsed = JSON.parse(m[0]); } catch (_) { } }
           }
+        } catch (geminiErr) {
+          console.warn('[AI-PROXY] Lỗi tổng hợp thông tin bài báo qua Gemini:', geminiErr);
         }
 
         // ── Điền Abstract + Core Findings (không bao giờ để trống) ──
@@ -9348,32 +9683,20 @@ Trả về kết quả dưới dạng JSON thuần (không markdown, không back
 
         // --- 2. DỰ PHÒNG: GEMINI AI TẠO CITATION ---
         if (!citationText) {
-          const lang = appData.lang || 'vi';
-          const dict = i18nDict[lang] || i18nDict['vi'];
-          // Fix BUG #9: Kiểm tra nếu GEMINI_API_KEY rỗng
-          if (!GEMINI_API_KEY) {
-            showSuccessToast(dict.aiKeyMissing || "Tính năng AI chưa được cấu hình khóa API");
-          } else {
-            const promptText = format === 'bibtex'
-              ? `Tạo một mục BibTeX chuẩn (@article hoặc loại phù hợp) cho bài báo sau. Chỉ trả về chuỗi BibTeX thuần, không giải thích, không markdown.\n\nTiêu đề: ${paper.title || 'Unknown'}\nDOI: ${paper.doi || 'N/A'}\nThông tin khác: ${paper.abstract ? paper.abstract.substring(0, 200) : ''}`
-              : `Tạo một trích dẫn APA 7th edition chuẩn cho bài báo sau. Chỉ trả về chuỗi trích dẫn thuần, không giải thích, không markdown.\n\nTiêu đề: ${paper.title || 'Unknown'}\nDOI: ${paper.doi || 'N/A'}\nThông tin khác: ${paper.abstract ? paper.abstract.substring(0, 200) : ''}`;
+          // Fix AI-PROXY: Gọi Gemini qua Cloudflare Worker proxy
+          const promptText = format === 'bibtex'
+            ? `Tạo một mục BibTeX chuẩn (@article hoặc loại phù hợp) cho bài báo sau. Chỉ được dùng thông tin cung cấp, không suy diễn thêm; field nào không có thì để chuỗi rỗng. Chỉ trả về chuỗi BibTeX thuần, không giải thích, không markdown.\n\nTiêu đề: ${paper.title || 'Unknown'}\nDOI: ${paper.doi || 'N/A'}\nThông tin khác: ${paper.abstract ? paper.abstract.substring(0, 200) : ''}`
+            : `Tạo một trích dẫn APA 7th edition chuẩn cho bài báo sau. Chỉ được dùng thông tin cung cấp, không suy diễn thêm; field nào không có thì để chuỗi rỗng. Chỉ trả về chuỗi trích dẫn thuần, không giải thích, không markdown.\n\nTiêu đề: ${paper.title || 'Unknown'}\nDOI: ${paper.doi || 'N/A'}\nThông tin khác: ${paper.abstract ? paper.abstract.substring(0, 200) : ''}`;
 
-            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
-            const geminiRes = await fetch(geminiUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{ parts: [{ text: promptText }] }],
-                generationConfig: { temperature: 0.1, maxOutputTokens: 512 }
-              }),
-              signal: AbortSignal.timeout(20000)
+          try {
+            const geminiJson = await callGemini({
+              contents: [{ parts: [{ text: promptText }] }],
+              generationConfig: { temperature: 0.1, maxOutputTokens: 512 }
             });
-            if (geminiRes.ok) {
-              const geminiJson = await geminiRes.json();
-              const raw = (geminiJson?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
-              // Làm sạch markdown nếu Gemini trả về trong code block
-              citationText = raw.replace(/^```[a-z]*\s*/i, '').replace(/\s*```$/i, '').trim();
-            }
+            const raw = (geminiJson?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+            citationText = raw.replace(/^```[a-z]*\s*/i, '').replace(/\s*```$/i, '').trim();
+          } catch (cErr) {
+            console.warn('[AI-PROXY] Lỗi tạo trích dẫn qua Gemini proxy:', cErr);
           }
         }
 
@@ -9508,10 +9831,12 @@ Trả về kết quả dưới dạng JSON thuần (không markdown, không back
       // Fill date select
       const sel = document.getElementById('report-date-select');
       sel.innerHTML = `<option value="" data-i18n="optSelectDateDefault">${dict.optSelectDateDefault || '-- Chọn ngày từ bảng nhật ký --'}</option>`;
-      if (currentProj.logs && currentProj.logs.length > 0) {
+      // Fix BUG #10: Lọc các dòng chưa bị xóa mềm trước khi tạo danh sách ngày xuất báo cáo
+      const activeLogs = (currentProj.logs || []).filter(l => l && !l.deleted);
+      if (activeLogs.length > 0) {
         // Collect unique clean dates in chronological / appearance order
         const uniqueDates = [];
-        currentProj.logs.forEach((log) => {
+        activeLogs.forEach((log) => {
           const cleanDate = extractCleanDate(log.dateText);
           if (cleanDate && !uniqueDates.includes(cleanDate)) {
             uniqueDates.push(cleanDate);
@@ -9566,7 +9891,8 @@ Trả về kết quả dưới dạng JSON thuần (không markdown, không back
         return;
       }
 
-      const matchingLogs = currentProj.logs.filter(l => extractCleanDate(l.dateText) === targetDate);
+      // Fix BUG #10: Lọc bỏ các dòng đã xóa mềm khi xem trước báo cáo
+      const matchingLogs = (currentProj.logs || []).filter(l => l && !l.deleted && extractCleanDate(l.dateText) === targetDate);
       if (matchingLogs.length === 0) {
         previewBox.classList.add('hidden');
         noData.classList.remove('hidden');
@@ -9616,112 +9942,68 @@ Trả về kết quả dưới dạng JSON thuần (không markdown, không back
     }
 
     // --- GEMINI AI EXPORT ASSISTANT ---
+    // Fix AI-PROXY: Chuyển sang gọi qua Cloudflare Worker Proxy với responseSchema và chỉ thị grounding rõ ràng
     async function callGeminiDailyReportAssistant(rawData) {
-      // Fix BUG #9: Kiểm tra nếu GEMINI_API_KEY rỗng thì dừng và thông báo thân thiện
-      if (!GEMINI_API_KEY) {
-        const lang = appData.lang || 'vi';
-        const dict = i18nDict[lang] || i18nDict['vi'];
-        const msg = dict.aiKeyMissing || "Tính năng AI chưa được cấu hình khóa API";
-        if (typeof showSuccessToast === 'function') showSuccessToast(`⚠️ ${msg}`);
-        throw new Error(msg);
-      }
-      const prompt = `You are a Senior Academic Journal Editor. Transform the following raw daily lab notes into professional, publication-grade Academic English.
+      const prompt = `You are a Senior Academic Journal Editor. Transform the following raw daily lab notes into professional, publication-grade Academic English for a daily lab report.
 
 STRICT RULES:
+- GROUNDED INFORMATION ONLY: Only use information provided in the user's research logs below. Do NOT hallucinate, infer, or add ungrounded content not present in the input. If any field has no data, leave it as an empty string ("") or empty array ([]).
 - 100% ENGLISH TRANSLATION: Translate all Vietnamese text into formal Academic English. Absolute zero Vietnamese words in the output.
-- SYNTHESIZE & EDIT: Do NOT copy-paste raw text verbatim. Condense, format, and organize theoretical mechanisms (LOM vs AEM, DOS, d-band, overpotential) into clean, concise academic paragraphs or bullet points.
-- JSON STRUCTURE REQUIREMENT:
-  - "date": Date string.
-  - "title": A concise, formal scientific title (MAX 10 words).
-  - "objective": 1 clear sentence summarizing the research goal.
-  - "observations": Professional synthesis of findings and theoretical notes.
-  - "summary": 2-sentence formal conclusion.
-  - "next_steps": Actionable future research plans in English.
-  - "future_directions": Future development directions in English.
+- SYNTHESIZE & EDIT: Do NOT copy-paste raw text verbatim. Condense, format, and organize theoretical mechanisms (LOM vs AEM, DOS, d-band, overpotential) into clean, concise academic text.
 
 Raw daily lab notes:
-- Date: ${rawData.date || 'N/A'}
-- Planned Tasks: ${rawData.tasks || 'N/A'}
-- Progress: ${rawData.progress || 'N/A'}
-- Notes, Observations & Lessons Learned: ${rawData.notes || 'N/A'}
-- Next Plans: ${rawData.plan || 'N/A'}
-- Research Project: ${rawData.project || 'N/A'}`;
+- Date: ${rawData.date || ''}
+- Planned Tasks: ${rawData.tasks || ''}
+- Progress: ${rawData.progress || ''}
+- Notes, Observations & Lessons Learned: ${rawData.notes || ''}
+- Next Plans: ${rawData.plan || ''}
+- Research Project: ${rawData.project || ''}`;
 
-      // Endpoint chuẩn chính thức của Google Gemini API: gemini-3.6-flash
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
-      const maxRetries = 2; // Tự động thử lại tối đa 2 lần nếu gặp lỗi 503
-      let lastError = null;
-
-      for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: {
-                response_mime_type: "application/json",
-                responseMimeType: "application/json"
-              }
-            })
-          });
-
-          if (!response.ok) {
-            const errBody = await response.text();
-            console.warn(`Gemini 3.6 Flash (lần thử ${attempt + 1}) báo lỗi (${response.status}):`, errBody);
-
-            // Nếu gặp lỗi 503 (quá tải / Service Unavailable), tự động thử lại sau 2 giây
-            if (response.status === 503 && attempt < maxRetries) {
-              console.log(`⚠️ Gemini 3.6 Flash gặp lỗi 503 (quá tải). Đang tự động thử lại sau 2 giây... (lần ${attempt + 1}/${maxRetries})`);
-              await new Promise(resolve => setTimeout(resolve, 2000));
-              continue;
-            }
-
-            let detail = errBody;
-            try {
-              const errObj = JSON.parse(errBody);
-              if (errObj?.error?.message) {
-                detail = errObj.error.message;
-              }
-            } catch (_) { }
-            lastError = new Error(`[gemini-3.6-flash] HTTP ${response.status}: ${detail}`);
-            break;
+      const resJson = await callGemini({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.2,
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              date: { type: "STRING" },
+              title: { type: "STRING" },
+              objective: { type: "STRING" },
+              observations: { type: "STRING" },
+              summary: { type: "STRING" },
+              next_steps: { type: "STRING" },
+              future_directions: { type: "STRING" },
+              preparations: { type: "ARRAY", items: { type: "STRING" } },
+              procedures: { type: "ARRAY", items: { type: "STRING" } },
+              exp_data: { type: "ARRAY", items: { type: "STRING" } },
+              references: { type: "ARRAY", items: { type: "STRING" } },
+              weather: { type: "STRING" },
+              value: { type: "STRING" },
+              unit: { type: "STRING" }
+            },
+            required: ["date", "title", "objective", "observations", "summary", "next_steps"]
           }
+        }
+      });
 
-          const resJson = await response.json();
-          const textOutput = resJson?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (!textOutput) throw new Error('Không nhận được text phản hồi từ Gemini API (gemini-3.6-flash)');
+      const textOutput = resJson?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!textOutput) throw new Error('Không nhận được text phản hồi từ Gemini API');
 
-          // Tự động làm sạch chuỗi (xóa bỏ mọi dấu ```json hoặc ``` nếu có) trước khi JSON.parse()
-          let cleanJson = textOutput.trim();
-          cleanJson = cleanJson.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+      let cleanJson = textOutput.trim();
+      cleanJson = cleanJson.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
 
-          // Trích xuất phần JSON {} nếu có văn bản ngoài lề
-          if (!cleanJson.startsWith('{')) {
-            const firstBrace = cleanJson.indexOf('{');
-            const lastBrace = cleanJson.lastIndexOf('}');
-            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-              cleanJson = cleanJson.slice(firstBrace, lastBrace + 1);
-            }
-          }
-
-          const parsed = JSON.parse(cleanJson);
-          console.log('✅ [Gemini AI] Phân tích & biên tập thành công bằng model gemini-3.6-flash:', parsed);
-          return parsed;
-        } catch (err) {
-          console.warn(`Lỗi khi gọi Gemini 3.6 Flash (lần thử ${attempt + 1}):`, err);
-          lastError = err;
-          // Nếu lỗi chứa 503 và còn lượt retry
-          if (err?.message?.includes('503') && attempt < maxRetries) {
-            console.log('⚠️ Gặp lỗi 503. Đang tự động thử lại sau 2 giây...');
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            continue;
-          }
-          break;
+      if (!cleanJson.startsWith('{')) {
+        const firstBrace = cleanJson.indexOf('{');
+        const lastBrace = cleanJson.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          cleanJson = cleanJson.slice(firstBrace, lastBrace + 1);
         }
       }
 
-      throw lastError || new Error('Không thể kết nối với Gemini API (gemini-3.6-flash)');
+      const parsed = JSON.parse(cleanJson);
+      console.log('✅ [Gemini AI via Proxy] Phân tích & biên tập báo cáo Daily thành công:', parsed);
+      return parsed;
     }
 
     // Hàm gọi khi nhấn nút "Tải Báo Cáo Daily"
@@ -9758,7 +10040,8 @@ Raw daily lab notes:
         return;
       }
 
-      const matchingLogs = currentProj.logs.filter(l => extractCleanDate(l.dateText) === selectedDate);
+      // Fix BUG #10: Lọc bỏ các dòng đã xóa mềm khi xuất báo cáo hàng ngày
+      const matchingLogs = (currentProj.logs || []).filter(l => l && !l.deleted && extractCleanDate(l.dateText) === selectedDate);
       if (matchingLogs.length === 0) {
         alert(dict.alertNoLogsFound || 'Không tìm thấy dữ liệu nhật ký cho ngày đã chọn!');
         return;
@@ -10430,6 +10713,27 @@ Raw daily lab notes:
         console.warn('purgeOldTombstones error:', e);
       }
 
+      // Fix BUG #10: Migration chạy một lần trong initApp(): duyệt toàn bộ appData.researchProjects[*].logs, phần tử nào chưa có id thì gán id mới.
+      try {
+        if (appData && Array.isArray(appData.researchProjects)) {
+          appData.researchProjects.forEach(proj => {
+            if (proj && Array.isArray(proj.logs)) {
+              proj.logs.forEach(log => {
+                if (log && !log.id) {
+                  log.id = 'log_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+                  if (!log.updatedAt) log.updatedAt = Date.now();
+                }
+              });
+            }
+          });
+        }
+        // Fix BUG #10: Dọn trùng nhật ký đã bị nhân bản sẵn có
+        dedupeResearchLogs();
+        saveLocal();
+      } catch (e) {
+        console.warn('Fix BUG #10: migration/dedupeResearchLogs error:', e);
+      }
+
       // Khôi phục giao diện người dùng nếu đã có phiên trong localStorage để không bị giật/đăng xuất khi F5
       try {
         const savedUserStr = localStorage.getItem('loggedInUser');
@@ -10585,6 +10889,7 @@ Raw daily lab notes:
         const dateStr = c.startDate ? `${c.startDate} → ${c.endDate || '?'}` : (dict.unlimitedDate || 'Không giới hạn');
 
         const div = document.createElement('div');
+        div.setAttribute('data-course-idx', idx);
         div.className = 'flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-indigo-400 transition group';
         div.innerHTML = `
           <div class="flex-shrink-0 w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-base shadow">
@@ -10603,10 +10908,10 @@ Raw daily lab notes:
             <div class="text-[10px] text-slate-400 mt-0.5">📅 ${dateStr} (${c.weeks || '?'} ${dict.weeksUnit || 'tuần'})</div>
           </div>
           <div class="flex items-center gap-1.5 flex-shrink-0">
-            <button onclick="openEditCourseModal(${idx})" class="p-2 text-amber-500 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-xl transition" title="${dict.btnEditCourse || 'Chỉnh sửa'}">
+            <button type="button" onclick="event.stopPropagation(); openEditCourseModal(${idx})" class="p-2 text-amber-500 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-xl transition" title="${dict.btnEditCourse || 'Chỉnh sửa'}">
               <i class="fa-solid fa-pen-to-square"></i>
             </button>
-            <button onclick="deleteCourse(${idx})" class="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition" title="${dict.colDelete || 'Xóa'}">
+            <button type="button" onclick="event.stopPropagation(); deleteCourse(${idx})" class="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition" title="${dict.colDelete || 'Xóa'}">
               <i class="fa-solid fa-trash-can"></i>
             </button>
           </div>
@@ -10628,13 +10933,16 @@ Raw daily lab notes:
       });
       if (!confirmed) return;
 
-      // Fix BUG #3c: Xóa mềm môn học (soft delete / tombstone)
+      // Fix BUG #3c & BUG #11: Xóa mềm môn học (soft delete / tombstone) và gỡ DOM ngay
       const c = appData.globalCourses[idx];
       if (c) {
         c.deleted = true;
         c.deletedAt = Date.now();
         c.updatedAt = Date.now();
+        appData.updatedAtLocal = Date.now();
       }
+      const el = document.querySelector(`div[data-course-idx="${idx}"]`);
+      if (el) el.remove();
       saveData();
       renderCoursesManagement();
       renderWeeksContainer();
@@ -11018,7 +11326,9 @@ Raw daily lab notes:
       const lang = appData.lang || 'vi';
       const dict = i18nDict[lang] || i18nDict['vi'];
 
-      if (!proj || !proj.logs || !proj.logs.length) {
+      // Fix BUG #10: Lọc các dòng chưa bị xóa mềm trước khi cấu hình báo cáo tuần
+      const activeLogs = (proj && Array.isArray(proj.logs)) ? proj.logs.filter(l => l && !l.deleted) : [];
+      if (!proj || !activeLogs.length) {
         showSuccessToast(dict.alertNoLogsFound || '⚠️ Chưa có nhật ký nào trong đề tài hiện tại để xuất báo cáo tuần!');
         return;
       }
@@ -11026,10 +11336,10 @@ Raw daily lab notes:
       const listContainer = document.getElementById('weekly-days-list');
       if (!listContainer) return;
 
-      const totalLogs = proj.logs.length;
+      const totalLogs = activeLogs.length;
       const startIndex = Math.max(0, totalLogs - 7);
 
-      listContainer.innerHTML = proj.logs.map((log, idx) => {
+      listContainer.innerHTML = activeLogs.map((log, idx) => {
         const isChecked = idx >= startIndex;
         const cleanDate = extractCleanDate(log.dateText) || log.dateText || `Ngày ${idx + 1}`;
         const weekdayStr = getWeekdayLabel(cleanDate, lang);
@@ -11044,7 +11354,7 @@ Raw daily lab notes:
 
         return `
           <label class="flex items-start gap-3 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-emerald-400 dark:hover:border-emerald-500 bg-white dark:bg-slate-800/80 cursor-pointer transition select-none group">
-            <input type="checkbox" name="weekly-day-check" value="${idx}" ${isChecked ? 'checked' : ''} onchange="updateWeeklySelectedCount()"
+            <input type="checkbox" name="weekly-day-check" value="${log.id || idx}" ${isChecked ? 'checked' : ''} onchange="updateWeeklySelectedCount()"
               class="mt-1 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 accent-emerald-600 cursor-pointer">
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
@@ -11061,6 +11371,9 @@ Raw daily lab notes:
       }).join('');
 
       updateWeeklySelectedCount();
+      // Fix AI-PROXY: Đồng bộ dropdown model với GEMINI_MODEL hiện tại
+      const modelSelect = document.getElementById('select-gemini-model');
+      if (modelSelect) modelSelect.value = GEMINI_MODEL;
       document.getElementById('weekly-report-modal').classList.remove('hidden');
     }
 
@@ -11105,7 +11418,9 @@ Raw daily lab notes:
       const lang = appData.lang || 'vi';
       const dict = i18nDict[lang] || i18nDict['vi'];
 
-      if (!proj || !proj.logs || !proj.logs.length) {
+      // Fix BUG #10: Lọc các dòng chưa bị xóa mềm trước khi xuất Word
+      const activeLogs = (proj && Array.isArray(proj.logs)) ? proj.logs.filter(l => l && !l.deleted) : [];
+      if (!proj || !activeLogs.length) {
         showSuccessToast(dict.alertNoLogsFound || '⚠️ Chưa có nhật ký nào trong đề tài!');
         return;
       }
@@ -11116,8 +11431,11 @@ Raw daily lab notes:
         return;
       }
 
-      const selectedIndexes = checkedBoxes.map(cb => parseInt(cb.value)).sort((a, b) => a - b);
-      const selectedLogs = selectedIndexes.map(i => proj.logs[i]).filter(Boolean);
+      // Fix BUG #10: Tìm log theo id hoặc index và lọc bỏ các log đã xóa mềm
+      const selectedLogs = checkedBoxes.map(cb => {
+        const val = cb.value;
+        return proj.logs.find(l => l && !l.deleted && l.id === val) || proj.logs[parseInt(val)];
+      }).filter(l => l && !l.deleted);
 
       const btn = document.getElementById('btn-weekly-export-docx');
       let origHTML = '';
@@ -11184,38 +11502,33 @@ Hãy trả về duy nhất chuỗi JSON hợp lệ theo định dạng sau (khô
 DỮ LIỆU NHẬT KÝ ĐÃ CHỌN:\n${logSummary}`;
 
       let aiData = null;
-      // Fix BUG #9: Kiểm tra nếu GEMINI_API_KEY rỗng
-      if (!GEMINI_API_KEY) {
-        const lang = appData.lang || 'vi';
-        const dict = i18nDict[lang] || i18nDict['vi'];
-        if (typeof showSuccessToast === 'function') showSuccessToast(`⚠️ ${dict.aiKeyMissing || "Tính năng AI chưa được cấu hình khóa API"}`);
-      } else {
-        try {
-          const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: {
-                  response_mime_type: "application/json",
-                  temperature: 0.3,
-                  maxOutputTokens: 2048
-                }
-              })
+      // Fix AI-PROXY: Gọi Gemini qua Cloudflare Worker Proxy với responseSchema và grounding instructions
+      try {
+        const resJson = await callGemini({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseMimeType: "application/json",
+            temperature: 0.2,
+            maxOutputTokens: 2048,
+            responseSchema: {
+              type: "OBJECT",
+              properties: {
+                executive_summary: { type: "STRING" },
+                completed_tasks: { type: "ARRAY", items: { type: "STRING" } },
+                experimental_results: { type: "ARRAY", items: { type: "STRING" } },
+                challenges_and_solutions: { type: "ARRAY", items: { type: "STRING" } },
+                next_week_plan: { type: "ARRAY", items: { type: "STRING" } }
+              },
+              required: ["executive_summary", "completed_tasks", "experimental_results", "challenges_and_solutions", "next_week_plan"]
             }
-          );
-
-          if (res.ok) {
-            const rawRes = await res.json();
-            let jsonStr = rawRes?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-            jsonStr = jsonStr.replace(/```json/gi, '').replace(/```/g, '').trim();
-            aiData = JSON.parse(jsonStr);
           }
-        } catch (e) {
-          console.warn('Lỗi gọi Gemini cho Word, sử dụng fallback cục bộ', e);
-        }
+        }, GEMINI_MODEL);
+
+        let jsonStr = resJson?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+        jsonStr = jsonStr.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+        aiData = JSON.parse(jsonStr);
+      } catch (e) {
+        console.warn('[AI-PROXY] Lỗi gọi Gemini cho Word, sử dụng fallback cục bộ:', e);
       }
 
       if (!aiData) {
@@ -11492,7 +11805,9 @@ DỮ LIỆU NHẬT KÝ ĐÃ CHỌN:\n${logSummary}`;
       const lang = appData.lang || 'vi';
       const dict = i18nDict[lang] || i18nDict['vi'];
 
-      if (!proj || !proj.logs || !proj.logs.length) {
+      // Fix BUG #10: Lọc các dòng chưa bị xóa mềm trước khi xuất PowerPoint
+      const activeLogs = (proj && Array.isArray(proj.logs)) ? proj.logs.filter(l => l && !l.deleted) : [];
+      if (!proj || !activeLogs.length) {
         showSuccessToast(dict.alertNoLogsFound || '⚠️ Chưa có nhật ký nào trong đề tài!');
         return;
       }
@@ -11503,8 +11818,11 @@ DỮ LIỆU NHẬT KÝ ĐÃ CHỌN:\n${logSummary}`;
         return;
       }
 
-      const selectedIndexes = checkedBoxes.map(cb => parseInt(cb.value)).sort((a, b) => a - b);
-      const selectedLogs = selectedIndexes.map(i => proj.logs[i]).filter(Boolean);
+      // Fix BUG #10: Tìm log theo id hoặc index và lọc bỏ các log đã xóa mềm
+      const selectedLogs = checkedBoxes.map(cb => {
+        const val = cb.value;
+        return proj.logs.find(l => l && !l.deleted && l.id === val) || proj.logs[parseInt(val)];
+      }).filter(l => l && !l.deleted);
 
       const btn = document.getElementById('btn-weekly-export-pptx');
       let origHTML = '';
@@ -11514,7 +11832,7 @@ DỮ LIỆU NHẬT KÝ ĐÃ CHỌN:\n${logSummary}`;
         btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${dict.generatingPptxSpin || 'Gemini AI đang phân tích bài báo & tạo slide...'}</span>`;
       }
 
-      showSuccessToast(dict.toastAiAnalyzingPptx || '🤖 Gemini AI (gemini-3.6-flash) đang phân tích bài báo & dữ liệu nhật ký...');
+      showSuccessToast((dict.toastAiAnalyzingPptx || '🤖 Gemini AI đang phân tích bài báo & dữ liệu nhật ký...').replace('gemini-3.6-flash', GEMINI_MODEL));
 
       try {
         // --- BƯỚC 1: TRÍCH XUẤT DOIs, URLs VÀ ẢNH TỪ NHẬT KÝ ĐÃ CHỌN ---
@@ -11686,38 +12004,22 @@ Return ONLY valid JSON (no markdown formatting, or clean json block) matching th
 }`;
 
         let aiData = null;
-        // Fix BUG #9: Kiểm tra nếu GEMINI_API_KEY rỗng
-        if (!GEMINI_API_KEY) {
-          const lang = appData.lang || 'vi';
-          const dict = i18nDict[lang] || i18nDict['vi'];
-          if (typeof showSuccessToast === 'function') showSuccessToast(`⚠️ ${dict.aiKeyMissing || "Tính năng AI chưa được cấu hình khóa API"}`);
-        } else {
-          try {
-            const res = await fetch(
-              `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`,
-              {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  contents: [{ parts: [{ text: aiPrompt }] }],
-                  generationConfig: {
-                    response_mime_type: "application/json",
-                    temperature: 0.2,
-                    maxOutputTokens: 4096
-                  }
-                })
-              }
-            );
-
-            if (res.ok) {
-              const rawRes = await res.json();
-              let jsonStr = rawRes?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-              jsonStr = jsonStr.replace(/```json/gi, '').replace(/```/g, '').trim();
-              aiData = JSON.parse(jsonStr);
+        // Fix AI-PROXY: Gọi Gemini qua Cloudflare Worker Proxy
+        try {
+          const rawRes = await callGemini({
+            contents: [{ parts: [{ text: aiPrompt }] }],
+            generationConfig: {
+              responseMimeType: "application/json",
+              temperature: 0.2,
+              maxOutputTokens: 4096
             }
-          } catch (callErr) {
-            console.warn('Lỗi gọi Gemini AI, sử dụng fallback học thuật chuẩn cao:', callErr);
-          }
+          }, GEMINI_MODEL);
+
+          let jsonStr = rawRes?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+          jsonStr = jsonStr.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+          aiData = JSON.parse(jsonStr);
+        } catch (callErr) {
+          console.warn('[AI-PROXY] Lỗi gọi Gemini AI cho PPTX, sử dụng fallback học thuật chuẩn cao:', callErr);
         }
 
         if (!aiData || !aiData.section1_authors) {
@@ -12152,19 +12454,17 @@ Return ONLY valid JSON (no markdown formatting, or clean json block) matching th
     // --- 3. AI POLISH GHI CHÚ → ACADEMIC ENGLISH ---
     // ==========================================
     async function aiPolishNote(lIdx, btnEl) {
-      // Fix BUG #9: Kiểm tra nếu GEMINI_API_KEY rỗng thì vô hiệu hóa tính năng và hiện thông báo thân thiện
-      if (!GEMINI_API_KEY) {
-        const lang = appData.lang || 'vi';
-        const dict = i18nDict[lang] || i18nDict['vi'];
-        showSuccessToast(dict.aiKeyMissing || "Tính năng AI chưa được cấu hình khóa API");
-        return;
-      }
       const proj = getActiveProject();
-      if (!proj || !proj.logs || !proj.logs[lIdx]) return;
+      if (!proj || !Array.isArray(proj.logs)) return;
+
+      const tr = btnEl.closest('tr');
+      const logId = tr?.getAttribute('data-log-id') || tr?.dataset?.logId;
+      const targetLog = (logId ? proj.logs.find(l => l && l.id === logId) : null) || proj.logs[lIdx];
+      if (!targetLog) return;
 
       // Ưu tiên đọc nội dung hiện tại trên DOM (kể cả khi chưa blur khỏi cell)
-      const noteCell = document.querySelector(`[data-field="notes"][data-idx="${lIdx}"]`);
-      const rawText = noteCell ? noteCell.innerText.trim() : (proj.logs[lIdx].notes || '').replace(/<[^>]+>/g, ' ').trim();
+      const noteCell = tr ? tr.querySelector('[data-field="notes"]') : document.querySelector(`[data-field="notes"][data-idx="${lIdx}"]`);
+      const rawText = noteCell ? noteCell.innerText.trim() : (targetLog.notes || '').replace(/<[^>]+>/g, ' ').trim();
 
       if (!rawText) {
         showSuccessToast('⚠️ Ô Ghi Chú đang trống, hãy nhập nội dung trước khi dùng AI Polish!');
@@ -12187,34 +12487,28 @@ Rules:
 3. Preserve all specific numbers, units (e.g., mV, mA/cm², h, °C, M), chemical formulas (e.g., NiFe-LDH, Pt/C, KOH), and sample names intact.
 4. If the input is in Vietnamese or colloquial text, translate and polish directly into clear Academic English.
 5. Return ONLY the final polished sentence(s). Do NOT add quotation marks, preamble, or commentary.
+6. GROUNDED INFORMATION ONLY: Only use information provided in the original note. Do not invent experiments, results, or data not present in the note.
 
 Original note:
 "${rawText}"`;
 
-        const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: {
-                temperature: 0.2,
-                maxOutputTokens: 512
-              }
-            })
+        // Fix AI-PROXY: Gọi qua Cloudflare Worker proxy
+        const json = await callGemini({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.2,
+            maxOutputTokens: 512
           }
-        );
+        }, GEMINI_MODEL);
 
-        if (!res.ok) throw new Error(`Gemini HTTP ${res.status}`);
-        const json = await res.json();
         let polished = (json?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
         polished = polished.replace(/^["']|["']$/g, '').trim();
 
         if (!polished) throw new Error('Không nhận được nội dung phản hồi từ Gemini');
 
         // Cập nhật dữ liệu
-        proj.logs[lIdx].notes = polished;
+        targetLog.notes = polished;
+        targetLog.updatedAt = Date.now();
         saveData();
 
         // Cập nhật giao diện cell
