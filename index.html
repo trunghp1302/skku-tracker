@@ -12,6 +12,8 @@
   <script src="https://unpkg.com/pizzip@3.1.4/dist/pizzip.js"></script>
   <script src="https://unpkg.com/docxtemplater@3.42.5/build/docxtemplater.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <!-- PDF.js for reading PDF files for AI analysis -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <!-- PptxGenJS for PowerPoint presentation generation -->
   <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
   <!-- Firebase SDK v10 Compat for Cloud Database & Authentication -->
@@ -1389,6 +1391,46 @@
           </div>
         </div>
 
+        <!-- 📄 PDF UPLOAD SECTION (AI Full-Text Analysis) -->
+        <div
+          class="p-4 rounded-2xl border-2 border-dashed border-blue-300 dark:border-blue-700/70 bg-gradient-to-br from-blue-50/80 to-cyan-50/60 dark:from-blue-950/30 dark:to-cyan-950/20 space-y-3">
+          <div class="flex items-center gap-2">
+            <span class="text-base">📄</span>
+            <span class="text-xs font-black uppercase tracking-wider text-blue-700 dark:text-blue-300"
+              data-i18n="lblPdfUploadTitle">Upload PDF for AI Analysis</span>
+            <span
+              class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-700/60">AI
+              POWERED</span>
+          </div>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed" data-i18n="lblPdfUploadDesc">Upload
+            the full PDF file of the paper. AI will read the entire document and automatically fill in title, authors,
+            publication date, journal, abstract, methodology and results.</p>
+          <div class="flex gap-2">
+            <label
+              class="flex-1 cursor-pointer bg-white dark:bg-slate-800 border-2 border-blue-300 dark:border-blue-700/60 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-bold text-blue-700 dark:text-blue-300 flex items-center gap-2 hover:bg-blue-50 dark:hover:bg-slate-700 transition">
+              <i class="fa-solid fa-file-pdf"></i>
+              <span id="paper-pdf-filename-label" data-i18n="btnChoosePdfFile">Choose PDF file...</span>
+              <input type="file" id="paper-pdf-upload" accept="application/pdf" class="hidden"
+                onchange="handlePaperPdfUpload(event)">
+            </label>
+          </div>
+          <div id="paper-pdf-status" class="hidden">
+            <div class="flex items-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400">
+              <svg class="animate-spin w-3.5 h-3.5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+              </svg>
+              <span id="paper-pdf-status-text" data-i18n="msgPdfAnalyzing">AI is reading and analyzing the PDF...</span>
+            </div>
+          </div>
+          <div id="paper-pdf-error"
+            class="hidden text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 px-3 py-2 rounded-xl border border-red-200 dark:border-red-800/50">
+          </div>
+        </div>
+
         <div class="border-t border-slate-200 dark:border-slate-800 pt-1">
           <p class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Hoặc nhập thủ công bên dưới:</p>
         </div>
@@ -2681,6 +2723,11 @@
       console.warn("Firebase init catch:", e);
     }
 
+    // --- PDF.js Worker Init ---
+    if (typeof pdfjsLib !== 'undefined') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
     // --- Firebase Auth & Firestore Helpers (tương thích cả cú pháp Modular v9 lẫn Compat v8) ---
     const browserLocalPersistence = (typeof firebase !== 'undefined' && firebase.auth && firebase.auth.Auth && firebase.auth.Auth.Persistence) ? firebase.auth.Auth.Persistence.LOCAL : 'local';
 
@@ -3223,7 +3270,15 @@
         envWarningCookiesBlocked: "Trình duyệt đang chặn cookie. Hãy tắt chặn cookie cho trang này (Cốc Cốc: Shield / Quyền riêng tư) để đăng nhập được.",
         envWarningStorageFailed: "Không thể lưu dữ liệu cục bộ trên trình duyệt này (có thể do chế độ ẩn danh). Dữ liệu sẽ mất khi đóng tab.",
         // Fix BUG #9: Thông báo khóa API Gemini
-        aiKeyMissing: "Tính năng AI chưa được cấu hình khóa API"
+        aiKeyMissing: "Tính năng AI chưa được cấu hình khóa API",
+        // --- PDF Upload i18n ---
+        lblPdfUploadTitle: "Tải Lên PDF Để AI Phân Tích",
+        lblPdfUploadDesc: "Tải lên toàn bộ file PDF của bài báo. AI sẽ đọc toàn bộ tài liệu và tự động điền tên bài báo, tác giả, ngày xuất bản, tạp chí, tóm tắt, phương pháp và kết quả.",
+        btnChoosePdfFile: "Chọn file PDF...",
+        msgPdfAnalyzing: "AI đang đọc và phân tích file PDF...",
+        msgPdfExtractFailed: "Không thể trích xuất văn bản từ file PDF này. Vui lòng kiểm tra lại file!",
+        toastPdfPaperSaved: "đã lưu bài báo từ PDF vào thư viện thành công!",
+        badgeFromPdf: "Từ PDF"
       },
       en: {
         kstClock: "Korea Time (KST)",
@@ -3607,7 +3662,15 @@
         envWarningCookiesBlocked: "Browser is blocking cookies. Please disable cookie blocking for this site (Coc Coc: Shield / Privacy settings) to log in.",
         envWarningStorageFailed: "Unable to save local data on this browser (possibly due to incognito mode). Data will be lost when closing the tab.",
         // Fix BUG #9: Missing Gemini API key
-        aiKeyMissing: "AI features have not been configured with an API key"
+        aiKeyMissing: "AI features have not been configured with an API key",
+        // --- PDF Upload i18n ---
+        lblPdfUploadTitle: "Upload PDF for AI Analysis",
+        lblPdfUploadDesc: "Upload the full PDF file of the paper. AI will read the entire document and automatically fill in title, authors, publication date, journal, abstract, methodology and results.",
+        btnChoosePdfFile: "Choose PDF file...",
+        msgPdfAnalyzing: "AI is reading and analyzing the PDF...",
+        msgPdfExtractFailed: "Could not extract text from this PDF file. Please check the file!",
+        toastPdfPaperSaved: "paper from PDF saved to library successfully!",
+        badgeFromPdf: "From PDF"
       },
       ko: {
         kstClock: "한국 표준시 (KST)",
@@ -3991,7 +4054,15 @@
         envWarningCookiesBlocked: "브라우저가 쿠키를 차단하고 있습니다. 로그인하려면 이 사이트의 쿠키 차단을 해제하세요 (Cốc Cốc: Shield / 개인정보 보호 설정).",
         envWarningStorageFailed: "이 브라우저에서 로컬 데이터를 저장할 수 없습니다 (시크릿 모드일 수 있음). 탭을 닫으면 데이터가 손실됩니다.",
         // Fix BUG #9: Gemini API 키 누락 메시지
-        aiKeyMissing: "AI 기능에 API 키가 구성되지 않았습니다"
+        aiKeyMissing: "AI 기능에 API 키가 구성되지 않았습니다",
+        // --- PDF Upload i18n ---
+        lblPdfUploadTitle: "AI 분석용 PDF 업로드",
+        lblPdfUploadDesc: "논문의 전체 PDF 파일을 업로드하세요. AI가 전체 문서를 읽고 제목, 저자, 출판일, 저널, 초록, 방법론 및 결과를 자동으로 입력합니다.",
+        btnChoosePdfFile: "PDF 파일 선택...",
+        msgPdfAnalyzing: "AI가 PDF를 읽고 분석하고 있습니다...",
+        msgPdfExtractFailed: "이 PDF 파일에서 텍스트를 추출할 수 없습니다. 파일을 확인해 주세요!",
+        toastPdfPaperSaved: "PDF에서 추출한 논문이 라이브러리에 저장되었습니다!",
+        badgeFromPdf: "PDF에서"
       }
     };
 
@@ -8946,6 +9017,7 @@
             </div>
 
             <!-- Card Title -->
+            ${p.sourceType === 'pdf' ? `<span class="inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700/60 mt-2"><i class="fa-solid fa-file-pdf"></i>${dict.badgeFromPdf || 'From PDF'}</span>` : ''}
             <h4 class="text-base font-extrabold text-slate-900 dark:text-white mt-3 leading-snug">
               ${escapeHtml(p.title)}
             </h4>
@@ -9087,6 +9159,16 @@
       if (autoFillError) { autoFillError.classList.add('hidden'); autoFillError.innerText = ''; }
       if (autoFillBtn) autoFillBtn.disabled = false;
 
+      // Reset PDF upload UI
+      const pdfLabel = document.getElementById('paper-pdf-filename-label');
+      const pdfStatus = document.getElementById('paper-pdf-status');
+      const pdfError = document.getElementById('paper-pdf-error');
+      const pdfInput = document.getElementById('paper-pdf-upload');
+      if (pdfLabel) pdfLabel.textContent = dict.btnChoosePdfFile || "Choose PDF file...";
+      if (pdfStatus) pdfStatus.classList.add('hidden');
+      if (pdfError) { pdfError.classList.add('hidden'); pdfError.innerText = ''; }
+      if (pdfInput) pdfInput.value = '';
+
       if (modal) {
         modal.classList.remove('hidden');
         setTimeout(() => autoFillInput && autoFillInput.focus(), 60);
@@ -9133,6 +9215,18 @@
       if (doiStatus) doiStatus.classList.add('hidden');
       if (doiErr) { doiErr.classList.add('hidden'); doiErr.innerText = ''; }
       if (doiSuccess) { doiSuccess.classList.add('hidden'); doiSuccess.innerText = ''; }
+
+      // Reset PDF upload UI
+      const lang2 = appData.lang || 'vi';
+      const dict2 = i18nDict[lang2] || i18nDict['vi'];
+      const pdfLabel2 = document.getElementById('paper-pdf-filename-label');
+      const pdfStatus2 = document.getElementById('paper-pdf-status');
+      const pdfError2 = document.getElementById('paper-pdf-error');
+      const pdfInput2 = document.getElementById('paper-pdf-upload');
+      if (pdfLabel2) pdfLabel2.textContent = dict2.btnChoosePdfFile || "Choose PDF file...";
+      if (pdfStatus2) pdfStatus2.classList.add('hidden');
+      if (pdfError2) { pdfError2.classList.add('hidden'); pdfError2.innerText = ''; }
+      if (pdfInput2) pdfInput2.value = '';
 
       if (modal) {
         modal.classList.remove('hidden');
@@ -9624,6 +9718,152 @@ CHỈ DẪN BẮT BUỘC:
     }
 
     // ==========================================
+    // --- PDF UPLOAD + AI FULL-TEXT ANALYSIS ---
+    // ==========================================
+    async function extractTextFromPdfFile(file) {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      let fullText = '';
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map(item => item.str).join(' ');
+        fullText += pageText + '\n\n';
+      }
+      return fullText.trim();
+    }
+
+    async function callGeminiPdfPaperAnalyzer(pdfText, fileName) {
+      const truncatedText = pdfText.length > 30000 ? pdfText.slice(0, 30000) : pdfText;
+      const prompt = `You are a meticulous academic research assistant. Carefully read the following full text extracted from a scientific paper PDF (file name: ${fileName}) and extract accurate structured information.
+
+STRICT RULES:
+- Only extract information that is explicitly present in the text. Do NOT invent author names, dates, or numbers that are not in the text.
+- If a field cannot be confidently found in the text, return an empty string for that field instead of guessing.
+- All output text must be in formal Academic English, regardless of the original language of the paper.
+- The abstract field should be a concise rewritten summary of 150 to 250 words capturing the core contribution of the paper.
+- The methodology field should describe the research methods, materials, or experimental/theoretical approach used.
+- The results field should summarize the key findings, main results, and important conclusions.
+
+FULL TEXT EXTRACTED FROM PDF:
+${truncatedText}
+
+Return ONLY a valid JSON object with this exact structure, no markdown, no explanation:
+{"title": "...", "authors": "...", "publicationDate": "...", "journal": "...", "abstract": "...", "methodology": "...", "results": "..."}`;
+
+      const resJson = await callGemini({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.1,
+          maxOutputTokens: 2048,
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              title: { type: "STRING" },
+              authors: { type: "STRING" },
+              publicationDate: { type: "STRING" },
+              journal: { type: "STRING" },
+              abstract: { type: "STRING" },
+              methodology: { type: "STRING" },
+              results: { type: "STRING" }
+            },
+            required: ["title", "authors", "abstract"]
+          }
+        }
+      }, GEMINIMODELS.quality);
+
+      const textOutput = resJson?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!textOutput) throw new Error("No response text received from Gemini API.");
+      let cleanJson = textOutput.trim();
+      cleanJson = cleanJson.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+      if (!cleanJson.startsWith('{')) {
+        const firstBrace = cleanJson.indexOf('{');
+        const lastBrace = cleanJson.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          cleanJson = cleanJson.slice(firstBrace, lastBrace + 1);
+        }
+      }
+      return JSON.parse(cleanJson);
+    }
+
+    async function handlePaperPdfUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const lang = appData.lang || 'vi';
+      const dict = i18nDict[lang] || i18nDict.vi;
+
+      const filenameLabel = document.getElementById('paper-pdf-filename-label');
+      const statusEl = document.getElementById('paper-pdf-status');
+      const statusTextEl = document.getElementById('paper-pdf-status-text');
+      const errorEl = document.getElementById('paper-pdf-error');
+
+      if (filenameLabel) filenameLabel.textContent = file.name;
+      if (errorEl) { errorEl.classList.add('hidden'); errorEl.innerText = ''; }
+      if (statusEl) statusEl.classList.remove('hidden');
+      if (statusTextEl) statusTextEl.innerText = dict.msgPdfAnalyzing || "AI is reading and analyzing the PDF...";
+
+      try {
+        if (typeof pdfjsLib === 'undefined') {
+          throw new Error("PDF.js library is not loaded. Please check your internet connection.");
+        }
+        const pdfText = await extractTextFromPdfFile(file);
+        if (!pdfText || pdfText.length < 30) {
+          throw new Error(dict.msgPdfExtractFailed || "Could not extract text from this PDF file.");
+        }
+
+        const aiData = await callGeminiPdfPaperAnalyzer(pdfText, file.name);
+        if (!aiData || typeof aiData !== 'object') {
+          throw new Error("AI did not return valid structured data.");
+        }
+
+        const proj = getActiveProject();
+        const papers = getProjectPapers(proj);
+
+        const findingsCombined = [
+          aiData.methodology ? `Methodology: ${aiData.methodology}` : '',
+          aiData.results ? `Results: ${aiData.results}` : ''
+        ].filter(Boolean).join('\n\n');
+
+        const newPaper = {
+          id: 'paper_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+          title: aiData.title || file.name.replace(/\.pdf$/i, ''),
+          doi: '',
+          status: 'toread',
+          authors: aiData.authors || '',
+          journal: aiData.journal || '',
+          year: aiData.publicationDate || '',
+          abstract: aiData.abstract || '',
+          findings: findingsCombined,
+          sourceType: 'pdf',
+          pdfFileName: file.name,
+          createdAt: new Date().toISOString().split('T')[0],
+          updatedAt: Date.now()
+        };
+
+        papers.unshift(newPaper);
+        saveProjectPapers(proj, papers);
+        renderPapersRepository();
+
+        if (statusEl) statusEl.classList.add('hidden');
+        closePaperModal();
+        const successMsg = (dict.toastPdfPaperSaved || "paper from PDF saved to library successfully!");
+        showSuccessToast(`"${newPaper.title}" ${successMsg}`);
+
+      } catch (err) {
+        console.error("PDF paper analysis error:", err);
+        if (statusEl) statusEl.classList.add('hidden');
+        if (errorEl) {
+          errorEl.innerText = err.message || (dict.msgPdfExtractFailed || "Failed to process PDF.");
+          errorEl.classList.remove('hidden');
+        }
+      } finally {
+        event.target.value = '';
+      }
+    }
+    window.handlePaperPdfUpload = handlePaperPdfUpload;
+
+    // ==========================================
     // --- 9D. TRÍCH DẪN NHANH: BIBTEX & APA ---
     // ==========================================
     async function copyCitation(format, paperId) {
@@ -9944,12 +10184,44 @@ CHỈ DẪN BẮT BUỘC:
     // --- GEMINI AI EXPORT ASSISTANT ---
     // Fix AI-PROXY: Chuyển sang gọi qua Cloudflare Worker Proxy với responseSchema và chỉ thị grounding rõ ràng
     async function callGeminiDailyReportAssistant(rawData) {
-      const prompt = `You are a Senior Academic Journal Editor. Transform the following raw daily lab notes into professional, publication-grade Academic English for a daily lab report.
+      const prompt = `You are a Senior Academic Research Assistant in science and engineering. Your mission is to transform raw, informal daily experiment logs (in Vietnamese, abbreviated, and unstructured) into a comprehensive, professional daily experiment report in high-standard Academic English.
 
-STRICT RULES:
-- GROUNDED INFORMATION ONLY: Only use information provided in the user's research logs below. Do NOT hallucinate, infer, or add ungrounded content not present in the input. If any field has no data, leave it as an empty string ("") or empty array ([]).
-- 100% ENGLISH TRANSLATION: Translate all Vietnamese text into formal Academic English. Absolute zero Vietnamese words in the output.
-- SYNTHESIZE & EDIT: Do NOT copy-paste raw text verbatim. Condense, format, and organize theoretical mechanisms (LOM vs AEM, DOS, d-band, overpotential) into clean, concise academic text.
+OPERATIONAL WORKFLOW & PRINCIPLES:
+1. Scientific Comprehension & Plausibility Check (Reasoning before output):
+   - Analyze "tasks", "notes", and "plan" to identify: experiment type, materials/chemicals, equipment, measurement parameters, and key discoveries or anomalies.
+   - If recorded raw information contains minor scientific ambiguities or unconventional phrasing, refine it into the standard scientific expression deduced from context.
+   - Do NOT fabricate specific numerical measurements without empirical basis in the input.
+
+2. Content Categorization into Target Schema:
+   - "title": Concise, formal scientific title of the daily experiment.
+   - "objective": Clear experimental objective and research rationale.
+   - "preparations": Array of strings listing materials, reagents, chemical solutions, substrate prep, or experimental apparatus conditions.
+   - "procedures": Array of strings detailing chronological procedural steps executed.
+   - "exp_data": Array of quantitative measurement objects with schema: [{ "d_date": "...", "value": "...", "unit": "...", "notes": "..." }].
+     * CRITICAL: ONLY populate if actual numerical measurements or quantitative data points are explicitly mentioned in the input.
+     * If no numerical measurement data exists, return an empty array []. Do NOT invent numbers; describe qualitative observations under "observations" instead.
+   - "observations": In-depth analysis of experimental results, observed phenomena, characterization patterns, and discussion.
+   - "next_steps": Concrete, short-term next steps for immediate follow-up.
+   - "summary": Executive synthesis of the day's experimental findings and outcome.
+   - "future_directions": Broader research directions, downstream characterizations, or prospective methodology improvements.
+   - "references": Array of strings listing relevant literature citations, standard methods, or paper references (or [] if none).
+   - "weather": Ambient laboratory conditions or weather string (e.g., "Laboratory ambient (22-25°C, controlled RH ~45%)" or standard condition).
+   * Intelligently allocate insights to the most fitting section without verbatim repeating identical sentences across multiple sections.
+
+3. Paraphrase with Academic Rigor (No Verbatim Copying):
+   - Do NOT translate literally or copy mechanically 1-to-1.
+   - Paraphrase into formal scholarly scientific discourse with logical flow, connecting technical reasoning while remaining faithful to the experimental premise.
+
+4. Bounded Contextual Inference:
+   - If a target field lacks explicit direct phrasing in the input (e.g., the researcher did not explicitly write an "objective"), reasonably deduce a compelling, scientifically rigorous statement from the project context, tasks, and notes.
+   - Do NOT leave fields blank or output "N/A" if valid deductions can be drawn from the project scope. Only return an empty string or empty array if there is zero contextual clue.
+
+5. 100% Academic English & Appropriate Tenses:
+   - All output must be strictly in Academic English. Zero Vietnamese words.
+   - Use standard laboratory report grammar: past tense for completed steps and observations, present tense for scientific facts/characterizations/conclusions, and future/modal verbs ("will", "plan to", "shall") for next steps and future directions.
+
+6. Hard Fact Preservation:
+   - Retain exact chemical formulas (e.g., Ni-Fe LDH, KOH), concentrations (e.g., 1M), numerical values, angles (e.g., 2theta = 11°), units, and dates accurately without unauthorized alteration or rounding.
 
 Raw daily lab notes:
 - Date: ${rawData.date || ''}
@@ -9968,19 +10240,29 @@ Raw daily lab notes:
             type: "OBJECT",
             properties: {
               date: { type: "STRING" },
+              weather: { type: "STRING" },
               title: { type: "STRING" },
               objective: { type: "STRING" },
-              observations: { type: "STRING" },
-              summary: { type: "STRING" },
-              next_steps: { type: "STRING" },
-              future_directions: { type: "STRING" },
               preparations: { type: "ARRAY", items: { type: "STRING" } },
               procedures: { type: "ARRAY", items: { type: "STRING" } },
-              exp_data: { type: "ARRAY", items: { type: "STRING" } },
-              references: { type: "ARRAY", items: { type: "STRING" } },
-              weather: { type: "STRING" },
-              value: { type: "STRING" },
-              unit: { type: "STRING" }
+              exp_data: {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    d_date: { type: "STRING" },
+                    value: { type: "STRING" },
+                    unit: { type: "STRING" },
+                    notes: { type: "STRING" }
+                  },
+                  required: ["d_date", "value", "unit", "notes"]
+                }
+              },
+              observations: { type: "STRING" },
+              next_steps: { type: "STRING" },
+              summary: { type: "STRING" },
+              future_directions: { type: "STRING" },
+              references: { type: "ARRAY", items: { type: "STRING" } }
             },
             required: ["date", "title", "objective", "observations", "summary", "next_steps"]
           }
@@ -10091,7 +10373,8 @@ Raw daily lab notes:
         }
 
         // Ánh xạ dữ liệu học thuật 100% tiếng Anh vào template thẻ {}
-        const finalDate = (aiData.date || dateVal || '').trim();
+        const finalDate = (aiData.date || selectedDate || '').trim();
+        const finalWeather = (aiData.weather || '').trim();
         const finalTitle = (aiData.title || '').trim();
         const finalObjective = (aiData.objective || finalTitle || '').trim();
         const finalObservations = (Array.isArray(aiData.observations) ? aiData.observations.join('\n') : (aiData.observations || '')).trim();
@@ -10099,9 +10382,50 @@ Raw daily lab notes:
         const finalNextSteps = (Array.isArray(aiData.next_steps) ? aiData.next_steps.join('\n') : (aiData.next_steps || '')).trim();
         const finalFutureDirections = (Array.isArray(aiData.future_directions) ? aiData.future_directions.join('\n') : (aiData.future_directions || finalNextSteps)).trim();
 
+        // Xử lý các mảng dữ liệu lặp theo cú pháp Docxtemplater ({#tag}...{/tag})
+        const proceduresArr = (Array.isArray(aiData.procedures) ? aiData.procedures : [])
+          .map((item, idx) => {
+            if (typeof item === 'object' && item !== null) {
+              return { step_num: item.step_num || (idx + 1), step_text: item.step_text || item.text || '' };
+            }
+            return { step_num: idx + 1, step_text: String(item || '') };
+          });
+
+        const referencesArr = (Array.isArray(aiData.references) ? aiData.references : [])
+          .map((item, idx) => {
+            if (typeof item === 'object' && item !== null) {
+              return { ref_num: item.ref_num || (idx + 1), ref_text: item.ref_text || item.text || '' };
+            }
+            return { ref_num: idx + 1, ref_text: String(item || '') };
+          });
+
+        const preparationsArr = (Array.isArray(aiData.preparations) ? aiData.preparations : [])
+          .map(item => {
+            if (typeof item === 'object' && item !== null) {
+              return { item: item.item || item.text || '' };
+            }
+            return { item: String(item || '') };
+          });
+
+        const expDataArr = (Array.isArray(aiData.exp_data) ? aiData.exp_data : [])
+          .map(item => {
+            if (typeof item === 'object' && item !== null) {
+              return {
+                d_date: String(item.d_date || finalDate || ''),
+                value: String(item.value || ''),
+                unit: String(item.unit || ''),
+                notes: String(item.notes || '')
+              };
+            }
+            return { d_date: finalDate, value: String(item || ''), unit: '', notes: '' };
+          });
+
         const templateData = {
           date: finalDate,
           Date: finalDate,
+
+          weather: finalWeather,
+          Weather: finalWeather,
 
           title: finalTitle,
           Title: finalTitle,
@@ -10118,15 +10442,14 @@ Raw daily lab notes:
           future_directions: finalFutureDirections,
           Future_directions: finalFutureDirections,
 
-          preparations: Array.isArray(aiData.preparations) ? aiData.preparations : [],
-          procedures: Array.isArray(aiData.procedures) ? aiData.procedures : [],
-          exp_data: Array.isArray(aiData.exp_data) ? aiData.exp_data : [],
-          references: Array.isArray(aiData.references) ? aiData.references : [],
+          preparations: preparationsArr,
+          procedures: proceduresArr,
+          exp_data: expDataArr,
+          references: referencesArr,
 
-          weather: aiData.weather || "",
+          // Giữ các biến bổ trợ / fallback tương thích ngược
           value: aiData.value || "",
           unit: aiData.unit || "",
-
           tasks: finalTitle,
           notes: finalObservations,
           plan: finalNextSteps,
