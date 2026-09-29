@@ -9771,7 +9771,7 @@ Return ONLY a valid JSON object with this exact structure, no markdown, no expla
             required: ["title", "authors", "abstract"]
           }
         }
-      }, GEMINIMODELS.quality);
+      });
 
       const textOutput = resJson?.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!textOutput) throw new Error("No response text received from Gemini API.");
