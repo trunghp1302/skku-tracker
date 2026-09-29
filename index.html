@@ -9854,7 +9854,12 @@ Return ONLY a valid JSON object with this exact structure, no markdown, no expla
         console.error("PDF paper analysis error:", err);
         if (statusEl) statusEl.classList.add('hidden');
         if (errorEl) {
-          errorEl.innerText = err.message || (dict.msgPdfExtractFailed || "Failed to process PDF.");
+          const errMsg = err.message || '';
+          const isRateLimit = /429|quota|rate.?limit|RESOURCE_EXHAUSTED/i.test(errMsg);
+          const userMsg = isRateLimit
+            ? "Gemini is temporarily rate-limited. Please wait about one minute and try again. The PDF was not saved yet."
+            : (errMsg || (dict.msgPdfExtractFailed || "Failed to process PDF."));
+          errorEl.innerText = userMsg;
           errorEl.classList.remove('hidden');
         }
       } finally {
