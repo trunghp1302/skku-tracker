@@ -1391,6 +1391,25 @@
           </div>
         </div>
 
+        <!-- 🤖 AI MODEL SELECTOR (shared for DOI analysis and PDF analysis) -->
+        <div
+          class="flex items-center gap-2 flex-wrap bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-2xl px-4 py-2.5">
+          <label
+            class="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap flex items-center gap-1">
+            <i class="fa-solid fa-brain text-indigo-500 text-[11px]"></i>
+            <span data-i18n="lblModalAiModel">Mô hình AI:</span>
+          </label>
+          <select id="modal-paper-ai-model-select" onchange="selectAiModel(this.value)"
+            class="text-xs font-bold py-1 px-2.5 rounded-xl border border-indigo-300 dark:border-indigo-700/60 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm flex-1 min-w-[180px]">
+            <option value="gemini-3.8-flash" data-i18n="optModalQuality">✨ Chất lượng cao (gemini-3.8-flash)</option>
+            <option value="gemini-3.5-flash" data-i18n="optModalFast">⚡ Cân bằng (gemini-3.5-flash)</option>
+            <option value="gemini-3.5-flash-lite" data-i18n="optModalCheap">🍃 Nhanh nhất / Tiết kiệm quota
+              (gemini-3.5-flash-lite)</option>
+          </select>
+          <span class="text-[10px] text-slate-400 font-medium italic" data-i18n="lblModelSelectorHint">AI sẽ dùng mô
+            hình này để phân tích.</span>
+        </div>
+
         <!-- 📄 PDF UPLOAD SECTION (AI Full-Text Analysis) -->
         <div
           class="p-4 rounded-2xl border-2 border-dashed border-blue-300 dark:border-blue-700/70 bg-gradient-to-br from-blue-50/80 to-cyan-50/60 dark:from-blue-950/30 dark:to-cyan-950/20 space-y-3">
@@ -1660,8 +1679,26 @@
         <span data-i18n="noReportData">Không có dữ liệu nhật ký cho ngày này hoặc chưa chọn ngày.</span>
       </div>
 
+      <!-- AI Model Selector for Daily Report -->
+      <div class="flex items-center gap-2 flex-wrap border-t border-slate-200 dark:border-slate-800 pt-3">
+        <label
+          class="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap flex items-center gap-1">
+          <i class="fa-solid fa-brain text-amber-500 text-[11px]"></i>
+          <span data-i18n="lblModalAiModel">Mô hình AI:</span>
+        </label>
+        <select id="modal-report-ai-model-select" onchange="selectAiModel(this.value)"
+          class="text-xs font-bold py-1.5 px-3 rounded-xl border border-amber-300 dark:border-amber-700/60 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer shadow-sm flex-1 min-w-[180px]">
+          <option value="gemini-3.8-flash" data-i18n="optModalQuality">✨ Chất lượng cao (gemini-3.8-flash)</option>
+          <option value="gemini-3.5-flash" data-i18n="optModalFast">⚡ Cân bằng (gemini-3.5-flash)</option>
+          <option value="gemini-3.5-flash-lite" data-i18n="optModalCheap">🍃 Nhanh nhất / Tiết kiệm quota
+            (gemini-3.5-flash-lite)</option>
+        </select>
+        <span class="text-[10px] text-slate-400 font-medium italic" data-i18n="lblModelSelectorHint">AI sẽ dùng mô hình
+          này để phân tích.</span>
+      </div>
+
       <!-- Buttons -->
-      <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center gap-2">
+      <div class="flex justify-between items-center gap-2">
         <p class="text-xs text-slate-400 font-semibold hidden sm:block">
           <i class="fa-solid fa-circle-check text-emerald-500"></i>
           <span data-i18n="exportWordDocxNote">Xuất file Word .docx tiêu chuẩn bằng Docxtemplater</span>
@@ -2559,11 +2596,25 @@
     let GEMINI_MODEL = localStorage.getItem('EESL_GEMINI_MODEL') || GEMINI_MODELS.cheap;
 
     // Fix AI-PROXY: Hàm đổi model và lưu vào localStorage
-    function changeGeminiModel(modelName) {
+    const VALID_GEMINI_MODELS = [GEMINI_MODELS.cheap, GEMINI_MODELS.fast, GEMINI_MODELS.quality];
+
+    // selectAiModel: central function — updates GEMINI_MODEL, localStorage, and syncs ALL dropdowns
+    function selectAiModel(modelName) {
+      if (!VALID_GEMINI_MODELS.includes(modelName)) modelName = GEMINI_MODELS.cheap;
       GEMINI_MODEL = modelName;
       localStorage.setItem('EESL_GEMINI_MODEL', modelName);
       console.log('[AI-PROXY] Đã chọn model Gemini:', modelName);
+      // Sync all model selectors across the UI
+      const ids = ['select-gemini-model', 'modal-report-ai-model-select', 'modal-paper-ai-model-select'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.value !== modelName) el.value = modelName;
+      });
     }
+    window.selectAiModel = selectAiModel;
+
+    // changeGeminiModel: kept for backward compatibility (header dropdown onchange)
+    function changeGeminiModel(modelName) { selectAiModel(modelName); }
     window.changeGeminiModel = changeGeminiModel;
 
     // Fix AI-PROXY: Hàm dùng chung gọi Gemini API qua Cloudflare Worker Proxy
@@ -3298,7 +3349,14 @@
         msgPdfAnalyzing: "AI đang đọc và phân tích file PDF...",
         msgPdfExtractFailed: "Không thể trích xuất văn bản từ file PDF này. Vui lòng kiểm tra lại file!",
         toastPdfPaperSaved: "đã lưu bài báo từ PDF vào thư viện thành công!",
-        badgeFromPdf: "Từ PDF"
+        badgeFromPdf: "Từ PDF",
+        // --- AI Model Selector trong Modal ---
+        lblModalAiModel: "Mô hình AI:",
+        optModalQuality: "✨ Chất lượng cao (gemini-3.8-flash)",
+        optModalFast: "⚡ Cân bằng (gemini-3.5-flash)",
+        optModalCheap: "🍃 Nhanh nhất / Tiết kiệm quota (gemini-3.5-flash-lite)",
+        lblModelSelectorHint: "AI sẽ dùng mô hình này để phân tích.",
+        allModelsQuotaMsg: "Tất cả các mô hình AI đều đã hết quota hôm nay. Vui lòng thử lại vào ngày mai."
       },
       en: {
         kstClock: "Korea Time (KST)",
@@ -3690,7 +3748,14 @@
         msgPdfAnalyzing: "AI is reading and analyzing the PDF...",
         msgPdfExtractFailed: "Could not extract text from this PDF file. Please check the file!",
         toastPdfPaperSaved: "paper from PDF saved to library successfully!",
-        badgeFromPdf: "From PDF"
+        badgeFromPdf: "From PDF",
+        // --- AI Model Selector in Modal ---
+        lblModalAiModel: "AI Model:",
+        optModalQuality: "✨ High Quality (gemini-3.8-flash)",
+        optModalFast: "⚡ Balanced (gemini-3.5-flash)",
+        optModalCheap: "🍃 Fastest / Best quota (gemini-3.5-flash-lite)",
+        lblModelSelectorHint: "AI will use this model to analyze.",
+        allModelsQuotaMsg: "All AI models have exhausted their daily quota. Please try again tomorrow."
       },
       ko: {
         kstClock: "한국 표준시 (KST)",
@@ -4082,7 +4147,14 @@
         msgPdfAnalyzing: "AI가 PDF를 읽고 분석하고 있습니다...",
         msgPdfExtractFailed: "이 PDF 파일에서 텍스트를 추출할 수 없습니다. 파일을 확인해 주세요!",
         toastPdfPaperSaved: "PDF에서 추출한 논문이 라이브러리에 저장되었습니다!",
-        badgeFromPdf: "PDF에서"
+        badgeFromPdf: "PDF에서",
+        // --- 모달 AI 모델 선택기 ---
+        lblModalAiModel: "AI 모델:",
+        optModalQuality: "✨ 고품질 (gemini-3.8-flash)",
+        optModalFast: "⚡ 균형 (gemini-3.5-flash)",
+        optModalCheap: "🍃 가장 빠름 / 쿼타 절약 (gemini-3.5-flash-lite)",
+        lblModelSelectorHint: "AI가 이 모델을 사용하여 분석합니다.",
+        allModelsQuotaMsg: "모든 AI 모델이 오늘 쿼타를 소진했습니다. 내일 다시 시도해 주세요."
       }
     };
 
@@ -9190,6 +9262,8 @@
       if (pdfInput) pdfInput.value = '';
 
       if (modal) {
+        // Sync model selector to current GEMINI_MODEL before showing
+        if (typeof selectAiModel === 'function') selectAiModel(GEMINI_MODEL);
         modal.classList.remove('hidden');
         setTimeout(() => autoFillInput && autoFillInput.focus(), 60);
       }
@@ -9249,6 +9323,8 @@
       if (pdfInput2) pdfInput2.value = '';
 
       if (modal) {
+        // Sync model selector to current GEMINI_MODEL before showing
+        if (typeof selectAiModel === 'function') selectAiModel(GEMINI_MODEL);
         modal.classList.remove('hidden');
         setTimeout(() => titleInput && titleInput.focus(), 60);
       }
@@ -10129,6 +10205,8 @@ Return ONLY a valid JSON object with this exact structure, no markdown, no expla
 
       updateTemplateStatusBadge();
       previewReportContent();
+      // Sync model selector to current GEMINI_MODEL before showing
+      if (typeof selectAiModel === 'function') selectAiModel(GEMINI_MODEL);
       document.getElementById('download-report-modal').classList.remove('hidden');
     }
 
@@ -11719,9 +11797,8 @@ Raw daily lab notes:
       }).join('');
 
       updateWeeklySelectedCount();
-      // Fix AI-PROXY: Đồng bộ dropdown model với GEMINI_MODEL hiện tại
-      const modelSelect = document.getElementById('select-gemini-model');
-      if (modelSelect) modelSelect.value = GEMINI_MODEL;
+      // Fix AI-PROXY: Đồng bộ tất cả dropdown model với GEMINI_MODEL hiện tại
+      if (typeof selectAiModel === 'function') selectAiModel(GEMINI_MODEL);
       document.getElementById('weekly-report-modal').classList.remove('hidden');
     }
 
