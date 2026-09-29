@@ -2394,7 +2394,7 @@
             class="text-xs font-extrabold py-1.5 px-3 rounded-xl border border-indigo-300 dark:border-indigo-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm">
             <option value="gemini-3.8-flash" data-i18n="optModelQuality">✨ Chất lượng cao (gemini-3.8-flash)</option>
             <option value="gemini-3.5-flash" data-i18n="optModelFast">⚡ Nhanh &amp; Ổn định (gemini-3.5-flash)</option>
-            <option value="gemini-3.5-flash-lite" data-i18n="optModelCheap">🍃 Siêu nhẹ / Tiết kiệm
+            <option value="gemini-3.5-flash-lite" data-i18n="optModelCheap" selected>🍃 Siêu nhẹ / Tiết kiệm
               (gemini-3.5-flash-lite)</option>
           </select>
         </div>
@@ -2556,7 +2556,7 @@
     // Fix AI-PROXY: Cấu hình Cloudflare Worker Proxy cho Gemini API (không lộ khóa API phía client)
     const AI_PROXY_URL = 'https://trung.lethanhtrunghp1302.workers.dev';
     const GEMINI_MODELS = { quality: 'gemini-3.8-flash', fast: 'gemini-3.5-flash', cheap: 'gemini-3.5-flash-lite' };
-    let GEMINI_MODEL = localStorage.getItem('EESL_GEMINI_MODEL') || GEMINI_MODELS.quality;
+    let GEMINI_MODEL = localStorage.getItem('EESL_GEMINI_MODEL') || GEMINI_MODELS.cheap;
 
     // Fix AI-PROXY: Hàm đổi model và lưu vào localStorage
     function changeGeminiModel(modelName) {
@@ -2578,10 +2578,14 @@
         throw new Error(msg);
       }
 
-      // Danh sách model dự phòng theo thứ tự nếu gặp 404 hoặc unsupported
-      const fallbackModels = [model];
-      if (model !== GEMINI_MODELS.fast) fallbackModels.push(GEMINI_MODELS.fast);
-      if (model !== GEMINI_MODELS.cheap) fallbackModels.push(GEMINI_MODELS.cheap);
+      // Fallback model order: user-selected first, then lite → flash → quality
+      const fallbackOrder = [GEMINI_MODELS.cheap, GEMINI_MODELS.fast, GEMINI_MODELS.quality];
+      const fallbackModels = [model, ...fallbackOrder.filter(m => m !== model)];
+
+      // Helper: detect permanent daily quota exhaustion (should NOT retry, skip to next model immediately)
+      function isQuotaExhausted(text) {
+        return /free_tier_requests|quota.?exceeded|RESOURCE_EXHAUSTED/i.test(text);
+      }
 
       const retryDelays = [2000, 5000]; // Thử lại tối đa 2 lần với độ trễ 2s rồi 5s
       let lastError = null;
@@ -2605,13 +2609,29 @@
 
             clearTimeout(timeoutId);
 
-            // Nếu nhận HTTP 503 hoặc 429 (UNAVAILABLE / quá tải), tự thử lại tối đa 2 lần với độ trễ 2s rồi 5s
-            if ((response.status === 503 || response.status === 429) && attempt < retryDelays.length) {
-              const delay = retryDelays[attempt];
-              const retryMsg = dict.aiOverloadedRetry || "AI đang quá tải, đang thử lại...";
-              if (typeof showSuccessToast === 'function') showSuccessToast(`⏳ ${retryMsg} (${attempt + 1}/${retryDelays.length})`);
-              await new Promise(r => setTimeout(r, delay));
-              continue;
+            // Nếu nhận HTTP 503 hoặc 429 (UNAVAILABLE / quá tải): kiểm tra trước xem có phải daily quota cạn không
+            if (response.status === 503 || response.status === 429) {
+              // Đọc body để phân biệt transient overload vs daily quota exhaustion
+              const errText = await response.text();
+              if (isQuotaExhausted(errText) && mIdx < fallbackModels.length - 1) {
+                console.warn(`[AI-PROXY] Model ${currentModel} đã cạn quota ngày (${response.status}), chuyển sang model tiếp theo...`);
+                shouldTryNextModel = true;
+                break; // Skip to next fallback model immediately
+              }
+              if (attempt < retryDelays.length) {
+                const delay = retryDelays[attempt];
+                const retryMsg = dict.aiOverloadedRetry || "AI đang quá tải, đang thử lại...";
+                if (typeof showSuccessToast === 'function') showSuccessToast(`⏳ ${retryMsg} (${attempt + 1}/${retryDelays.length})`);
+                await new Promise(r => setTimeout(r, delay));
+                continue;
+              }
+              // Exhausted retries for this model, move to next fallback if available
+              if (mIdx < fallbackModels.length - 1) {
+                shouldTryNextModel = true;
+                break;
+              }
+              lastError = new Error(`HTTP ${response.status}: ${errText.slice(0, 200)}`);
+              throw lastError;
             }
 
             // Nếu nhận HTTP 404 hoặc lỗi chứa not found / is not supported, tự hạ cấp model
