@@ -3455,7 +3455,13 @@
         optModalFast: "⚡ Cân bằng (gemini-3.5-flash)",
         optModalCheap: "🍃 Nhanh nhất / Tiết kiệm quota (gemini-3.5-flash-lite)",
         lblModelSelectorHint: "AI sẽ dùng mô hình này để phân tích.",
-        allModelsQuotaMsg: "Tất cả các mô hình AI đều đã hết quota hôm nay. Vui lòng thử lại vào ngày mai."
+        allModelsQuotaMsg: "Tất cả các mô hình AI đều đã hết quota hôm nay. Vui lòng thử lại vào ngày mai.",
+        reportVerificationTitle: "Cảnh báo kiểm chứng thông tin bài báo",
+        reportVerificationContinue: "Tiếp tục tải báo cáo",
+        reportVerificationCancel: "Hủy",
+        reportVerificationIntro: "Phát hiện một số luận điểm trong nhật ký chưa khớp hoặc mâu thuẫn với bằng chứng bài báo đã đối chiếu:",
+        reportVerificationOutro: "Bạn có muốn tiếp tục tải báo cáo không?",
+        toastGatheringEvidence: "🔍 Đang đối chiếu bằng chứng từ bài báo đã trích dẫn..."
       },
       en: {
         kstClock: "Korea Time (KST)",
@@ -3857,7 +3863,13 @@
         optModalFast: "⚡ Balanced (gemini-3.5-flash)",
         optModalCheap: "🍃 Fastest / Best quota (gemini-3.5-flash-lite)",
         lblModelSelectorHint: "AI will use this model to analyze.",
-        allModelsQuotaMsg: "All AI models have exhausted their daily quota. Please try again tomorrow."
+        allModelsQuotaMsg: "All AI models have exhausted their daily quota. Please try again tomorrow.",
+        reportVerificationTitle: "Paper Evidence Verification Warning",
+        reportVerificationContinue: "Continue Download",
+        reportVerificationCancel: "Cancel",
+        reportVerificationIntro: "Some claims in your daily log could not be verified or appear contradicted by the cited paper evidence:",
+        reportVerificationOutro: "Do you want to continue downloading the report?",
+        toastGatheringEvidence: "🔍 Gathering and verifying cited paper evidence..."
       },
       ko: {
         kstClock: "한국 표준시 (KST)",
@@ -4259,7 +4271,13 @@
         optModalFast: "⚡ 균형 (gemini-3.5-flash)",
         optModalCheap: "🍃 가장 빠름 / 쿼타 절약 (gemini-3.5-flash-lite)",
         lblModelSelectorHint: "AI가 이 모델을 사용하여 분석합니다.",
-        allModelsQuotaMsg: "모든 AI 모델이 오늘 쿼타를 소진했습니다. 내일 다시 시도해 주세요."
+        allModelsQuotaMsg: "모든 AI 모델이 오늘 쿼타를 소진했습니다. 내일 다시 시도해 주세요.",
+        reportVerificationTitle: "논문 근거 검증 경고",
+        reportVerificationContinue: "보고서 계속 다운로드",
+        reportVerificationCancel: "취소",
+        reportVerificationIntro: "연구 일지의 일부 내용이 인용된 논문의 근거와 일치하지 않거나 상충됩니다:",
+        reportVerificationOutro: "보고서를 계속 다운로드하시겠습니까?",
+        toastGatheringEvidence: "🔍 인용된 논문 근거 자료를 수집 및 대조하는 중..."
       }
     };
 
@@ -9953,12 +9971,14 @@ STRICT RULES:
 - The abstract field should be a concise rewritten summary of 150 to 250 words capturing the core contribution of the paper.
 - The methodology field should describe the research methods, materials, or experimental/theoretical approach used.
 - The results field should summarize the key findings, main results, and important conclusions.
+- The doi field must be the exact DOI printed in the paper text (e.g., "10.1016/j.jpowsour.2023.233000"), or empty string "" if not found.
+- The keyFacts field must be an array of at most 15 short, precise English strings containing definitions, equations, key numerical values, and experimental conditions stated explicitly in the paper.
 
 FULL TEXT EXTRACTED FROM PDF:
 ${truncatedText}
 
 Return ONLY a valid JSON object with this exact structure, no markdown, no explanation:
-{"title": "...", "authors": "...", "publicationDate": "...", "journal": "...", "abstract": "...", "methodology": "...", "results": "..."}`;
+{"title": "...", "authors": "...", "publicationDate": "...", "journal": "...", "doi": "...", "abstract": "...", "methodology": "...", "results": "...", "keyFacts": ["...", "..."]}`;
 
       const resJson = await callGemini({
         contents: [{ parts: [{ text: prompt }] }],
@@ -9973,9 +9993,14 @@ Return ONLY a valid JSON object with this exact structure, no markdown, no expla
               authors: { type: "STRING" },
               publicationDate: { type: "STRING" },
               journal: { type: "STRING" },
+              doi: { type: "STRING" },
               abstract: { type: "STRING" },
               methodology: { type: "STRING" },
-              results: { type: "STRING" }
+              results: { type: "STRING" },
+              keyFacts: {
+                type: "ARRAY",
+                items: { type: "STRING" }
+              }
             },
             required: ["title", "authors", "abstract"]
           }
@@ -10034,16 +10059,34 @@ Return ONLY a valid JSON object with this exact structure, no markdown, no expla
           aiData.results ? `Results: ${aiData.results}` : ''
         ].filter(Boolean).join('\n\n');
 
+        // Check if user already typed a DOI in the modal inputs
+        const typedDoiInput = document.getElementById('paper-input-doi');
+        const autofillInput = document.getElementById('paper-autofill-input');
+        const userTypedDoi = cleanDoiString((typedDoiInput ? typedDoiInput.value : '') || (autofillInput ? autofillInput.value : ''));
+        const extractedDoi = cleanDoiString(aiData.doi || '');
+        const finalDoi = (userTypedDoi || extractedDoi || '').toLowerCase();
+
+        let keyFactsArr = Array.isArray(aiData.keyFacts) ? aiData.keyFacts.filter(Boolean).map(s => String(s).trim()) : [];
+        if (keyFactsArr.length > 15) keyFactsArr = keyFactsArr.slice(0, 15);
+        let keyFactsTotalChars = 0;
+        const boundedKeyFacts = [];
+        for (const fact of keyFactsArr) {
+          if (keyFactsTotalChars + fact.length > 3000) break;
+          boundedKeyFacts.push(fact);
+          keyFactsTotalChars += fact.length;
+        }
+
         const newPaper = {
           id: 'paper_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
           title: aiData.title || file.name.replace(/\.pdf$/i, ''),
-          doi: '',
+          doi: finalDoi,
           status: 'toread',
           authors: aiData.authors || '',
           journal: aiData.journal || '',
           year: aiData.publicationDate || '',
           abstract: aiData.abstract || '',
           findings: findingsCombined,
+          keyFacts: boundedKeyFacts,
           sourceType: 'pdf',
           pdfFileName: file.name,
           createdAt: new Date().toISOString().split('T')[0],
@@ -10063,12 +10106,7 @@ Return ONLY a valid JSON object with this exact structure, no markdown, no expla
         console.error("PDF paper analysis error:", err);
         if (statusEl) statusEl.classList.add('hidden');
         if (errorEl) {
-          const errMsg = err.message || '';
-          const isRateLimit = /429|quota|rate.?limit|RESOURCE_EXHAUSTED/i.test(errMsg);
-          const userMsg = isRateLimit
-            ? "Gemini is temporarily rate-limited. Please wait about one minute and try again. The PDF was not saved yet."
-            : (errMsg || (dict.msgPdfExtractFailed || "Failed to process PDF."));
-          errorEl.innerText = userMsg;
+          errorEl.innerText = err.message || (dict.msgPdfExtractFailed || "Failed to process PDF.");
           errorEl.classList.remove('hidden');
         }
       } finally {
@@ -10318,8 +10356,7 @@ Return ONLY a valid JSON object with this exact structure, no markdown, no expla
 
       updateTemplateStatusBadge();
       previewReportContent();
-      // Sync model selector to current GEMINI_MODEL before showing
-      if (typeof selectAiModel === 'function') selectAiModel(GEMINI_MODEL);
+      if (typeof selectAiModel === 'function' && typeof GEMINI_MODEL !== 'undefined') selectAiModel(GEMINI_MODEL);
       document.getElementById('download-report-modal').classList.remove('hidden');
     }
 
@@ -10397,55 +10434,241 @@ Return ONLY a valid JSON object with this exact structure, no markdown, no expla
       previewBox.classList.remove('hidden');
     }
 
-    // --- GEMINI AI EXPORT ASSISTANT ---
+    // --- GEMINI AI EXPORT ASSISTANT & EVIDENCE GATHERING ---
+    const _dailyReportEvidenceCache = new Map();
+
+    function extractDoisFromText(text) {
+      if (!text || typeof text !== 'string') return [];
+      const regex = /\b(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+)/gi;
+      const matches = text.match(regex) || [];
+      const seen = new Set();
+      const results = [];
+      for (const m of matches) {
+        const cleaned = cleanDoiString(m).toLowerCase();
+        if (cleaned && /^10\.\d{4,9}\/\S+/.test(cleaned) && !seen.has(cleaned)) {
+          seen.add(cleaned);
+          results.push(cleaned);
+          if (results.length >= 3) break;
+        }
+      }
+      return results;
+    }
+
+    async function gatherDailyReportPaperEvidence(dois, proj) {
+      if (!Array.isArray(dois) || dois.length === 0) return '';
+      const localPapers = (proj && Array.isArray(proj.papers)) ? proj.papers.filter(p => p && !p.deleted) : [];
+      const evidenceBlocks = [];
+
+      for (const doi of dois) {
+        // Priority a: Look in proj.papers
+        const saved = localPapers.find(p => cleanDoiString(p.doi || '').toLowerCase() === doi);
+        if (saved) {
+          const keyFactsStr = Array.isArray(saved.keyFacts) ? saved.keyFacts.join('; ') : (saved.keyFacts || '');
+          let block = `[PAPER EVIDENCE: ${doi}]
+- Evidence Level: saved_summary (from Papers Library)
+- Title: ${saved.title || 'N/A'}
+- Authors: ${saved.authors || 'N/A'}
+- Journal: ${saved.journal || 'N/A'} (${saved.year || 'N/A'})
+- Abstract: ${saved.abstract || 'N/A'}
+- Findings & Methodology: ${saved.findings || 'N/A'}
+- Key Facts: ${keyFactsStr || 'N/A'}`;
+          if (block.length > 6000) block = block.slice(0, 6000) + '... [truncated]';
+          evidenceBlocks.push(block);
+          continue;
+        }
+
+        // Priority b & c: Check session cache first
+        if (_dailyReportEvidenceCache.has(doi)) {
+          evidenceBlocks.push(_dailyReportEvidenceCache.get(doi));
+          continue;
+        }
+
+        // Fetch Crossref
+        let meta = null;
+        let abstract = '';
+        try {
+          const controller = new AbortController();
+          const tId = setTimeout(() => controller.abort(), 6000);
+          const res = await fetch(`https://api.crossref.org/works/${encodeURIComponent(doi)}`, {
+            headers: { 'Accept': 'application/json' },
+            signal: controller.signal
+          });
+          clearTimeout(tId);
+          if (res.ok) {
+            const json = await res.json();
+            const msg = json.message || {};
+            let title = '';
+            if (Array.isArray(msg.title) && msg.title.length > 0) title = msg.title[0];
+            else if (typeof msg.title === 'string') title = msg.title;
+            title = (title || '').replace(/<[^>]+>/g, '').trim();
+
+            let authors = '';
+            if (Array.isArray(msg.author)) {
+              authors = msg.author.map(a => {
+                if (a.name) return a.name;
+                const given = a.given ? a.given.trim() : '';
+                const family = a.family ? a.family.trim() : '';
+                if (family && given) return `${family} ${given}`;
+                return family || given || '';
+              }).filter(Boolean).join(', ');
+            }
+
+            let journal = '';
+            if (Array.isArray(msg['container-title']) && msg['container-title'].length > 0) journal = msg['container-title'][0];
+            else if (typeof msg['container-title'] === 'string') journal = msg['container-title'];
+            else if (msg.publisher) journal = msg.publisher;
+
+            let year = '';
+            if (msg['published-print']?.['date-parts']?.[0]?.[0]) year = msg['published-print']['date-parts'][0][0];
+            else if (msg['published-online']?.['date-parts']?.[0]?.[0]) year = msg['published-online']['date-parts'][0][0];
+            else if (msg.issued?.['date-parts']?.[0]?.[0]) year = msg.issued['date-parts'][0][0];
+            else if (msg.created?.['date-parts']?.[0]?.[0]) year = msg.created['date-parts'][0][0];
+
+            if (msg.abstract) {
+              abstract = msg.abstract.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+            }
+            meta = { title, authors, journal, year };
+          }
+        } catch (e) {
+          // Skip silently on timeout, network, or CORS failure
+        }
+
+        // Priority c: OpenAlex if abstract is still missing
+        if (!abstract) {
+          try {
+            const controller = new AbortController();
+            const tId = setTimeout(() => controller.abort(), 6000);
+            const oaRes = await fetch(`https://api.openalex.org/works/https://doi.org/${encodeURIComponent(doi)}`, {
+              headers: { 'Accept': 'application/json' },
+              signal: controller.signal
+            });
+            clearTimeout(tId);
+            if (oaRes.ok) {
+              const oaJson = await oaRes.json();
+              if (!meta) {
+                const title = (oaJson.title || '').replace(/<[^>]+>/g, '').trim();
+                const authors = Array.isArray(oaJson.authorships)
+                  ? oaJson.authorships.map(a => a.author?.display_name).filter(Boolean).join(', ')
+                  : '';
+                const journal = oaJson.primary_location?.source?.display_name || '';
+                const year = oaJson.publication_year || '';
+                meta = { title, authors, journal, year };
+              }
+              const inv = oaJson.abstract_inverted_index;
+              if (inv && typeof inv === 'object') {
+                const wordPositions = [];
+                for (const [word, positions] of Object.entries(inv)) {
+                  if (Array.isArray(positions)) {
+                    for (const pos of positions) {
+                      wordPositions.push([pos, word]);
+                    }
+                  }
+                }
+                wordPositions.sort((a, b) => a[0] - b[0]);
+                abstract = wordPositions.map(wp => wp[1]).join(' ').trim();
+              }
+            }
+          } catch (e) {
+            // Skip silently
+          }
+        }
+
+        let evidenceLevel = "none";
+        if (abstract) {
+          evidenceLevel = "abstract_only";
+        } else if (meta && (meta.title || meta.authors || meta.journal)) {
+          evidenceLevel = "metadata_only";
+        }
+
+        let block = `[PAPER EVIDENCE: ${doi}]
+- Evidence Level: ${evidenceLevel}
+- Title: ${meta?.title || 'N/A'}
+- Authors: ${meta?.authors || 'N/A'}
+- Journal: ${meta?.journal || 'N/A'} (${meta?.year || 'N/A'})
+- Abstract: ${abstract || 'N/A'}`;
+
+        if (block.length > 6000) block = block.slice(0, 6000) + '... [truncated]';
+        _dailyReportEvidenceCache.set(doi, block);
+        evidenceBlocks.push(block);
+      }
+
+      let total = evidenceBlocks.join('\n\n');
+      if (total.length > 15000) {
+        total = total.slice(0, 15000) + '... [truncated]';
+      }
+      return total;
+    }
+
     // Fix AI-PROXY: Chuyển sang gọi qua Cloudflare Worker Proxy với responseSchema và chỉ thị grounding rõ ràng
-    async function callGeminiDailyReportAssistant(rawData) {
-      const prompt = `You are a Senior Academic Research Assistant in science and engineering. Your mission is to transform raw, informal daily experiment logs (in Vietnamese, abbreviated, and unstructured) into a comprehensive, professional daily experiment report in high-standard Academic English.
+    async function callGeminiDailyReportAssistant(rawData, paperEvidence = '') {
+      const evidenceText = (paperEvidence || rawData.evidence || '').trim();
+      const prompt = `You are a Senior Academic Research Assistant in science and engineering. Your mission is to transform raw, informal daily experiment logs (in Vietnamese, abbreviated, and unstructured) into a comprehensive, professional daily experiment report in high-standard Academic English, cross-referenced and verified against provided scientific paper evidence.
 
-OPERATIONAL WORKFLOW & PRINCIPLES:
-1. Scientific Comprehension & Plausibility Check (Reasoning before output):
-   - Analyze "tasks", "notes", and "plan" to identify: experiment type, materials/chemicals, equipment, measurement parameters, and key discoveries or anomalies.
-   - If recorded raw information contains minor scientific ambiguities or unconventional phrasing, refine it into the standard scientific expression deduced from context.
-   - Do NOT fabricate specific numerical measurements without empirical basis in the input.
+CORE OPERATIONAL RULES:
+R1. Time Separation & Future Plan Guardrail:
+   - "COMPLETED TODAY (tasks)" and "NOTES AND LEARNINGS TODAY (notes)" describe experimental and theoretical work completed today.
+   - "PLAN FOR TOMORROW (plan)" is strictly FUTURE WORK that has NOT been done yet.
+   - CRITICAL: Anything that comes ONLY from the Plan for Tomorrow may appear ONLY in "next_steps" and "future_directions" using future tense ("will", "plan to", "shall").
+   - Content from the Plan must NEVER appear in "preparations", "procedures", "observations", "summary", "references", or "exp_data".
 
-2. Content Categorization into Target Schema:
-   - "title": Concise, formal scientific title of the daily experiment.
-   - "objective": Clear experimental objective and research rationale.
-   - "preparations": Array of strings listing materials, reagents, chemical solutions, substrate prep, or experimental apparatus conditions.
-   - "procedures": Array of strings detailing chronological procedural steps executed.
-   - "exp_data": Array of quantitative measurement objects with schema: [{ "d_date": "...", "value": "...", "unit": "...", "notes": "..." }].
-     * CRITICAL: ONLY populate if actual numerical measurements or quantitative data points are explicitly mentioned in the input.
-     * If no numerical measurement data exists, return an empty array []. Do NOT invent numbers; describe qualitative observations under "observations" instead.
-   - "observations": In-depth analysis of experimental results, observed phenomena, characterization patterns, and discussion.
-   - "next_steps": Concrete, short-term next steps for immediate follow-up.
-   - "summary": Executive synthesis of the day's experimental findings and outcome.
-   - "future_directions": Broader research directions, downstream characterizations, or prospective methodology improvements.
-   - "references": Array of strings listing relevant literature citations, standard methods, or paper references (or [] if none).
-   - "weather": Ambient laboratory conditions or weather string (e.g., "Laboratory ambient (22-25°C, controlled RH ~45%)" or standard condition).
-   * Intelligently allocate insights to the most fitting section without verbatim repeating identical sentences across multiple sections.
+R2. Preparations:
+   - "preparations" must ONLY list materials, chemicals, reagents, solutions, substrates, experimental apparatus, instruments, software, datasets, or papers that tasks or notes show were ACTUALLY used or studied today.
+   - NEVER include items mentioned only in Plan. If no materials or apparatus were used today, return an empty array [].
 
-3. Paraphrase with Academic Rigor (No Verbatim Copying):
-   - Do NOT translate literally or copy mechanically 1-to-1.
-   - Paraphrase into formal scholarly scientific discourse with logical flow, connecting technical reasoning while remaining faithful to the experimental premise.
+R3. Chronological Procedures:
+   - "procedures" must detail the chronological steps actually executed today. For a literature review or computation day, list actual analytical steps (e.g., reading cited papers, extracting mathematical models or definitions, deriving equations, running computational simulations).
 
-4. Bounded Contextual Inference:
-   - If a target field lacks explicit direct phrasing in the input (e.g., the researcher did not explicitly write an "objective"), reasonably deduce a compelling, scientifically rigorous statement from the project context, tasks, and notes.
-   - Do NOT leave fields blank or output "N/A" if valid deductions can be drawn from the project scope. Only return an empty string or empty array if there is zero contextual clue.
+R4. References:
+   - "references" must include ONLY papers cited in tasks or notes completed today.
+   - Format each citation rigorously from the provided PAPER EVIDENCE metadata (Author(s), Title, Journal, Year, DOI). If metadata is missing, provide the DOI.
+   - Papers mentioned ONLY in Plan must be strictly EXCLUDED from references.
 
-5. 100% Academic English & Appropriate Tenses:
-   - All output must be strictly in Academic English. Zero Vietnamese words.
-   - Use standard laboratory report grammar: past tense for completed steps and observations, present tense for scientific facts/characterizations/conclusions, and future/modal verbs ("will", "plan to", "shall") for next steps and future directions.
+R5. Scientific Verification & Grounding:
+   - Compare every scientific assertion, claim, or data point in the researcher's notes against the provided PAPER EVIDENCE.
+   - Classify each claim into "verification_notes" as:
+     * "supported": The claim is directly corroborated by the paper evidence. Write supported claims into observations/summary.
+     * "contradicted": The claim is contradicted or disproven by the paper evidence. Do NOT state contradicted claims as fact in the report. Note the discrepancy.
+     * "not_verifiable": The claim cannot be confirmed from the provided paper evidence alone.
+   - GROUNDING PRINCIPLE: Use ONLY the provided PAPER EVIDENCE to determine what the paper says or claims. Never use outside or hallucinated assumptions to "confirm" findings about the specific paper.
+   - If a claim is not verifiable from the evidence, it may only be retained if it represents standard, general textbook background knowledge and is NOT attributed to the paper; otherwise omit them. NEVER attribute a claim to a paper unless the paper evidence directly supports it.
 
-6. Hard Fact Preservation:
-   - Retain exact chemical formulas (e.g., Ni-Fe LDH, KOH), concentrations (e.g., 1M), numerical values, angles (e.g., 2theta = 11°), units, and dates accurately without unauthorized alteration or rounding.
+R6. Academic Rigor, Fact Preservation & Bounded Inference:
+   - Output 100% formal Academic English (zero Vietnamese).
+   - "title" and "objective": Must describe what was actually accomplished or investigated TODAY, NOT future planned tasks.
+   - Preserve exact chemical formulas (e.g., Ni-Fe LDH, KOH), numerical values, angles, concentrations, and units without alteration.
+   - Do NOT fabricate quantitative data. "exp_data" must be empty [] unless actual quantitative measurement data points are explicitly provided in today's notes or tasks.
 
-Raw daily lab notes:
+TARGET SCHEMA ALLOCATION:
+- "date": Date string (${rawData.date || ''})
+- "weather": Laboratory ambient condition string (e.g., "Laboratory ambient (22-25°C, controlled RH ~45%)" or standard condition)
+- "title": Formal scientific title describing today's completed work
+- "objective": Clear experimental objective of today's work
+- "preparations": Array of strings (materials/instruments actually used today, or [] if none)
+- "procedures": Array of strings (chronological steps executed today)
+- "exp_data": Array of [{ "d_date": "...", "value": "...", "unit": "...", "notes": "..." }] (only if explicit quantitative measurements exist)
+- "observations": In-depth analysis of results, verified findings, characterization data, and discussion
+- "summary": Executive synthesis of today's findings and outcome
+- "next_steps": Concrete, short-term immediate follow-up steps (can incorporate tomorrow's plan in future tense)
+- "future_directions": Broader research directions and prospective methodology improvements (can incorporate tomorrow's plan in future tense)
+- "references": Array of formal citation strings for papers cited today (or [] if none)
+- "verification_notes": Array of [{ "claim": "...", "status": "supported" | "contradicted" | "not_verifiable", "evidence_note": "..." }]
+
+INPUT DATA:
 - Date: ${rawData.date || ''}
-- Planned Tasks: ${rawData.tasks || ''}
+- Research Project: ${rawData.project || ''}
 - Progress: ${rawData.progress || ''}
-- Notes, Observations & Lessons Learned: ${rawData.notes || ''}
-- Next Plans: ${rawData.plan || ''}
-- Research Project: ${rawData.project || ''}`;
+
+=== COMPLETED TODAY (tasks) ===
+${rawData.tasks || '(None recorded)'}
+
+=== NOTES AND LEARNINGS TODAY (notes) ===
+${rawData.notes || '(None recorded)'}
+
+=== PLAN FOR TOMORROW (plan) [FUTURE - NOT DONE YET] ===
+${rawData.plan || '(None recorded)'}
+
+=== PAPER EVIDENCE ===
+${evidenceText || '(No DOI cited or no external paper evidence gathered)'}`;
 
       const resJson = await callGemini({
         contents: [{ parts: [{ text: prompt }] }],
@@ -10478,7 +10701,19 @@ Raw daily lab notes:
               next_steps: { type: "STRING" },
               summary: { type: "STRING" },
               future_directions: { type: "STRING" },
-              references: { type: "ARRAY", items: { type: "STRING" } }
+              references: { type: "ARRAY", items: { type: "STRING" } },
+              verification_notes: {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    claim: { type: "STRING" },
+                    status: { type: "STRING" },
+                    evidence_note: { type: "STRING" }
+                  },
+                  required: ["claim", "status", "evidence_note"]
+                }
+              }
             },
             required: ["date", "title", "objective", "observations", "summary", "next_steps"]
           }
@@ -10565,6 +10800,16 @@ Raw daily lab notes:
       showSuccessToast(dict.toastAiTranslating || '🤖 Gemini AI đang dịch thuật & biên tập báo cáo tiếng Anh chuyên ngành...');
 
       try {
+        // PART 1 - EVIDENCE GATHERING
+        const citedDois = extractDoisFromText(tasksVal + '\n' + notesVal);
+        let paperEvidence = '';
+        if (citedDois.length > 0) {
+          if (dict.toastGatheringEvidence) {
+            showSuccessToast(dict.toastGatheringEvidence);
+          }
+          paperEvidence = await gatherDailyReportPaperEvidence(citedDois, currentProj);
+        }
+
         // Thu thập dữ liệu thô
         const rawData = {
           date: selectedDate,
@@ -10572,13 +10817,14 @@ Raw daily lab notes:
           progress: progressVal,
           notes: notesVal,
           plan: planVal,
-          project: currentProj.title || 'Lab Research'
+          project: currentProj.title || 'Lab Research',
+          evidence: paperEvidence
         };
 
         // Gọi Gemini API phân tích và tổng hợp dữ liệu (BẮT BUỘC THÀNH CÔNG, KHÔNG SILENT FALLBACK)
         let aiData = null;
         try {
-          aiData = await callGeminiDailyReportAssistant(rawData);
+          aiData = await callGeminiDailyReportAssistant(rawData, paperEvidence);
           if (!aiData || typeof aiData !== 'object') {
             throw new Error('Dữ liệu trả về từ Gemini không đúng định dạng JSON.');
           }
@@ -10586,6 +10832,51 @@ Raw daily lab notes:
           console.error('Lỗi Gemini API:', error);
           alert('Lỗi Gemini API: ' + error.message);
           return; // Dừng tiến trình, KHÔNG tự ý chèn tiếng Việt thô vào file docx
+        }
+
+        // PART 3 - USER WARNING
+        const unverifiedClaims = Array.isArray(aiData.verification_notes)
+          ? aiData.verification_notes.filter(n => n && (n.status === 'contradicted' || n.status === 'not_verifiable'))
+          : [];
+
+        if (unverifiedClaims.length > 0) {
+          const itemsToShow = unverifiedClaims.slice(0, 8);
+          const messageLines = itemsToShow.map((item, idx) => {
+            const statusLabel = item.status === 'contradicted' ? '❌ [CONTRADICTED]' : '⚠️ [UNVERIFIED]';
+            return `${idx + 1}. ${statusLabel} ${item.claim || ''}\n   ↳ ${item.evidence_note || ''}`;
+          }).join('\n\n');
+
+          const promptIntro = dict.reportVerificationIntro || (lang === 'vi'
+            ? 'Phát hiện một số luận điểm trong nhật ký chưa khớp hoặc mâu thuẫn với bằng chứng bài báo đã đối chiếu:'
+            : (lang === 'ko'
+            ? '연구 일지의 일부 내용이 인용된 논문의 근거와 일치하지 않거나 상충됩니다:'
+            : 'Some claims in your daily log could not be verified or appear contradicted by the cited paper evidence:'));
+
+          const promptOutro = dict.reportVerificationOutro || (lang === 'vi'
+            ? 'Bạn có muốn tiếp tục tải báo cáo không?'
+            : (lang === 'ko'
+            ? '보고서를 계속 다운로드하시겠습니까?'
+            : 'Do you want to continue downloading the report?'));
+
+          const fullMessage = `${promptIntro}\n\n${messageLines}\n\n${promptOutro}`;
+
+          const confirmed = await showCustomConfirm({
+            title: dict.reportVerificationTitle || 'Paper Evidence Verification Warning',
+            message: fullMessage,
+            confirmText: dict.reportVerificationContinue || 'Continue Download',
+            cancelText: dict.reportVerificationCancel || 'Cancel',
+            isDestructive: false,
+            icon: 'fa-solid fa-triangle-exclamation'
+          });
+
+          if (!confirmed) {
+            if (btn) {
+              btn.disabled = false;
+              btn.classList.remove('opacity-80', 'cursor-wait');
+              if (btnText) btnText.innerHTML = `<i class="fa-solid fa-file-arrow-down mr-1"></i> ${dict.btnDownloadReportModal || 'Tải Báo Cáo Daily (.docx)'}`;
+            }
+            return;
+          }
         }
 
         // Ánh xạ dữ liệu học thuật 100% tiếng Anh vào template thẻ {}
