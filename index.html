@@ -10638,6 +10638,8 @@ R6. Academic Rigor, Fact Preservation & Bounded Inference:
    - Preserve exact chemical formulas (e.g., Ni-Fe LDH, KOH), numerical values, angles, concentrations, and units without alteration.
    - Do NOT fabricate quantitative data. "exp_data" must be empty [] unless actual quantitative measurement data points are explicitly provided in today's notes or tasks.
 
+OUTPUT FORMAT: Return plain text only. Do NOT use LaTeX, dollar signs, backslashes, or markdown (no $...$, no \text{}, no **bold**, no backticks). Write chemical formulas with Unicode subscript and superscript characters, for example Co3O4 as Co₃O₄, AB2O4 as AB₂O₄, Fe3+ as Fe³⁺. Write units and values as plain text, for example 0.63 V. For comparisons use the plain symbols < and >, or words such as 'followed by'. Use Greek letters directly, for example Δ, η.
+
 TARGET SCHEMA ALLOCATION:
 - "date": Date string (${rawData.date || ''})
 - "weather": Laboratory ambient condition string (e.g., "Laboratory ambient (22-25°C, controlled RH ~45%)" or standard condition)
@@ -10751,6 +10753,142 @@ ${evidenceText || '(No DOI cited or no external paper evidence gathered)'}`;
       }
 
       executeDownloadDailyReport(targetIdx);
+    }
+
+    function sanitizeReportText(input, seen = new WeakSet()) {
+      if (typeof input === 'string') {
+        try {
+          let text = input;
+
+          // 1. Remove the $ delimiters of math mode
+          text = text.replace(/\$/g, '');
+
+          // 2. Convert \text{X}, \mathrm{X}, \textbf{X} to X
+          let prevText;
+          do {
+            prevText = text;
+            text = text.replace(/\\(?:text|mathrm|textbf)\{([^{}]*)\}/g, '$1');
+          } while (text !== prevText);
+
+          // 4. Convert common commands: \Delta to Δ, \eta to η, \alpha to α, \beta to β, \sigma to σ,
+          // \to and \rightarrow to →, \approx to ≈, \pm to ±, \times to ×, \cdot to ·, \leq to ≤, \geq to ≥, \degree to °.
+          // Remove spacing commands \, and \; and \!
+          text = text
+            .replace(/\\Delta(?![a-zA-Z])/g, 'Δ')
+            .replace(/\\delta(?![a-zA-Z])/g, 'δ')
+            .replace(/\\eta(?![a-zA-Z])/g, 'η')
+            .replace(/\\alpha(?![a-zA-Z])/g, 'α')
+            .replace(/\\beta(?![a-zA-Z])/g, 'β')
+            .replace(/\\sigma(?![a-zA-Z])/g, 'σ')
+            .replace(/\\theta(?![a-zA-Z])/g, 'θ')
+            .replace(/\\mu(?![a-zA-Z])/g, 'µ')
+            .replace(/\\omega(?![a-zA-Z])/g, 'ω')
+            .replace(/\\Omega(?![a-zA-Z])/g, 'Ω')
+            .replace(/\\gamma(?![a-zA-Z])/g, 'γ')
+            .replace(/\\lambda(?![a-zA-Z])/g, 'λ')
+            .replace(/\\rightarrow(?![a-zA-Z])/g, '→')
+            .replace(/\\to(?![a-zA-Z])/g, '→')
+            .replace(/\\approx(?![a-zA-Z])/g, '≈')
+            .replace(/\\pm(?![a-zA-Z])/g, '±')
+            .replace(/\\times(?![a-zA-Z])/g, '×')
+            .replace(/\\cdot(?![a-zA-Z])/g, '·')
+            .replace(/\\leq(?![a-zA-Z])/g, '≤')
+            .replace(/\\geq(?![a-zA-Z])/g, '≥')
+            .replace(/\\le(?![a-zA-Z])/g, '≤')
+            .replace(/\\ge(?![a-zA-Z])/g, '≥')
+            .replace(/\\degree(?![a-zA-Z])/g, '°')
+            .replace(/\\circ(?![a-zA-Z])/g, '°')
+            .replace(/\\[,;!]/g, '');
+
+          // 3. Convert subscripts _{...} and _x, and superscripts ^{...} and ^x:
+          // map digits 0-9 and characters + - = ( ) to their Unicode subscript or superscript forms;
+          // for letters, use the Unicode form only if it exists, otherwise keep the letter unchanged.
+          const subMap = {
+            '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄',
+            '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉',
+            '+': '₊', '-': '₋', '−': '₋', '=': '₌', '(': '₍', ')': '₎',
+            'a': 'ₐ', 'e': 'ₑ', 'h': 'ₕ', 'i': 'ᵢ', 'j': 'ⱼ',
+            'k': 'ₖ', 'l': 'ₗ', 'm': 'ₘ', 'n': 'ₙ', 'o': 'ₒ',
+            'p': 'ₚ', 'r': 'ᵣ', 's': 'ₛ', 't': 'ₜ', 'u': 'ᵤ',
+            'v': 'ᵥ', 'x': 'ₓ',
+            'β': 'ᵦ', 'γ': 'ᵧ', 'ρ': 'ᵨ', 'φ': 'ᵩ', 'χ': 'ᵪ'
+          };
+
+          const supMap = {
+            '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+            '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
+            '+': '⁺', '-': '⁻', '−': '⁻', '=': '⁼', '(': '⁽', ')': '⁾',
+            'a': 'ᵃ', 'b': 'ᵇ', 'c': 'ᶜ', 'd': 'ᵈ', 'e': 'ᵉ',
+            'f': 'ᶠ', 'g': 'ᵍ', 'h': 'ʰ', 'i': 'ⁱ', 'j': 'ʲ',
+            'k': 'ᵏ', 'l': 'ˡ', 'm': 'ᵐ', 'n': 'ⁿ', 'o': 'ᵒ',
+            'p': 'ᵖ', 'r': 'ʳ', 's': 'ˢ', 't': 'ᵗ', 'u': 'ᵘ',
+            'v': 'ᵛ', 'w': 'ʷ', 'x': 'ˣ', 'y': 'ʸ', 'z': 'ᶻ',
+            'A': 'ᴬ', 'B': 'ᴮ', 'D': 'ᴰ', 'E': 'ᴱ', 'G': 'ᴳ',
+            'H': 'ᴴ', 'I': 'ᴵ', 'J': 'ᴶ', 'K': 'ᴷ', 'L': 'ᴸ',
+            'M': 'ᴹ', 'N': 'ᴺ', 'O': 'ᴼ', 'P': 'ᴾ', 'R': 'ᴿ',
+            'T': 'ᵀ', 'U': 'ᵁ', 'W': 'ᵂ',
+            'γ': 'ᵞ', 'β': 'ᵝ', 'θ': 'ᶿ', 'φ': 'ᵠ', 'χ': 'ᵡ'
+          };
+
+          const convertSub = (chars) => chars.split('').map(c => subMap[c] || c).join('');
+          const convertSup = (chars) => chars.split('').map(c => supMap[c] || c).join('');
+
+          text = text.replace(/_\{([^{}]+)\}/g, (_, inner) => convertSub(inner));
+          text = text.replace(/\^\{([^{}]+)\}/g, (_, inner) => convertSup(inner));
+          text = text.replace(/_([0-9a-zA-Z+\-=()])/g, (_, ch) => convertSub(ch));
+          text = text.replace(/\^([0-9a-zA-Z+\-=()])/g, (_, ch) => convertSup(ch));
+
+          // 5. Remove any remaining backslash followed by letters by keeping only the letters, and remove stray backslashes
+          text = text.replace(/\\([a-zA-Z]+)/g, '$1');
+          text = text.replace(/\\/g, '');
+
+          // 6. Remove markdown ** and backticks
+          text = text.replace(/\*\*/g, '').replace(/`/g, '');
+
+          // 7. Collapse repeated spaces, and trim leading and trailing spaces and line breaks.
+          // Remove trailing empty lines so that no empty bullet is created in the DOCX.
+          const lines = text.split(/\r?\n/);
+          const cleanedLines = lines.map(line => line.replace(/[^\S\r\n]+/g, ' ').trim());
+          const collapsedLines = [];
+          let prevEmpty = false;
+          for (const l of cleanedLines) {
+            if (l === '') {
+              if (!prevEmpty) collapsedLines.push(l);
+              prevEmpty = true;
+            } else {
+              collapsedLines.push(l);
+              prevEmpty = false;
+            }
+          }
+          while (collapsedLines.length > 0 && collapsedLines[collapsedLines.length - 1] === '') {
+            collapsedLines.pop();
+          }
+          while (collapsedLines.length > 0 && collapsedLines[0] === '') {
+            collapsedLines.shift();
+          }
+          text = collapsedLines.join('\n');
+
+          return text;
+        } catch (err) {
+          console.warn('sanitizeReportText error on string, using original string:', err);
+          return input;
+        }
+      }
+
+      if (input && typeof input === 'object') {
+        if (seen.has(input)) return input;
+        seen.add(input);
+        if (Array.isArray(input)) {
+          return input.map(item => sanitizeReportText(item, seen));
+        }
+        const res = {};
+        for (const key of Object.keys(input)) {
+          res[key] = sanitizeReportText(input[key], seen);
+        }
+        return res;
+      }
+
+      return input;
     }
 
     async function executeDownloadDailyReport(targetDateParam) {
@@ -11002,6 +11140,15 @@ ${evidenceText || '(No DOI cited or no external paper evidence gathered)'}`;
             return "";
           }
         });
+
+        try {
+          const sanitized = sanitizeReportText(templateData);
+          if (sanitized && typeof sanitized === 'object') {
+            Object.assign(templateData, sanitized);
+          }
+        } catch (sanitizeErr) {
+          console.warn('sanitizeReportText failed, using original templateData:', sanitizeErr);
+        }
 
         doc.setData(templateData);
 
