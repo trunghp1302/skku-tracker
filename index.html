@@ -10638,23 +10638,6 @@ R6. Academic Rigor, Fact Preservation & Bounded Inference:
    - Preserve exact chemical formulas (e.g., Ni-Fe LDH, KOH), numerical values, angles, concentrations, and units without alteration.
    - Do NOT fabricate quantitative data. "exp_data" must be empty [] unless actual quantitative measurement data points are explicitly provided in today's notes or tasks.
 
-OUTPUT FORMAT: Return plain text only. Do NOT use LaTeX, dollar signs, backslashes, or markdown (no $...$, no \text{}, no **bold**, no backticks). Write chemical formulas with Unicode subscript and superscript characters, for example Co3O4 as Co₃O₄, AB2O4 as AB₂O₄, Fe3+ as Fe³⁺. Write units and values as plain text, for example 0.63 V. For comparisons use the plain symbols < and >, or words such as 'followed by'. Use Greek letters directly, for example Δ, η.
-
-TARGET SCHEMA ALLOCATION:
-- "date": Date string (${rawData.date || ''})
-- "weather": Laboratory ambient condition string (e.g., "Laboratory ambient (22-25°C, controlled RH ~45%)" or standard condition)
-- "title": Formal scientific title describing today's completed work
-- "objective": Clear experimental objective of today's work
-- "preparations": Array of strings (materials/instruments actually used today, or [] if none)
-- "procedures": Array of strings (chronological steps executed today)
-- "exp_data": Array of [{ "d_date": "...", "value": "...", "unit": "...", "notes": "..." }] (only if explicit quantitative measurements exist)
-- "observations": In-depth analysis of results, verified findings, characterization data, and discussion
-- "summary": Executive synthesis of today's findings and outcome
-- "next_steps": Concrete, short-term immediate follow-up steps (can incorporate tomorrow's plan in future tense)
-- "future_directions": Broader research directions and prospective methodology improvements (can incorporate tomorrow's plan in future tense)
-- "references": Array of formal citation strings for papers cited today (or [] if none)
-- "verification_notes": Array of [{ "claim": "...", "status": "supported" | "contradicted" | "not_verifiable", "evidence_note": "..." }]
-
 INPUT DATA:
 - Date: ${rawData.date || ''}
 - Research Project: ${rawData.project || ''}
@@ -10672,6 +10655,8 @@ ${rawData.plan || '(None recorded)'}
 === PAPER EVIDENCE ===
 ${evidenceText || '(No DOI cited or no external paper evidence gathered)'}`;
 
+      console.log(`[Gemini Daily Report] Prompt length: ${prompt.length} characters`);
+      const startTime = Date.now();
       const resJson = await callGemini({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
@@ -10717,10 +10702,26 @@ ${evidenceText || '(No DOI cited or no external paper evidence gathered)'}`;
                 }
               }
             },
-            required: ["date", "title", "objective", "observations", "summary", "next_steps"]
+            required: [
+              "date",
+              "weather",
+              "title",
+              "objective",
+              "preparations",
+              "procedures",
+              "exp_data",
+              "observations",
+              "next_steps",
+              "summary",
+              "future_directions",
+              "references",
+              "verification_notes"
+            ]
           }
         }
       });
+      const elapsedMs = Date.now() - startTime;
+      console.log(`[Gemini Daily Report] Elapsed: ${elapsedMs} ms (prompt length: ${prompt.length} characters)`);
 
       const textOutput = resJson?.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!textOutput) throw new Error('Không nhận được text phản hồi từ Gemini API');
@@ -10987,14 +10988,14 @@ ${evidenceText || '(No DOI cited or no external paper evidence gathered)'}`;
           const promptIntro = dict.reportVerificationIntro || (lang === 'vi'
             ? 'Phát hiện một số luận điểm trong nhật ký chưa khớp hoặc mâu thuẫn với bằng chứng bài báo đã đối chiếu:'
             : (lang === 'ko'
-            ? '연구 일지의 일부 내용이 인용된 논문의 근거와 일치하지 않거나 상충됩니다:'
-            : 'Some claims in your daily log could not be verified or appear contradicted by the cited paper evidence:'));
+              ? '연구 일지의 일부 내용이 인용된 논문의 근거와 일치하지 않거나 상충됩니다:'
+              : 'Some claims in your daily log could not be verified or appear contradicted by the cited paper evidence:'));
 
           const promptOutro = dict.reportVerificationOutro || (lang === 'vi'
             ? 'Bạn có muốn tiếp tục tải báo cáo không?'
             : (lang === 'ko'
-            ? '보고서를 계속 다운로드하시겠습니까?'
-            : 'Do you want to continue downloading the report?'));
+              ? '보고서를 계속 다운로드하시겠습니까?'
+              : 'Do you want to continue downloading the report?'));
 
           const fullMessage = `${promptIntro}\n\n${messageLines}\n\n${promptOutro}`;
 
